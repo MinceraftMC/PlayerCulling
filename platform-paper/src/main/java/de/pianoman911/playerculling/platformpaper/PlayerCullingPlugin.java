@@ -17,8 +17,14 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerCullingPlugin extends JavaPlugin {
 
-    private final PaperPlatform platform = new PaperPlatform(this); // Use getter to access platform to support custom paper platforms
+    private final PaperPlatform platform;
     private @MonotonicNonNull CullShip cullShip;
+
+    public PlayerCullingPlugin() {
+        // build platform implementation in separate method to allow
+        // for other platforms extending this platform
+        this.platform = this.buildPlatform();
+    }
 
     @Override
     public void onLoad() {
@@ -58,6 +64,10 @@ public class PlayerCullingPlugin extends JavaPlugin {
         for (PaperWorld world : this.getPlatform().getPaperWorlds()) {
             this.getPlatform().getNmsAdapter().uninjectWorld(world.getWorld());
         }
+    }
+
+    protected PaperPlatform buildPlatform() {
+        return new PaperPlatform(this);
     }
 
     public PaperPlatform getPlatform() {
