@@ -1421,6 +1421,8 @@ public final class ConcurrentLongCache<V> implements Iterable<V> {
 
         public ValueIterator(@Nullable Node<V> @Nullable [] tab, int size, int index, int limit) {
             super(tab, size, index, limit);
+            // initialize first entry immediately on iterator construction
+            this.advance();
         }
 
         @Override
