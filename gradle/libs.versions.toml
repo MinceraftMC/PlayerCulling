@@ -1,0 +1,71 @@
+[versions]
+
+gradle-shadow = "8.3.6"
+
+paperweight-userdev = "2.0.0-beta.16"
+pluginyml-bukkit = "0.6.0"
+fabric-loom = "1.10-SNAPSHOT"
+
+adventure-api = "4.20.0"
+adventure-platform-fabric = "6.3.0"
+
+slf4j = "2.0.17"
+jspecify = "1.0.0"
+checkerframework = "3.49.2"
+
+configurate = "4.1.2"
+fastutil = "8.5.15"
+brigadier = "1.0.18"
+
+google-guava = "33.4.8-jre"
+google-gson = "2.13.0"
+
+paper-api = "1.21.5-R0.1-SNAPSHOT"
+bstats = "3.1.0"
+
+run-paper = "2.3.1"
+netty = "4.1.121.Final"
+
+minecraft = "1.21.4"
+parchment = "2025.03.16"
+fabric-loader = "0.16.10"
+fabric-api = "0.119.2+1.21.4"
+
+fabric-permissions = "0.3.3"
+
+[plugins]
+gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow" }
+
+paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight-userdev" }
+pluginyml-bukkit = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "pluginyml-bukkit" }
+fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
+
+runtask-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
+
+[libraries]
+adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure-api" }
+adventure-platform-fabric = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric" }
+
+slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+checkerframework = { module = "org.checkerframework:checker-qual", version.ref = "checkerframework" }
+
+configurate-core = { module = "org.spongepowered:configurate-core", version.ref = "configurate" }
+configurate-yaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurate" }
+
+fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
+brigadier = { module = "com.mojang:brigadier", version.ref = "brigadier" }
+
+google-guava = { module = "com.google.guava:guava", version.ref = "google-guava" }
+google-gson = { module = "com.google.code.gson:gson", version.ref = "google-gson" }
+
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper-api" }
+bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
+netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
+
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+parchment = { module = "org.parchmentmc.data:parchment-1.21.4", version.ref = "parchment" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
+
+fabric-permissions = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions" }
