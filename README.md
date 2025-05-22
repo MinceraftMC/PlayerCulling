@@ -32,25 +32,27 @@ The scheduler will dynamically start/stop threads ("containers") based on how ma
 To limit the amount of resources PlayerCulling can use, see the thread limit in the plugin configuration.
 By default it limits itself to (number of CPU threads / 3).
 
-Here are some examples on how the PlayerCulling scheduler works:
+Here are some examples on how the PlayerCulling scheduler works.
+The following examples were tested on an arch linux desktop environment with an AMD Ryzen 5 3600X CPU:
+
 <ul>
 <li>
 <details>
 <summary>One Container</summary>
-One container is able to handle the load of a few players without much problems.
+One container is able to handle the load of 42 players without many problems.
 <br>
 <br>
-<img src="https://imgur.com/7T58A34.gif" alt="One cull container with a few players" width="600" loading="lazy">
+<img src="https://imgur.com/aImcHRU.gif" alt="One cull container with a few players" width="600" loading="lazy">
 </details>
 </li>
 <li>
 <details>
 <summary>Two Containers</summary>
 If the load increases, the scheduler will automatically create a second
-container and distribute the players to maintain a buffer.
+container and distribute the players to maintain a buffer. In this example, a total of 55 players are together in an area.
 <br>
 <br>
-<img src="https://imgur.com/2xsPH01.gif" alt="Two cull containers with a few more players" width="600" loading="lazy">
+<img src="https://imgur.com/WskzbWA.gif" alt="Two cull containers with a few more players" width="600" loading="lazy">
 </details>
 </li>
 <li>
@@ -61,7 +63,7 @@ After its time-to-live (TTL) runs out because the load didn't increase again,
 it will get cleaned up automatically.
 <br>
 <br>
-<img src="https://imgur.com/Bh3cYss.gif" alt="One cull container which gets cleaned up after its TTL expires" width="600" loading="lazy">
+<img src="https://imgur.com/ahP2Ynm.gif" alt="One cull container which gets cleaned up after its TTL expires" width="600" loading="lazy">
 </details>
 </li>
 <li>
@@ -69,10 +71,10 @@ it will get cleaned up automatically.
 <summary>Heavy Load</summary>
 The scheduling system is theoretically able to scale to an infinite amount of containers.
 As long as the load increases (and the limit of containers hasn't been reached yet), the scheduler
-will automatically continue to add more containers.
+will automatically continue to add more containers. In this example, a total of 112 players are together in an area.
 <br>
 <br>
-<img src="https://imgur.com/2sxoqJt.gif" alt="A lot of cull containers with a lot of players" width="600" loading="lazy">
+<img src="https://imgur.com/Z1Gkxxd.gif" alt="A lot of cull containers with a lot of players" width="600" loading="lazy">
 </details>
 </li>
 <li>
@@ -82,7 +84,7 @@ If the load of multiple containers is too low, they will be
 merged together after a few seconds.
 <br>
 <br>
-<img src="https://imgur.com/4V96x3b.gif" alt="A few cull containers with low load get merged into a single cull container" width="600" loading="lazy">
+<img src="https://imgur.com/qqFvxk2.gif" alt="A few cull containers with low load get merged into a single cull container" width="600" loading="lazy">
 </details>
 </li>
 </ul>
@@ -106,9 +108,12 @@ amount of **S**tored chunks and the chunk cache size in bytes.
 
 The third bossbar shows info about culled players. The maximum amount
 of culled players can be calculated by (playercount) * (playercount - 1).
+
+In this example, a total of 112 players are together in an area. The server was running in an arch linux desktop
+environment with an AMD Ryzen 5 3600X CPU.
 <br>
 <br>
-<img src="https://imgur.com/JrBCoSn.gif" alt="Performance overview with 42 players" width="600" loading="lazy">
+<img src="https://imgur.com/3cFkBec.gif" alt="Performance overview with 42 players" width="600" loading="lazy">
 </details>
 
 ### Supported Software
@@ -213,7 +218,7 @@ of the executed command. For example:
     <dependency>
         <groupId>de.pianoman911</groupId>
         <artifactId>playerculling-api</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.0.1-SNAPSHOT</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -233,7 +238,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'de.pianoman911:playerculling-api:2.0.0-SNAPSHOT'
+    compileOnly 'de.pianoman911:playerculling-api:2.0.1-SNAPSHOT'
 }
 ```
 
@@ -250,7 +255,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("de.pianoman911:playerculling-api:2.0.0-SNAPSHOT")
+    compileOnly("de.pianoman911:playerculling-api:2.0.1-SNAPSHOT")
 }
 ```
 
