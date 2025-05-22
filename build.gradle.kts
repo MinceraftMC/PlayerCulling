@@ -25,7 +25,7 @@ ext["compileDate"] = DateTimeFormatter.ISO_DATE_TIME.format(ext["compileTime"] a
 
 allprojects {
     group = "de.pianoman911"
-    version = "2.0.0-SNAPSHOT"
+    version = "2.0.1-SNAPSHOT"
 }
 
 subprojects {
