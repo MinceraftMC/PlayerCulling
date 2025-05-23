@@ -9,6 +9,7 @@ import de.pianoman911.playerculling.platformcommon.AABB;
 import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
+import de.pianoman911.playerculling.platformcommon.util.FastStack;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -36,7 +37,7 @@ public final class CullPlayer {
     private final OcclusionCullingInstance cullingInstance;
     private final DataProvider provider = new ChunkOcclusionDataProvider(this);
 
-    private final Set<PlatformPlayer> tracked = new HashSet<>();
+    private final FastStack<PlatformPlayer> tracked;
     private final Vec3d viewerPosition = new Vec3d(0, 0, 0);
     private final Vec3d viewerDirection = new Vec3d(0, 0, 0);
     private final Vec3d viewerBack = new Vec3d(0, 0, 0);
@@ -54,6 +55,7 @@ public final class CullPlayer {
         this.player = player;
         this.cullingInstance = new OcclusionCullingInstance(this.provider, AABB_EXPANSION);
         this.provider.world(player.getWorld());
+        this.tracked = new FastStack<>(player.getWorld().getPlayerCount());
     }
 
     /**
@@ -168,6 +170,8 @@ public final class CullPlayer {
             this.hidden.clear();
             return;
         }
+        this.tracked.grow(playersInWorld.size()); // Ensure tracked stack capacity
+
         double trackingDistSq = trackingDist * trackingDist;
 
         for (PlatformPlayer worldPlayer : playersInWorld) {
@@ -188,7 +192,7 @@ public final class CullPlayer {
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
                             (!darkness || distSq < DARKNESS_DISTANCE_SQUARED) // In darkness distance
             ) { // cull
-                this.tracked.add(worldPlayer);
+                this.tracked.push(worldPlayer);
             } else { // not visible
                 this.hidden.add(worldPlayer.getUniqueId());
             }
@@ -207,8 +211,13 @@ public final class CullPlayer {
         boolean backPos = false;
         boolean frontPos = false;
 
-        for (PlatformPlayer t : this.tracked) {
-            AABB trackedBox = t.getBoundingBox();
+
+        while (this.tracked.hasEntries()){
+            PlatformPlayer target = this.tracked.pop();
+            if (target == null) {
+                continue;
+            }
+            AABB trackedBox = target.getBoundingBox();
 
             // For 2x2x2 Shapes
             double aabbMinX = trackedBox.minX() * 2d;
@@ -272,12 +281,11 @@ public final class CullPlayer {
             }
 
             if (canSee) {
-                this.unHideWithDirectPairing(t);
+                this.unHideWithDirectPairing(target);
             } else {
-                this.hidden.add(t.getUniqueId());
+                this.hidden.add(target.getUniqueId());
             }
         }
-        this.tracked.clear();
     }
 
     private void unHideWithDirectPairing(PlatformPlayer target) {

@@ -45,6 +45,10 @@ public abstract class PlatformWorld {
         return this.playersInWorld.get();
     }
 
+    public int getPlayerCount() {
+        return this.playersInWorld.get().size();
+    }
+
     protected abstract List<PlatformPlayer> getPlayers0();
 
     @Nullable
