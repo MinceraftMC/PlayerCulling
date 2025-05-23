@@ -4,8 +4,8 @@ import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
 import com.destroystokyo.paper.util.SneakyThrow;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
 import de.pianoman911.playerculling.platformcommon.util.ForwardedInt2ObjectMap;
+import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
@@ -79,19 +79,34 @@ public final class DelegatedTrackedEntity {
 
         // Anonymous class due non-static inner class
         ChunkMap.TrackedEntity delegated = map.new TrackedEntity(mcEntity, range, updateInterval, trackDelta) {
+
+            private final CullPlayer cullPlayer = ship.getPlayer(mcEntity.getUUID());
+            private final MethodHandle getCullPlayer = ReflectionUtil.getGetter(this.getClass(), CullPlayer.class, 0);
+
             @Override
             public void updatePlayer(@NotNull ServerPlayer player) {
                 AsyncCatcher.catchOp("player tracker update");
                 if (player == mcEntity) {
                     return;
                 }
-                // check if player culling allows seeing this player
-                boolean visible = isVisible(player, mcEntity, ship);
-                if (visible) {
-                    // not culled, delegate
+                ChunkMap.TrackedEntity trackedPlayer = player.moonrise$getTrackedEntity();
+                if (!this.getClass().isInstance(trackedPlayer)) {
+                    // not a delegated entity, skip
                     super.updatePlayer(player);
-                } else if (this.seenBy.remove(player.connection)) {
-                    this.serverEntity.removePairing(player);
+                    return;
+                }
+                try {
+                    CullPlayer cullPlayer = (CullPlayer) getCullPlayer.invoke(trackedPlayer);
+
+                    // check if player culling allows seeing this player
+                    if (!cullPlayer.isHidden(mcEntity.getUUID())) {
+                        // not culled, delegate
+                        super.updatePlayer(player);
+                    } else if (this.seenBy.remove(player.connection)) {
+                        this.serverEntity.removePairing(player);
+                    }
+                } catch (Throwable throwable) {
+                    SneakyThrow.sneaky(throwable);
                 }
             }
         };
@@ -102,11 +117,6 @@ public final class DelegatedTrackedEntity {
         SET_LAST_CHUNK_UPDATE.invoke(delegated, GET_LAST_CHUNK_UPDATE.invoke(entity));
         SET_LAST_TRACKED_CHUNK.invoke(delegated, GET_LAST_TRACKED_CHUNK.invoke(entity));
         return delegated;
-    }
-
-    private static boolean isVisible(ServerPlayer player, Entity target, CullShip ship) {
-        CullPlayer cullPlayer = ship.getPlayer(player.getUUID());
-        return cullPlayer == null || !cullPlayer.isHidden(target.getUUID());
     }
 
     // Custom entity map for injecting the custom tracked entity only for players

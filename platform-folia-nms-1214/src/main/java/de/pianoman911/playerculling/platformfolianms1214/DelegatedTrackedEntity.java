@@ -1,6 +1,7 @@
 package de.pianoman911.playerculling.platformfolianms1214;
 
 import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
+import com.destroystokyo.paper.util.SneakyThrow;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
@@ -53,19 +54,34 @@ public final class DelegatedTrackedEntity {
 
         // Anonymous class due non-static inner class
         ChunkMap.TrackedEntity delegated = map.new TrackedEntity(mcEntity, range, updateInterval, trackDelta) {
+
+            private final CullPlayer cullPlayer = ship.getPlayer(mcEntity.getUUID());
+            private final MethodHandle getCullPlayer = ReflectionUtil.getGetter(this.getClass(), CullPlayer.class, 0);
+
             @Override
-            public void updatePlayer(ServerPlayer player) {
+            public void updatePlayer(@NotNull ServerPlayer player) {
                 AsyncCatcher.catchOp("player tracker update");
                 if (player == mcEntity) {
                     return;
                 }
-                // check if player culling allows seeing this player
-                boolean visible = isVisible(player, mcEntity, ship);
-                if (visible) {
-                    // not culled, delegate
+                ChunkMap.TrackedEntity trackedPlayer = player.moonrise$getTrackedEntity();
+                if (!this.getClass().isInstance(trackedPlayer)) {
+                    // not a delegated entity, skip
                     super.updatePlayer(player);
-                } else if (this.seenBy.remove(player.connection)) {
-                    this.serverEntity.removePairing(player);
+                    return;
+                }
+                try {
+                    CullPlayer cullPlayer = (CullPlayer) getCullPlayer.invoke(trackedPlayer);
+
+                    // check if player culling allows seeing this player
+                    if (!cullPlayer.isHidden(mcEntity.getUUID())) {
+                        // not culled, delegate
+                        super.updatePlayer(player);
+                    } else if (this.seenBy.remove(player.connection)) {
+                        this.serverEntity.removePairing(player);
+                    }
+                } catch (Throwable throwable) {
+                    SneakyThrow.sneaky(throwable);
                 }
             }
         };
