@@ -12,7 +12,6 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -139,16 +138,7 @@ public final class CullPlayer {
 
         PlatformWorld world = this.player.getWorld();
         List<PlatformPlayer> playersInWorld = world.getPlayers();
-        List<PlatformPlayer> filteredPlayersInWorld = new ArrayList<>();
-
-        for (PlatformPlayer worldPlayer : playersInWorld) {
-            if (worldPlayer == this.player || worldPlayer.isSpectator() || worldPlayer.shouldPreventCulling()) {
-                continue;
-            }
-            filteredPlayersInWorld.add(worldPlayer);
-        }
-
-        if (filteredPlayersInWorld.isEmpty()) {
+        if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
         }
         this.provider.world(world);
@@ -180,7 +170,10 @@ public final class CullPlayer {
         }
         double trackingDistSq = trackingDist * trackingDist;
 
-        for (PlatformPlayer worldPlayer : filteredPlayersInWorld) {
+        for (PlatformPlayer worldPlayer : playersInWorld) {
+            if (worldPlayer == this.player) {
+                continue;
+            }
             boolean nameTag = this.player.canSeeNameTag(worldPlayer);
 
             double distSq = eye.distanceSquared(worldPlayer.getPosition());
