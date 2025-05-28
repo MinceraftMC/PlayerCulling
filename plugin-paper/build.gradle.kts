@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.gradle.shadow)
 }
 
+runPaper.folia.registerTask()
+
 dependencies {
     listOf("1.21.1", "1.21.4")
         .map { "paper-nms-${it.replace(".", "")}" }
