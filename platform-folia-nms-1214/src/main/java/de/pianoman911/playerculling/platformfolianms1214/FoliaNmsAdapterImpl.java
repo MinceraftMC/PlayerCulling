@@ -14,8 +14,6 @@ import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.network.ChannelInitializeListenerHolder;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
@@ -43,19 +41,17 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @NullMarked
 public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
 
     private static final String HANDLER_NAME = "playerculling";
 
-    private final List<LongSet> changedBlocks = new ArrayList<>();
-    private final Map<Level, Integer> levels = new IdentityHashMap<>();
-
+    private final Map<Level, Set<Long>> levels = new ConcurrentHashMap<>();
     private @MonotonicNonNull NmsPacketListener packetListener;
 
     public FoliaNmsAdapterImpl() {
@@ -122,10 +118,14 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
 
     @Override
     public void tickChangedBlocks(PaperWorld world) {
-        LongSet blocks = this.getLevelSet(((CraftWorld) world.getWorld()).getHandle());
+        Set<Long> blocks = this.getLevelSet(((CraftWorld) world.getWorld()).getHandle());
         OcclusionWorldCache worldCache = world.getOcclusionWorldCache();
 
-        for (long pos : blocks) {
+        Iterator<Long> it = blocks.iterator();
+        while (it.hasNext()) {
+            long pos = it.next();
+            it.remove();
+
             int posX = BlockPos.getX(pos);
             int posZ = BlockPos.getZ(pos);
             int chunkX = posX >> 4;
@@ -138,7 +138,6 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
             OcclusionChunkCache chunk = worldCache.chunk(chunkX, chunkZ);
             chunk.recalculateBlock(posX, BlockPos.getY(pos), posZ);
         }
-        blocks.clear();
     }
 
     @Override
@@ -216,17 +215,8 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
         return ((CraftPlayer) player).getHandle().isSpectator();
     }
 
-    private LongSet getLevelSet(Level level) {
-        int index = this.levels.computeIfAbsent(level, __ -> this.levels.size());
-        if (index < this.changedBlocks.size()) {
-            return this.changedBlocks.get(index);
-        }
-        for (int i = this.changedBlocks.size(); i < index; i++) {
-            this.changedBlocks.add(new LongOpenHashSet());
-        }
-        LongSet set = new LongOpenHashSet();
-        this.changedBlocks.add(new LongOpenHashSet());
-        return set;
+    private Set<Long> getLevelSet(Level level) {
+        return this.levels.computeIfAbsent(level, __ -> ConcurrentHashMap.newKeySet());
     }
 
     private void onBlockChange(Level level, BlockPos pos, BlockState oldState, BlockState newState) {
