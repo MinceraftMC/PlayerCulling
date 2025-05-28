@@ -211,8 +211,7 @@ public final class CullPlayer {
         boolean backPos = false;
         boolean frontPos = false;
 
-
-        while (this.tracked.hasEntries()){
+        while (this.tracked.hasEntries()) {
             PlatformPlayer target = this.tracked.pop();
             if (target == null) {
                 continue;

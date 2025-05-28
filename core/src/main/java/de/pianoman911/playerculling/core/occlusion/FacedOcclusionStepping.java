@@ -56,10 +56,6 @@ public final class FacedOcclusionStepping {
         final int mainThirdY;
         final int mainThirdZ;
 
-        int x0;
-        int y0;
-        int z0;
-
         { // Reduce locals in the scope
             double mainDirection;
             final double secondDirection;
@@ -141,26 +137,6 @@ public final class FacedOcclusionStepping {
                 thirdError = -thirdStep + 1; // Step to third intersection
             }
 
-
-            // Last voxel before first intersection
-            x0 = startVoxel.getX() - mainFace.modX;
-            y0 = startVoxel.getY() - mainFace.modY;
-            z0 = startVoxel.getZ() - mainFace.modZ;
-
-            if (secondError < 0) { // If second intersection is behind the first intersection (or on it)
-                secondError += GRID_SIZE;
-                x0 -= secondFace.modX;
-                y0 -= secondFace.modY;
-                z0 -= secondFace.modZ;
-            }
-
-            if (thirdError < 0) { // If third intersection is behind the first intersection (or on it)
-                thirdError += GRID_SIZE;
-                x0 -= thirdFace.modX;
-                y0 -= thirdFace.modY;
-                z0 -= thirdFace.modZ;
-            }
-
             secondError -= GRID_SIZE; // If positive, this is the error of the second intersection (in grid units)
             thirdError -= GRID_SIZE; // If positive, this is the error of the third intersection (in grid units)
 
@@ -190,6 +166,11 @@ public final class FacedOcclusionStepping {
             mainThirdY = mainY + thirdFace.modY;
             mainThirdZ = mainZ + thirdFace.modZ;
         }
+        // Last voxel before first intersection
+        int x0 = startVoxel.getX();
+        int y0 = startVoxel.getY();
+        int z0 = startVoxel.getZ();
+
         // Check vector
         int xC;
         int yC;
