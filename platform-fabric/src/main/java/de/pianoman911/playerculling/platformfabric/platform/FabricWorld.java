@@ -97,10 +97,13 @@ public class FabricWorld extends PlatformWorld {
     @Nullable
     public Vec3d rayTraceBlocks(Vec3d start, Vec3d dir, double maxDistance) {
         Vec3 startVec = new Vec3(start.getX(), start.getY(), start.getZ());
-        start.add(dir.mul(maxDistance));
-        Vec3 dirVec = new Vec3(start.getX(), start.getY(), start.getZ());
+        Vec3 endVec = new Vec3(
+                start.getX() + dir.getX() * maxDistance,
+                start.getY() + dir.getY() * maxDistance,
+                start.getZ() + dir.getZ() * maxDistance);
 
-        BlockHitResult result = this.world.clip(new ClipContext(startVec, dirVec, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
+        BlockHitResult result = this.world.clip(new ClipContext(startVec, endVec,
+                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
         if (result.getType() != HitResult.Type.BLOCK) {
             return null;
         }
