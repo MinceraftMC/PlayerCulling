@@ -6,7 +6,7 @@ plugins {
 runPaper.folia.registerTask()
 
 dependencies {
-    listOf("1.21.1", "1.21.4")
+    listOf("1.21.1", "1.21.4", "1.21.6")
         .map { "paper-nms-${it.replace(".", "")}" }
         .forEach { implementation(project(":platform-$it")) }
     listOf("1.21.4")
@@ -17,7 +17,7 @@ dependencies {
 tasks {
     runServer {
         runDirectory = project.layout.projectDirectory.dir("run")
-        minecraftVersion("1.21.5")
+        minecraftVersion("1.21.6")
     }
 
     shadowJar {
