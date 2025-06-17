@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,7 +27,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 @NullMarked
@@ -183,10 +183,8 @@ public final class PlayerCullingUpdater {
     }
 
     private Manifest loadManifest() {
-        try (JarFile jarFile = new JarFile(PlayerCullingUpdater.class.getProtectionDomain()
-                .getCodeSource().getLocation().getPath())
-        ) {
-            Manifest manifest = jarFile.getManifest();
+        try (InputStream resource = PlayerCullingUpdater.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
+            Manifest manifest = new Manifest(resource);
             Attributes mainAttributes = manifest.getMainAttributes();
             LOGGER.info("Loaded manifest: {} {}, {}/{}({}) - Environment: {} - Licensed under {} on {}",
                     mainAttributes.getValue("Implementation-Title"),
