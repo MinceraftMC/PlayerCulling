@@ -97,6 +97,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     public void injectWorld(PaperPlatform platform, World world) {
         ServerLevel level = ((CraftWorld) world).getHandle();
         DelegatedChunkPacketBlockController.inject(level, this::onBlockChange);
+        DelegatedWaypointManager.inject(level, platform.getPlugin().getCullShip());
 
         ChunkMap chunkMap = level.getChunkSource().chunkMap;
         CullShip ship = platform.getPlugin().getCullShip();
@@ -108,6 +109,8 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
         ServerLevel level = ((CraftWorld) world).getHandle();
         ChunkMap chunkMap = level.getChunkSource().chunkMap;
         DelegatedTrackedEntity.uninjectChunkMap(chunkMap);
+        DelegatedChunkPacketBlockController.uninject(level);
+        DelegatedWaypointManager.uninject(level);
     }
 
     @Override

@@ -159,8 +159,30 @@ following options:
     - `enabled`: Enables/disables the update checker (default: `true`)
     - `notify-admins`: Whether to notify admins about new PlayerCulling releases (default: `true`)
     - `interval-hours`: The update check interval in hours (default: `24`)
+- `waypoint-mode`: The mode for the waypoint system, see the [Locator Bar / Waypoints](#locator-bar--waypoints) section
+  for more information. (default: `0`)
 
 Note: If you're not sure what a configuration option does, it's best to leave it at its default value.
+
+### Locator Bar / Waypoints
+
+The locator bar was introduced in Minecraft 1.21.6 and allows players to see the direction of other players. As this
+would reveal the real location of players and defeat the purpose of PlayerCulling, PlayerCulling will disable all player
+related waypoints by default. If you still want to use the locator bar, you can use the `waypoint-mode` option in the
+configuration file, see below for more info.
+
+<b>Note: Players can still triangulate the real X and Z coordinates of players, use the `hidden` mode to prevent
+this</b>
+</b>
+
+The following modes are available:
+
+| Mode             | Description                                                                                                   |
+|------------------|---------------------------------------------------------------------------------------------------------------|
+| `HIDDEN`         | PlayerCulling will disable all player related waypoints (default)                                             |
+| `AZIMUTH`        | PlayerCulling will send the angle between players to the viewer                                               |
+| `CULLED_AZIMUTH` | PlayerCulling will send the angle between players to the viewer, if the other player is visible to the viewer |
+| `VANILLA`        | The locator bar will not be changed by PlayerCulling, this makes PlayerCulling effectively useless            |
 
 ### Permissions
 

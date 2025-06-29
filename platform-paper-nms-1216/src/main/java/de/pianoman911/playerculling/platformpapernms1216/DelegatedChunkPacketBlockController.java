@@ -42,6 +42,18 @@ public class DelegatedChunkPacketBlockController extends ChunkPacketBlockControl
         }
     }
 
+    public static void uninject(ServerLevel level) {
+        try {
+            Object controller = GET_CHUNK_PACKET_BLOCK_CONTROLLER.invoke(level);
+            if (!(controller instanceof DelegatedChunkPacketBlockController delegated)) {
+                return;
+            }
+            SET_CHUNK_PACKET_BLOCK_CONTROLLER.invoke(level, delegated.delegate);
+        } catch (Throwable throwable) {
+            SneakyThrow.sneaky(throwable);
+        }
+    }
+
     @Override
     public final BlockState[] getPresetBlockStates(Level level, ChunkPos chunkPos, int chunkSectionY) {
         return this.delegate.getPresetBlockStates(level, chunkPos, chunkSectionY);
