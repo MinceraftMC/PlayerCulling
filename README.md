@@ -15,7 +15,7 @@ through walls using cheats. It utilizes a unique allocationless asynchronous vox
 ## Features
 
 - Asynchronous, multithreaded culling
-- Allocationsless voxel raycasting algorithm
+- Allocationless voxel raycasting algorithm
 - Advanced scheduler system
 - Support for nametag visibility, potions, glowing and spectating
 - 2x2x2-scale voxel occlusion for non-full blocks

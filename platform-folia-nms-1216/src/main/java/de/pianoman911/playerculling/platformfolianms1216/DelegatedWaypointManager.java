@@ -49,9 +49,9 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         copyState(original, this);
 
         ship.getConfig().addReloadHookAndRun(__ -> {
-            breakAllConnections();
+            this.breakAllConnections();
             for (WaypointTransmitter waypoint : this$waypoints()) {
-                remakeConnections(waypoint);
+                this.remakeConnections(waypoint);
             }
         });
     }
@@ -141,7 +141,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
     @Override
     public void addPlayer(ServerPlayer player) {
-        this$players().add(player);
+        this.this$players().add(player);
 
         for (WaypointTransmitter waypoint : this.this$waypoints()) {
             if ((waypoint instanceof ServerPlayer)) {
