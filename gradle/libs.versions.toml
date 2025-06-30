@@ -7,7 +7,6 @@ pluginyml-bukkit = "0.6.0"
 fabric-loom = "1.10-SNAPSHOT"
 
 adventure-api = "4.20.0"
-adventure-platform-fabric = "6.3.0"
 
 slf4j = "2.0.17"
 jspecify = "1.0.0"
@@ -26,12 +25,21 @@ bstats = "3.1.0"
 run-paper = "2.3.1"
 netty = "4.1.121.Final"
 
-minecraft = "1.21.4"
-parchment = "2025.03.16"
-fabric-loader = "0.16.10"
-fabric-api = "0.119.2+1.21.4"
-
+# generic fabric
+fabric-loader = "0.16.14"
 fabric-permissions = "0.3.3"
+
+# fabric 1.21.4
+minecraft-v1214 = "1.21.4"
+fabricapi-v1214 = "0.119.3+1.21.4"
+parchment-v1214 = "2025.03.23"
+adventure-platform-fabric-v1214 = "6.3.0"
+
+# fabric 1.21.5
+minecraft-v1215 = "1.21.5"
+fabricapi-v1215 = "0.128.1+1.21.5"
+parchment-v1215 = "2025.06.01"
+adventure-platform-fabric-v1215 = "6.4.0"
 
 [plugins]
 gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow" }
@@ -44,7 +52,6 @@ runtask-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
 
 [libraries]
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure-api" }
-adventure-platform-fabric = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric" }
 
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
@@ -63,9 +70,15 @@ paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper-api" }
 bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
 
-minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-parchment = { module = "org.parchmentmc.data:parchment-1.21.4", version.ref = "parchment" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
-fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
-
 fabric-permissions = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions" }
+
+minecraft-v1214 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1214" }
+fabricapi-v1214 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1214" }
+parchment-v1214 = { module = "org.parchmentmc.data:parchment-1.21.4", version.ref = "parchment-v1214" }
+adventure-platform-fabric-v1214 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1214" }
+
+minecraft-v1215 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1215" }
+fabricapi-v1215 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1215" }
+parchment-v1215 = { module = "org.parchmentmc.data:parchment-1.21.5", version.ref = "parchment-v1215" }
+adventure-platform-fabric-v1215 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1215" }
