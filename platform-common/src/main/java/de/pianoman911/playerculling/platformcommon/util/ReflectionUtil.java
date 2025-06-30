@@ -5,6 +5,7 @@ import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -73,6 +74,18 @@ public final class ReflectionUtil {
                 return TRUSTED_LOOKUP.findStaticSetter(field.getDeclaringClass(), field.getName(), field.getType());
             }
             return TRUSTED_LOOKUP.findSetter(field.getDeclaringClass(), field.getName(), field.getType());
+        } catch (ReflectiveOperationException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    public static MethodHandle getVoidMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
+        return getMethod(clazz, name, void.class, parameterTypes);
+    }
+
+    public static MethodHandle getMethod(Class<?> clazz, String name, Class<?> returnType, Class<?>... parameterTypes) {
+        try {
+            return TRUSTED_LOOKUP.findVirtual(clazz, name, MethodType.methodType(returnType, parameterTypes));
         } catch (ReflectiveOperationException exception) {
             throw new RuntimeException(exception);
         }

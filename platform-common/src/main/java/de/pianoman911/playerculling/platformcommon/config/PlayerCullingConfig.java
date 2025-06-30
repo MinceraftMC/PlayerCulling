@@ -1,5 +1,6 @@
 package de.pianoman911.playerculling.platformcommon.config;
 
+import de.pianoman911.playerculling.platformcommon.util.WaypointMode;
 import org.jspecify.annotations.NullUnmarked;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
@@ -10,6 +11,7 @@ public final class PlayerCullingConfig {
     public int configVersion = 1;
     public Scheduler scheduler = new Scheduler();
     public Updater updater = new Updater();
+    public WaypointMode waypointMode = WaypointMode.HIDDEN;
 
     @ConfigSerializable
     public final static class Scheduler {

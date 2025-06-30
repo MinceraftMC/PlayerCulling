@@ -9,7 +9,6 @@ import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Team;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
