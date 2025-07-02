@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.pianoman911.playerculling.platformfabric1214.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ChunkMapMixin",
+    "LevelMixin",
+    "ServerLevelMixin",
+    "ServerPlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1,
+    "maxShiftBy": 1
+  }
+}
