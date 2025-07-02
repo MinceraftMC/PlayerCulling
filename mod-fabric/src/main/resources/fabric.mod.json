@@ -9,7 +9,7 @@
     "homepage": "https://minceraft.dev/playerculling"
   },
   "icon": "assets/playerculling/icon.png",
-  "description": "Prevents players from using cheats to see other players through walls A paper/folia plugin and fabric mod designed to prevent players from seeing each other through walls using cheats.",
+  "description": "A fabric mod designed to prevent players from seeing each other through walls using cheats.",
   "authors": [
     "pianoman911",
     "booky10"
@@ -17,7 +17,7 @@
   "license": "AGPL-3.0-or-later",
   "environment": "server",
   "depends": {
-    "fabricloader": ">=0.16.10",
+    "fabricloader": ">=0.16.14",
     "minecraft": [
       "1.21.4",
       "1.21.5"
