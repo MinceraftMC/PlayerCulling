@@ -1,6 +1,6 @@
-package de.pianoman911.playerculling.platformfolianms1214;
+package de.pianoman911.playerculling.platformpapernms1216;
 
-import ca.spottedleaf.concurrentutil.util.Priority;
+import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
@@ -14,6 +14,8 @@ import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.network.ChannelInitializeListenerHolder;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
@@ -21,7 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -42,28 +44,28 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @NullMarked
-public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
+public class PaperNmsAdapterImpl implements PaperNmsAdapter {
 
     private static final String HANDLER_NAME = "playerculling";
 
-    private final Map<Level, Set<Long>> levels = new ConcurrentHashMap<>();
+    private final List<LongSet> changedBlocks = new ArrayList<>();
+    private final Map<Level, Integer> levels = new IdentityHashMap<>();
+
     private @MonotonicNonNull NmsPacketListener packetListener;
 
-    public FoliaNmsAdapterImpl() {
-        if (!PaperNmsAdapter.isFolia() || SharedConstants.getProtocolVersion() != 770) {
+    public PaperNmsAdapterImpl() {
+        if (PaperNmsAdapter.isFolia() ||
+                (SharedConstants.getProtocolVersion() != 771 &&
+                        SharedConstants.getProtocolVersion() != 772)
+        ) {
             throw new UnsupportedOperationException();
         }
-    }
-
-    @Override
-    public void init(PlayerCullingPlugin plugin) {
-        plugin.getServer().getPluginManager().registerEvents(new EntityTrackerListener(plugin.getCullShip()), plugin);
     }
 
     @Override
@@ -96,11 +98,20 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     public void injectWorld(PaperPlatform platform, World world) {
         ServerLevel level = ((CraftWorld) world).getHandle();
         DelegatedChunkPacketBlockController.inject(level, this::onBlockChange);
+        DelegatedWaypointManager.inject(level, platform.getPlugin().getCullShip());
+
+        ChunkMap chunkMap = level.getChunkSource().chunkMap;
+        CullShip ship = platform.getPlugin().getCullShip();
+        DelegatedTrackedEntity.injectChunkMap(chunkMap, ship);
     }
 
     @Override
     public void uninjectWorld(World world) {
-        // Uninjecting is not needed in Folia
+        ServerLevel level = ((CraftWorld) world).getHandle();
+        ChunkMap chunkMap = level.getChunkSource().chunkMap;
+        DelegatedTrackedEntity.uninjectChunkMap(chunkMap);
+        DelegatedChunkPacketBlockController.uninject(level);
+        DelegatedWaypointManager.uninject(level);
     }
 
     @Override
@@ -108,7 +119,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     public @Nullable PlatformChunkAccess provideChunkAccess(PaperPlatform platform, World world, int chunkX, int chunkZ) {
         ChunkAccess chunk = ((CraftWorld) world).getHandle().moonrise$getSpecificChunkIfLoaded(
                 chunkX, chunkZ, ChunkStatus.FEATURES);
-        return chunk != null ? new FoliaNmsChunkAccess(platform, chunk) : null;
+        return chunk != null ? new PaperNmsChunkAccess(platform, chunk) : null;
     }
 
     @Override
@@ -119,14 +130,10 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
 
     @Override
     public void tickChangedBlocks(PaperWorld world) {
-        Set<Long> blocks = this.getLevelSet(((CraftWorld) world.getWorld()).getHandle());
+        LongSet blocks = this.getLevelSet(((CraftWorld) world.getWorld()).getHandle());
         OcclusionWorldCache worldCache = world.getOcclusionWorldCache();
 
-        Iterator<Long> it = blocks.iterator();
-        while (it.hasNext()) {
-            long pos = it.next();
-            it.remove();
-
+        for (long pos : blocks) {
             int posX = BlockPos.getX(pos);
             int posZ = BlockPos.getZ(pos);
             int chunkX = posX >> 4;
@@ -139,6 +146,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
             OcclusionChunkCache chunk = worldCache.chunk(chunkX, chunkZ);
             chunk.recalculateBlock(posX, BlockPos.getY(pos), posZ);
         }
+        blocks.clear();
     }
 
     @Override
@@ -154,15 +162,17 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     }
 
     @Override
-    @SuppressWarnings({"resource", "UnstableApiUsage", "ConstantConditions"})
+    @SuppressWarnings({"resource", "UnstableApiUsage"})
     public void addPairing(PlatformPlayer player, PlatformPlayer... targets) {
         ServerPlayer handle = ((CraftPlayer) ((PaperPlayer) player).getDelegate()).getHandle();
-        ServerLevel world = handle.serverLevel();
+        ServerLevel world = handle.level();
 
-        ChunkPos chunkPos = handle.chunkPosition();
-        world.moonrise$getChunkTaskScheduler().scheduleChunkTask(chunkPos.x, chunkPos.z, () -> {
+        BlockableEventLoop<?> eventLoop = world.getServer().isIteratingOverLevels ?
+                world.chunkSource.mainThreadProcessor : world.getServer();
+
+        eventLoop.executeIfPossible(() -> {
             for (PlatformPlayer target : targets) {
-                ChunkMap.TrackedEntity tracked = ((CraftPlayer) ((PaperPlayer) target).getDelegate()).getHandle().moonrise$getTrackedEntity();
+                ChunkMap.TrackedEntity tracked = world.getChunkSource().chunkMap.entityMap.get(((PaperPlayer) target).getDelegate().getEntityId());
                 if (tracked == null) {
                     continue; // Could be offline or not loaded
                 }
@@ -175,7 +185,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
                     tracked.serverEntity.onPlayerAdd();
                 }
             }
-        }, Priority.HIGHER);
+        });
     }
 
     @Override
@@ -216,8 +226,17 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
         return ((CraftPlayer) player).getHandle().isSpectator();
     }
 
-    private Set<Long> getLevelSet(Level level) {
-        return this.levels.computeIfAbsent(level, __ -> ConcurrentHashMap.newKeySet());
+    private LongSet getLevelSet(Level level) {
+        int index = this.levels.computeIfAbsent(level, __ -> this.levels.size());
+        if (index < this.changedBlocks.size()) {
+            return this.changedBlocks.get(index);
+        }
+        for (int i = this.changedBlocks.size(); i < index; i++) {
+            this.changedBlocks.add(new LongOpenHashSet());
+        }
+        LongSet set = new LongOpenHashSet();
+        this.changedBlocks.add(new LongOpenHashSet());
+        return set;
     }
 
     private void onBlockChange(Level level, BlockPos pos, BlockState oldState, BlockState newState) {

@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfolianms1214;
+package de.pianoman911.playerculling.platformfolianms1216;
 
 import ca.spottedleaf.concurrentutil.util.Priority;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
@@ -56,7 +56,10 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     private @MonotonicNonNull NmsPacketListener packetListener;
 
     public FoliaNmsAdapterImpl() {
-        if (!PaperNmsAdapter.isFolia() || SharedConstants.getProtocolVersion() != 770) {
+        if (!PaperNmsAdapter.isFolia() ||
+                (SharedConstants.getProtocolVersion() != 771 &&
+                        SharedConstants.getProtocolVersion() != 772)
+        ) {
             throw new UnsupportedOperationException();
         }
     }
@@ -157,7 +160,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     @SuppressWarnings({"resource", "UnstableApiUsage", "ConstantConditions"})
     public void addPairing(PlatformPlayer player, PlatformPlayer... targets) {
         ServerPlayer handle = ((CraftPlayer) ((PaperPlayer) player).getDelegate()).getHandle();
-        ServerLevel world = handle.serverLevel();
+        ServerLevel world = handle.level();
 
         ChunkPos chunkPos = handle.chunkPosition();
         world.moonrise$getChunkTaskScheduler().scheduleChunkTask(chunkPos.x, chunkPos.z, () -> {
