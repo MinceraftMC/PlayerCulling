@@ -58,7 +58,9 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
 
     public FoliaNmsAdapterImpl() {
         if (!PaperNmsAdapter.isFolia()||
-                (SharedConstants.getProtocolVersion() != 771)) {
+                (SharedConstants.getProtocolVersion() != 771 &&
+                        SharedConstants.getProtocolVersion() != 772)
+        ) {
             throw new UnsupportedOperationException();
         }
     }
