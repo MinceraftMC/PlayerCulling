@@ -28,7 +28,7 @@ public class PaperPlayer extends PaperLivingEntity<Player> implements PlatformPl
     @Override
     public boolean isSpectator() {
         // use nms for checking spectator mode, faster than using bukkit gamemode comparison
-        return this.platform.getNmsAdapter().isSpectator(this.sender);
+        return this.platform.getNmsAdapter().isSpectator(this.getDelegate());
     }
 
     @Override
@@ -84,7 +84,7 @@ public class PaperPlayer extends PaperLivingEntity<Player> implements PlatformPl
     @Override
     public boolean canSeeNameTag(PlatformPlayer targetPlayer) {
         Player target = ((PaperPlayer) targetPlayer).getDelegate();
-        return this.platform.getNmsAdapter().canSeeNametag(this.sender, target);
+        return this.platform.getNmsAdapter().canSeeNametag(this.getDelegate(), target);
     }
 
     @Override

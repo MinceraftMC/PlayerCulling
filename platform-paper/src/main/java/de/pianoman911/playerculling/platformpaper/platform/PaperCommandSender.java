@@ -5,19 +5,27 @@ import de.pianoman911.playerculling.platformcommon.platform.command.PlatformComm
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.command.CommandSender;
+import org.jspecify.annotations.NullMarked;
 
+import java.lang.ref.WeakReference;
+
+@NullMarked
 public class PaperCommandSender<T extends CommandSender> implements PlatformCommandSender {
 
     protected final PaperPlatform platform;
-    protected final T sender;
+    protected final WeakReference<T> sender;
 
     public PaperCommandSender(PaperPlatform platform, T sender) {
         this.platform = platform;
-        this.sender = sender;
+        this.sender = new WeakReference<>(sender);
     }
 
     public final T getDelegate() {
-        return this.sender;
+        T delegate = this.sender.get();
+        if (delegate != null) {
+            return delegate;
+        }
+        throw new IllegalStateException("Delegate of " + this + " has been garbage collected");
     }
 
     @Override
@@ -27,16 +35,15 @@ public class PaperCommandSender<T extends CommandSender> implements PlatformComm
 
     @Override
     public void sendMessage(Component message) {
-        this.sender.sendMessage(message);
+        this.getDelegate().sendMessage(message);
     }
 
     @Override
     public boolean hasPermission(String permission, TriState defaultValue) {
-        if (!defaultValue.equals(TriState.NOT_SET)) {
-            if (this.sender.isPermissionSet(permission)){
-                return Boolean.TRUE.equals(defaultValue.toBoolean());
-            }
+        T delegate = this.getDelegate();
+        if (defaultValue != TriState.NOT_SET && !delegate.isPermissionSet(permission)) {
+            return defaultValue == TriState.TRUE;
         }
-        return this.sender.hasPermission(permission);
+        return delegate.hasPermission(permission);
     }
 }
