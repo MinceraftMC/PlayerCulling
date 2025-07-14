@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.fabric.loom)
 }
 
-val testTaskVersion = "1.21.5"
+val testTaskVersion = "1.21.7"
 val testTaskVersionFiltered = testTaskVersion.replace(".", "")
 
 loom.noIntermediateMappings()

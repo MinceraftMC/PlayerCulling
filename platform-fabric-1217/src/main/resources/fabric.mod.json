@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "playerculling",
+  "id": "playerculling-mc1217",
   "version": "${version}",
-  "name": "PlayerCulling",
+  "name": "PlayerCulling 1.21.7",
 
   "contact": {
     "sources": "https://github.com/MinceraftMC/PlayerCulling",
@@ -11,7 +11,7 @@
   },
 
   "icon": "assets/playerculling/icon.png",
-  "description": "A fabric mod designed to prevent players from seeing each other through walls using cheats.",
+  "description": "A fabric mod designed to prevent players from seeing each other through walls using cheats for 1.21.7",
   "authors": [
     "pianoman911",
     "booky10"
@@ -19,15 +19,24 @@
 
   "license": "AGPL-3.0-or-later",
   "environment": "server",
+  "accessWidener": "playerculling.accesswidener",
+  "entrypoints": {
+    "main": [
+      "de.pianoman911.playerculling.platformfabric1217.PlayerCullingMod"
+    ]
+  },
+
+  "mixins": [
+    "playerculling.mixins.json"
+  ],
 
   "depends": {
     "fabricloader": ">=0.16.14",
     "minecraft": [
-      "1.21.4",
-      "1.21.5",
       "1.21.6",
       "1.21.7"
     ],
+    "java": ">=21",
     "fabric-api": "*",
     "fabric-permissions-api-v0": "*"
   },
