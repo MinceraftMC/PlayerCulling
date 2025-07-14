@@ -5,11 +5,13 @@ import de.pianoman911.playerculling.platformfabric1214.PlayerCullingMod;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.NullMarked;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+@NullMarked
 @Mixin(ChunkMap.class)
 public class ChunkMapMixin {
 

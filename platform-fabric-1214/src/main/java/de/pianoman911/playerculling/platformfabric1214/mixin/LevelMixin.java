@@ -1,9 +1,10 @@
 package de.pianoman911.playerculling.platformfabric1214.mixin;
 
-import de.pianoman911.playerculling.platformfabric1214.util.ILevelMixin;
+import de.pianoman911.playerculling.platformfabric1214.common.ILevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.NullMarked;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,9 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.HashSet;
 import java.util.Set;
 
+@NullMarked
 @Mixin(Level.class)
-@Implements(@Interface(iface = ILevelMixin.class, prefix = "playerculling$"))
-public abstract class LevelMixin implements ILevelMixin {
+@Implements(@Interface(iface = ILevel.class, prefix = "playerculling$"))
+public abstract class LevelMixin implements ILevel {
 
     @Unique
     private final Set<BlockPos> changedBlocks = new HashSet<>();

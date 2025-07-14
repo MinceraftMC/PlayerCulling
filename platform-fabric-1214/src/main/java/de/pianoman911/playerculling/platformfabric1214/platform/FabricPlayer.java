@@ -4,6 +4,7 @@ import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlaye
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -123,10 +124,15 @@ public class FabricPlayer extends FabricLivingEntity<ServerPlayer> implements Pl
 
     @Override
     public void addDirectPairing(PlatformPlayer... players) {
-        // not supported in Fabric
-    }
-
-    public ServerPlayer getFabricPlayer() {
-        return this.getDelegate();
+        ServerPlayer handle = this.getDelegate();
+        handle.server.executeIfPossible(() -> {
+            for (PlatformPlayer target : players) {
+                ServerPlayer mcTarget = ((FabricPlayer) target).getDelegate();
+                ChunkMap.TrackedEntity trackedTarget = mcTarget.serverLevel().getChunkSource().chunkMap.entityMap.get(mcTarget.getId());
+                if (trackedTarget != null && trackedTarget.seenBy.add(handle.connection)) {
+                    trackedTarget.serverEntity.addPairing(handle);
+                }
+            }
+        });
     }
 }

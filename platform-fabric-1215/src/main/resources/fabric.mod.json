@@ -3,13 +3,15 @@
   "id": "playerculling-mc1215",
   "version": "${version}",
   "name": "PlayerCulling 1.21.5",
+
   "contact": {
     "sources": "https://github.com/MinceraftMC/PlayerCulling",
     "issues": "https://github.com/MinceraftMC/PlayerCulling/issues",
     "homepage": "https://minceraft.dev/playerculling"
   },
+
   "icon": "assets/playerculling/icon.png",
-  "description": "A fabric mod designed to prevent players from seeing each other through walls using cheats. For 1.21.5",
+  "description": "A fabric mod designed to prevent players from seeing each other through walls using cheats for 1.21.5",
   "authors": [
     "pianoman911",
     "booky10"

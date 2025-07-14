@@ -3,7 +3,6 @@ package de.pianoman911.playerculling.platformfabric1214.platform;
 import de.pianoman911.playerculling.api.PlayerCullingApi;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
 import de.pianoman911.playerculling.platformcommon.config.PlayerCullingConfig;
 import de.pianoman911.playerculling.platformcommon.config.YamlConfigHolder;
 import de.pianoman911.playerculling.platformcommon.platform.IPlatform;
@@ -11,11 +10,14 @@ import de.pianoman911.playerculling.platformcommon.platform.command.PlatformComm
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
+import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
 import de.pianoman911.playerculling.platformfabric1214.PlayerCullingMod;
-import de.pianoman911.playerculling.platformfabric1214.util.BlockStateUtil;
+import de.pianoman911.playerculling.platformfabric1214.common.IServerLevel;
+import de.pianoman911.playerculling.platformfabric1214.common.IServerPlayer;
 import de.pianoman911.playerculling.platformfabric1214.util.SimpleScheduler;
 import net.fabricmc.loader.api.FabricLoader;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceKey;
@@ -33,25 +35,25 @@ import org.jspecify.annotations.NullMarked;
 
 import java.lang.invoke.MethodHandle;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 @NullMarked
 public class FabricPlatform implements IPlatform {
 
     private static @MonotonicNonNull MethodHandle GET_SERVER_PLAYER;
-    private final Map<ServerLevel, FabricWorld> worldMap = new WeakHashMap<>();
-    private final Map<ServerPlayer, FabricPlayer> playerMap = new WeakHashMap<>();
     private final FabricArgumentsProvider argumentsProvider = new FabricArgumentsProvider(this);
     private final PlayerCullingMod mod;
     private final SimpleScheduler scheduler = new SimpleScheduler();
     private final OcclusionMappings occlusionMappings = new OcclusionMappings(Block.BLOCK_STATE_REGISTRY.size() * 8); // 8 voxels per block
+
     private @MonotonicNonNull MinecraftServer server;
+    private @MonotonicNonNull MinecraftServerAudiences audiences;
     private long currentTick;
 
     public FabricPlatform(PlayerCullingMod mod) {
@@ -65,13 +67,20 @@ public class FabricPlatform implements IPlatform {
         if (world == null) {
             throw new IllegalArgumentException("Can't find world with name " + key);
         }
-        return this.provideWorld(world);
+        return ((IServerLevel) world).getCullWorldOrCreate();
     }
 
     @Override
     @Unmodifiable
     public Collection<PlatformWorld> getWorlds() {
-        return Collections.unmodifiableCollection(this.worldMap.values());
+        List<PlatformWorld> worlds = new ArrayList<>();
+        for (ServerLevel level : this.server.getAllLevels()) {
+            FabricWorld world = ((IServerLevel) level).getCullWorld();
+            if (world != null) {
+                worlds.add(world);
+            }
+        }
+        return Collections.unmodifiableList(worlds);
     }
 
     @Override
@@ -137,22 +146,6 @@ public class FabricPlatform implements IPlatform {
         return this.argumentsProvider;
     }
 
-    public FabricWorld provideWorld(Level level) {
-        if (level instanceof ServerLevel world) {
-            return this.provideWorld(world);
-        } else {
-            throw new IllegalArgumentException("Level is not a ServerLevel");
-        }
-    }
-
-    public FabricWorld provideWorld(ServerLevel world) {
-        return this.worldMap.computeIfAbsent(world, id -> {
-            this.occlusionMappings.lazyBuildCache(index ->
-                    BlockStateUtil.buildVoxelShape(Block.BLOCK_STATE_REGISTRY.byId(index), id));
-            return new FabricWorld(id, this);
-        });
-    }
-
     public FabricPlayer providePlayer(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
             return this.providePlayer(serverPlayer);
@@ -162,7 +155,7 @@ public class FabricPlatform implements IPlatform {
     }
 
     public FabricPlayer providePlayer(ServerPlayer player) {
-        return this.playerMap.computeIfAbsent(player, id -> new FabricPlayer(this, id));
+        return ((IServerPlayer) player).getCullPlayerOrCreate();
     }
 
     @SuppressWarnings("unchecked")
@@ -193,8 +186,6 @@ public class FabricPlatform implements IPlatform {
     }
 
     public void invalidatePlayer(ServerPlayer player) {
-        this.playerMap.remove(player);
-
         CullShip ship = this.mod.getCullShip();
         ship.removePlayer(player.getUUID());
 
@@ -204,25 +195,18 @@ public class FabricPlatform implements IPlatform {
         }
     }
 
-    public void replacePlayer(ServerPlayer oldPlayer, ServerPlayer newPlayer) {
-        FabricPlayer player = this.playerMap.remove(oldPlayer);
-        if (player != null) {
-            player.replacePlayer(newPlayer);
-            this.playerMap.put(newPlayer, player);
-        }
-    }
-
     @SuppressWarnings("deprecation")
     public MinecraftServer getServer() {
         if (this.server == null) {
             this.server = (MinecraftServer) FabricLoader.getInstance().getGameInstance();
+            this.audiences = MinecraftServerAudiences.of(this.server);
         }
         return this.server;
     }
 
-    @Unmodifiable
-    public Collection<FabricWorld> getFabricWorlds() {
-        return Collections.unmodifiableCollection(this.worldMap.values());
+    public @MonotonicNonNull MinecraftServerAudiences getAudiences() {
+        this.getServer(); // try initializing audiences
+        return this.audiences;
     }
 
     public OcclusionMappings getOcclusionMappings() {

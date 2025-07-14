@@ -27,11 +27,11 @@ public class FabricCommandSender<T extends CommandSource> implements PlatformCom
 
     @Override
     public void sendMessage(Component message) {
-
+        this.sender.sendSystemMessage(this.platform.getAudiences().asNative(message));
     }
 
     @Override
-    public boolean hasPermission(String permission, TriState state) {
-        return false;
+    public boolean hasPermission(String permission, TriState defaultValue) {
+        return defaultValue.toBooleanOrElse(false);
     }
 }

@@ -1,6 +1,4 @@
 import net.fabricmc.loom.task.AbstractRemapJarTask
-import org.gradle.kotlin.dsl.assign
-import org.gradle.kotlin.dsl.withType
 
 plugins {
     alias(libs.plugins.fabric.loom)
@@ -45,8 +43,7 @@ tasks.named<Jar>("jar") {
         "Git-Branch" to rootProject.ext["gitBranch"],
         "Git-Tag" to rootProject.ext["gitTag"],
 
-        "paperweight-mappings-namespace" to "mojang",
-        "Environment" to project.gradle.startParameter.taskNames
+        "Environment" to project.gradle.startParameter.taskNames,
     )
 }
 
@@ -62,9 +59,9 @@ tasks.withType<AbstractRemapJarTask> {
 }
 
 loom {
-    accessWidenerPath.set(
-        sourceSets.main.get().resources
-            .find { it.name == "playerculling.accesswidener" })
+    serverOnlyMinecraftJar()
 
+    accessWidenerPath = sourceSets.main.get().resources
+        .find { it.name == "playerculling.accesswidener" }
     mixin.defaultRefmapName = "${rootProject.name}-${project.name}-refmap.json".lowercase()
 }
