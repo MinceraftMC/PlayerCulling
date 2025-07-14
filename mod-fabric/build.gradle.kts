@@ -25,7 +25,6 @@ dependencies {
     include(projects.core)
     include(projects.platformCommon)
     include(projects.api)
-    include(libs.fabric.permissions)
 
     // include common dependencies
     sequenceOf(libs.configurate.yaml).forEach {
@@ -43,7 +42,6 @@ dependencies {
 
     // version-specific runtime mods
     productionRuntimeMods(libs.fabricapi.create("fabricapi.v$testTaskVersionFiltered"))
-    productionRuntimeMods(libs.fabric.permissions)
 }
 
 tasks.named<ProcessResources>("processResources") {

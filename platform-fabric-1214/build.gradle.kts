@@ -30,9 +30,11 @@ dependencies {
     "include1214"(libs.adventure.platform.fabric.v1214)
     "include1215"(libs.adventure.platform.fabric.v1215)
 
+    include(libs.fabric.permissions.v1214)
+    modImplementation(libs.fabric.permissions.v1214)
+
     api(projects.core)
 
-    modImplementation(libs.fabric.permissions)
     implementation(libs.configurate.core)
     implementation(libs.configurate.yaml)
 }
