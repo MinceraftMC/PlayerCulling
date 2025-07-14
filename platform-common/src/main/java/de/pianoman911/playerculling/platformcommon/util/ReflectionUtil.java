@@ -5,8 +5,11 @@ import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Objects;
 
 @SuppressWarnings("deprecation")
@@ -48,6 +51,22 @@ public final class ReflectionUtil {
         return TRUSTED_LOOKUP;
     }
 
+    public static MethodHandle getMethod(Class<?> clazz, MethodType methodType, int offset) {
+        return getMethod(lookupMethod(clazz, methodType, offset));
+    }
+
+    public static MethodHandle getMethod(Method method) {
+        try {
+            MethodType mtype = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
+            if (Modifier.isStatic(method.getModifiers())) {
+                return TRUSTED_LOOKUP.findStatic(method.getDeclaringClass(), method.getName(), mtype);
+            }
+            return TRUSTED_LOOKUP.findVirtual(method.getDeclaringClass(), method.getName(), mtype);
+        } catch (ReflectiveOperationException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
     public static MethodHandle getGetter(Class<?> clazz, Class<?> type, int offset) {
         return getGetter(lookupField(clazz, type, offset));
     }
@@ -76,6 +95,22 @@ public final class ReflectionUtil {
         } catch (ReflectiveOperationException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    private static Method lookupMethod(Class<?> clazz, MethodType methodType, int offset) {
+        int i = 0;
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getReturnType() != methodType.returnType()
+                    || method.getParameterCount() != methodType.parameterCount()
+                    || !Arrays.equals(method.getParameterTypes(), methodType.parameterArray())) {
+                continue; // wrong method
+            }
+            if (i++ == offset) {
+                return method;
+            }
+        }
+        throw new IllegalArgumentException("Can't find method " + methodType
+                + " with offset " + offset + " in " + clazz.getName());
     }
 
     private static Field lookupField(Class<?> clazz, Class<?> type, int offset) {
