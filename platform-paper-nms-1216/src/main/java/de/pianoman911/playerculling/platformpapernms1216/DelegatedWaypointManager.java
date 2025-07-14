@@ -264,7 +264,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     protected void handleUpdateWaypointConnection(ServerPlayer player, ServerPlayer waypoint) {
         WaypointTransmitter.Connection connection;
         switch (this.ship.getConfig().getDelegate().waypointMode) {
-            case WaypointMode.CULLED_AZIMUTH: {
+            case CULLED_AZIMUTH: {
                 CullPlayer cullPlayer = this.ship.getPlayer(player.getUUID());
                 if (cullPlayer == null || cullPlayer.isHidden(waypoint.getUUID())) {
                     // cull player is null or target is hidden, ignore
@@ -273,12 +273,15 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
                 }
                 // fall through
             }
-            case WaypointMode.AZIMUTH:
+            case AZIMUTH:
                 connection = new WaypointTransmitter.EntityAzimuthConnection(
                         waypoint, new Waypoint.Icon().cloneAndAssignStyle(waypoint), player);
                 break;
-            case WaypointMode.VANILLA:
+            case VANILLA:
                 connection = waypoint.makeWaypointConnectionWith(player).orElse(null);
+                break;
+            case HIDDEN:
+                connection = null;
                 break;
             default:
                 throw new AssertionError();

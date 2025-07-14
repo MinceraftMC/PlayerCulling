@@ -169,7 +169,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
 
         eventLoop.executeIfPossible(() -> {
             for (PlatformPlayer target : targets) {
-                ChunkMap.TrackedEntity tracked = world.getChunkSource().chunkMap.entityMap.get(((PaperPlayer) target).getDelegate().getEntityId());
+                ChunkMap.TrackedEntity tracked = ((CraftPlayer) ((PaperPlayer) target).getDelegate()).getHandle().moonrise$getTrackedEntity();
                 if (tracked == null) {
                     continue; // Could be offline or not loaded
                 }

@@ -1,21 +1,22 @@
-package de.pianoman911.playerculling.platformpapernms1211;
+package de.pianoman911.playerculling.platformfabric1217.platform;
 
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
-import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import org.jspecify.annotations.NullMarked;
 
-public class PaperNmsChunkAccess implements PlatformChunkAccess {
+@NullMarked
+public class FabricChunkAccess implements PlatformChunkAccess {
 
     private static final int VOID_AIR_STATE_ID = Block.BLOCK_STATE_REGISTRY.getId(Blocks.VOID_AIR.defaultBlockState());
 
-    private final PaperPlatform platform;
+    private final FabricPlatform platform;
     private final ChunkAccess chunk;
 
-    public PaperNmsChunkAccess(PaperPlatform platform, ChunkAccess chunk) {
+    public FabricChunkAccess(FabricPlatform platform, ChunkAccess chunk) {
         this.platform = platform;
         this.chunk = chunk;
     }
