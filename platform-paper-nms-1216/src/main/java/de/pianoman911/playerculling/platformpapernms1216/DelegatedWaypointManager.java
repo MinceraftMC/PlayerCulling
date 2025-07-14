@@ -18,6 +18,7 @@ import net.minecraft.world.waypoints.Waypoint;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,10 +34,10 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     private static final MethodHandle SET_PLAYERS = ReflectionUtil.getSetter(ServerWaypointManager.class, Set.class, 1);
     private static final MethodHandle SET_CONNECTIONS = ReflectionUtil.getSetter(ServerWaypointManager.class, Table.class, 0);
 
-    private static final MethodHandle CREATE_CONNECTION = ReflectionUtil.getVoidMethod(ServerWaypointManager.class,
-            "createConnection", ServerPlayer.class, WaypointTransmitter.class);
-    private static final MethodHandle UPDATE_CONNECTION = ReflectionUtil.getVoidMethod(ServerWaypointManager.class,
-            "updateConnection", ServerPlayer.class, WaypointTransmitter.class, WaypointTransmitter.Connection.class);
+    private static final MethodHandle CREATE_CONNECTION = ReflectionUtil.getMethod(ServerWaypointManager.class,
+            MethodType.methodType(void.class, ServerPlayer.class, WaypointTransmitter.class), 0);
+    private static final MethodHandle UPDATE_CONNECTION = ReflectionUtil.getMethod(ServerWaypointManager.class,
+            MethodType.methodType(void.class, ServerPlayer.class, WaypointTransmitter.class, WaypointTransmitter.Connection.class), 0);
 
     private final ServerWaypointManager original;
     private final CullShip ship;

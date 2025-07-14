@@ -56,8 +56,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     private @MonotonicNonNull NmsPacketListener packetListener;
 
     public FoliaNmsAdapterImpl() {
-        if (!PaperNmsAdapter.isFolia()||
-                (SharedConstants.getProtocolVersion() != 770)) {
+        if (!PaperNmsAdapter.isFolia() || SharedConstants.getProtocolVersion() != 770) {
             throw new UnsupportedOperationException();
         }
     }
