@@ -161,7 +161,7 @@ following options:
     - `notify-admins`: Whether to notify admins about new PlayerCulling releases (default: `true`)
     - `interval-hours`: The update check interval in hours (default: `24`)
 - `waypoint-mode`: The mode for the waypoint system, see the [Locator Bar / Waypoints](#locator-bar--waypoints) section
-  for more information. (default: `0`)
+  for more information. (default: `HIDDEN`)
 
 Note: If you're not sure what a configuration option does, it's best to leave it at its default value.
 
