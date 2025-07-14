@@ -126,6 +126,13 @@ public class FabricPlatform implements IPlatform {
         this.scheduler.cancel(taskId);
     }
 
+    public void shutdownScheduler() {
+        try {
+            this.scheduler.shutdown();
+        } catch (InterruptedException ignored) {
+        }
+    }
+
     @Override
     public void registerApi(PlayerCullingApi api) {
         FabricLoader.getInstance().getObjectShare().put("playerculling:api", api);

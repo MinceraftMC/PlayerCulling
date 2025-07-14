@@ -10,6 +10,7 @@ import de.pianoman911.playerculling.platformfabric1217.platform.FabricCommandSou
 import de.pianoman911.playerculling.platformfabric1217.platform.FabricWorld;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -26,6 +27,7 @@ public class PlayerCullingListener implements
         ServerPlayConnectionEvents.Disconnect,
         ServerPlayerEvents.AfterRespawn,
         ServerTickEvents.EndWorldTick,
+        ServerLifecycleEvents.ServerStopped,
         CommandRegistrationCallback {
 
     private final PlayerCullingMod plugin;
@@ -38,6 +40,7 @@ public class PlayerCullingListener implements
         ServerPlayConnectionEvents.JOIN.register(this);
         ServerPlayConnectionEvents.DISCONNECT.register(this);
         ServerTickEvents.END_WORLD_TICK.register(this);
+        ServerLifecycleEvents.SERVER_STOPPED.register(this);
         CommandRegistrationCallback.EVENT.register(this);
     }
 
@@ -72,6 +75,11 @@ public class PlayerCullingListener implements
         if (world != null) {
             world.tick();
         }
+    }
+
+    @Override
+    public void onServerStopped(MinecraftServer server) {
+        PlayerCullingMod.getInstance().getPlatform().shutdownScheduler();
     }
 
     @Override
