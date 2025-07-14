@@ -2,7 +2,6 @@ package de.pianoman911.playerculling.platformfolianms1216;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformfolianms1216.DelegatedTrackedEntity;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;

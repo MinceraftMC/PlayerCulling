@@ -12,7 +12,6 @@ import de.pianoman911.playerculling.platformcommon.util.WaypointMode;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.waypoints.ServerWaypointManager;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.waypoints.Waypoint;
 import net.minecraft.world.waypoints.WaypointTransmitter;
@@ -91,7 +90,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     }
 
     private static boolean isLocatorBarEnabledFor(ServerPlayer player) {
-        return player.level().getServer().getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
+        return player.level().getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
     }
 
     public ServerWaypointManager getOriginalModified() {
@@ -115,7 +114,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         }
         this.this$waypoints().add(waypoint);
         for (ServerPlayer receiver : this.this$players()) {
-            this.override$createConnection(receiver, waypoint);
+            this.override$createConnection(receiver, (ServerPlayer) waypoint);
         }
     }
 
@@ -136,7 +135,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         }
 
         for (ServerPlayer receiver : newReceivers) {
-            this.override$createConnection(receiver, waypoint);
+            this.override$createConnection(receiver, target);
         }
     }
 
@@ -146,7 +145,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
         for (WaypointTransmitter waypoint : this.this$waypoints()) {
             if ((waypoint instanceof ServerPlayer)) {
-                this.override$createConnection(player, waypoint);
+                this.override$createConnection(player, (ServerPlayer) waypoint);
             } else {
                 this.super$createConnection(player, waypoint);
             }
@@ -171,7 +170,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
         for (WaypointTransmitter waypoint : newWaypoints) {
             if (waypoint instanceof ServerPlayer) {
-                this.override$createConnection(player, waypoint);
+                this.override$createConnection(player, (ServerPlayer) waypoint);
             } else {
                 this.super$createConnection(player, waypoint);
             }
@@ -185,10 +184,11 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
             return; // Only override player waypoints
         }
         for (ServerPlayer receiver : this.this$players()) {
-            this.override$createConnection(receiver, waypoint);
+            this.override$createConnection(receiver, (ServerPlayer) waypoint);
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected Set<WaypointTransmitter> this$waypoints() {
         try {
             return (Set<WaypointTransmitter>) GET_WAYPOINTS.invoke(this);
@@ -198,6 +198,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected Set<ServerPlayer> this$players() {
         try {
             return (Set<ServerPlayer>) GET_PLAYERS.invoke(this);
@@ -207,6 +208,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected Table<ServerPlayer, WaypointTransmitter, WaypointTransmitter.Connection> this$connections() {
         try {
             return (Table<ServerPlayer, WaypointTransmitter, WaypointTransmitter.Connection>) GET_CONNECTIONS.invoke(this);
@@ -232,21 +234,14 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         }
     }
 
-    protected void override$createConnection(ServerPlayer player, WaypointTransmitter waypoint) {
-        if (player == waypoint) {
-            return;
+    protected void override$createConnection(ServerPlayer player, ServerPlayer waypoint) {
+        if (player != waypoint && isLocatorBarEnabledFor(player)) {
+            this.handleUpdateWaypointConnection(player, waypoint);
         }
-        if (!isLocatorBarEnabledFor(player)) {
-            return;
-        }
-        this.handleUpdateWaypointConnection(player, waypoint);
     }
 
     protected void override$updateConnection(ServerPlayer player, ServerPlayer waypoint, WaypointTransmitter.Connection connection) {
-        if (player == waypoint) {
-            return;
-        }
-        if (!isLocatorBarEnabledFor(player)) {
+        if (player == waypoint || !isLocatorBarEnabledFor(player)) {
             return;
         }
         if (this.ship.getConfig().getDelegate().waypointMode == WaypointMode.CULLED_AZIMUTH) {
@@ -266,25 +261,28 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         }
     }
 
-    protected void handleUpdateWaypointConnection(ServerPlayer player, WaypointTransmitter waypoint) {
-        WaypointTransmitter.Connection connection = switch (this.ship.getConfig().getDelegate().waypointMode) {
-            case WaypointMode.AZIMUTH -> new WaypointTransmitter.EntityAzimuthConnection(
-                    (ServerPlayer) waypoint, new Waypoint.Icon().cloneAndAssignStyle((LivingEntity) waypoint), player);
-            case WaypointMode.CULLED_AZIMUTH -> {
-                if (!(waypoint instanceof ServerPlayer target)) {
-                    yield null;
-                }
+    protected void handleUpdateWaypointConnection(ServerPlayer player, ServerPlayer waypoint) {
+        WaypointTransmitter.Connection connection;
+        switch (this.ship.getConfig().getDelegate().waypointMode) {
+            case WaypointMode.CULLED_AZIMUTH: {
                 CullPlayer cullPlayer = this.ship.getPlayer(player.getUUID());
-                if (cullPlayer == null) {
-                    yield null; // cull player is null, ignore
+                if (cullPlayer == null || cullPlayer.isHidden(waypoint.getUUID())) {
+                    // cull player is null or target is hidden, ignore
+                    connection = null;
+                    break;
                 }
-                yield cullPlayer.isHidden(target.getUUID()) ?
-                        null : new WaypointTransmitter.EntityAzimuthConnection(
-                        target, new Waypoint.Icon().cloneAndAssignStyle(target), player);
+                // fall through
             }
-            case WaypointMode.VANILLA -> waypoint.makeWaypointConnectionWith(player).orElse(null);
-            default -> null;
-        };
+            case WaypointMode.AZIMUTH:
+                connection = new WaypointTransmitter.EntityAzimuthConnection(
+                        waypoint, new Waypoint.Icon().cloneAndAssignStyle(waypoint), player);
+                break;
+            case WaypointMode.VANILLA:
+                connection = waypoint.makeWaypointConnectionWith(player).orElse(null);
+                break;
+            default:
+                throw new AssertionError();
+        }
 
         if (connection == null) {
             WaypointTransmitter.Connection removed = this.this$connections().remove(player, waypoint);
