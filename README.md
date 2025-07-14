@@ -242,7 +242,7 @@ of the executed command. For example:
     <dependency>
         <groupId>de.pianoman911</groupId>
         <artifactId>playerculling-api</artifactId>
-        <version>2.0.3-SNAPSHOT</version>
+        <version>2.1.0-SNAPSHOT</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -262,7 +262,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'de.pianoman911:playerculling-api:2.0.3-SNAPSHOT'
+    compileOnly 'de.pianoman911:playerculling-api:2.1.0-SNAPSHOT'
 }
 ```
 
@@ -279,7 +279,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("de.pianoman911:playerculling-api:2.0.3-SNAPSHOT")
+    compileOnly("de.pianoman911:playerculling-api:2.1.0-SNAPSHOT")
 }
 ```
 
