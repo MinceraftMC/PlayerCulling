@@ -1,10 +1,10 @@
 package de.pianoman911.playerculling.platformfabric1214.mixin;
 
 import de.pianoman911.playerculling.platformfabric1214.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric1214.common.IServerLevel;
 import de.pianoman911.playerculling.platformfabric1214.platform.FabricPlatform;
 import de.pianoman911.playerculling.platformfabric1214.platform.FabricWorld;
 import de.pianoman911.playerculling.platformfabric1214.util.BlockStateUtil;
-import de.pianoman911.playerculling.platformfabric1214.common.IServerLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;

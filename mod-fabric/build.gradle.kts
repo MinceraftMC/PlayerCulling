@@ -1,13 +1,12 @@
 import net.fabricmc.loom.task.AbstractRemapJarTask
 import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.prod.ClientProductionRunTask
 import net.fabricmc.loom.task.prod.ServerProductionRunTask
 
 plugins {
     alias(libs.plugins.fabric.loom)
 }
 
-val testTaskVersion = "1.21.4"
+val testTaskVersion = "1.21.5"
 val testTaskVersionFiltered = testTaskVersion.replace(".", "")
 
 loom.noIntermediateMappings()
