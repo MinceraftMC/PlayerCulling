@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "playerculling-mc1217",
+  "id": "playerculling-mc1219",
   "version": "${version}",
-  "name": "PlayerCulling 1.21.7",
+  "name": "PlayerCulling 1.21.9",
 
   "contact": {
     "sources": "https://github.com/MinceraftMC/PlayerCulling",

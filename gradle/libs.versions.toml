@@ -47,7 +47,7 @@ minecraft-v1217 = "1.21.7"
 fabricapi-v1217 = "0.129.0+1.21.7"
 parchment-v1217 = "2025.06.29"
 fabric-permissions-v1217 = "0.4.1"
-adventure-platform-fabric-v1217 = "6.5.0-SNAPSHOT"
+adventure-platform-fabric-v1217 = "6.6.0"
 
 # fabric 1.21.9
 minecraft-v1219 = "1.21.9"

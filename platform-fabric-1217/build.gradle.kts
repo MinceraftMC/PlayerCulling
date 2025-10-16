@@ -4,13 +4,6 @@ plugins {
     alias(libs.plugins.fabric.loom)
 }
 
-repositories {
-    // adventure-platform-mod hasn't been released yet, use snapshot version
-    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
-        mavenContent { snapshotsOnly() }
-    }
-}
-
 dependencies {
     minecraft(libs.minecraft.v1217)
     mappings(loom.layered {

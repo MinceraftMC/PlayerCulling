@@ -36,13 +36,11 @@ public class FabricWorld extends PlatformWorld {
 
     private final ServerLevel world;
     private final FabricPlatform platform;
-    private final int height;
 
     public FabricWorld(ServerLevel world, FabricPlatform platform) {
         super(platform);
         this.world = world;
         this.platform = platform;
-        this.height = world.getMaxY() - world.getMinY();
     }
 
     @Override
@@ -65,12 +63,7 @@ public class FabricWorld extends PlatformWorld {
 
     @Override
     public int getMaxY() {
-        return this.world.getMaxY();
-    }
-
-    @Override
-    public int getHeight() {
-        return this.height;
+        return this.world.getMaxY() + 1; // Make inclusive
     }
 
     @Override

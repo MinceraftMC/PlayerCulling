@@ -31,11 +31,11 @@ public abstract class PlatformWorld {
 
     public abstract String getName();
 
+    // Exclusive
     public abstract int getMinY();
 
+    // Exclusive
     public abstract int getMaxY();
-
-    public abstract int getHeight();
 
     public abstract int getTrackingDistance();
 
