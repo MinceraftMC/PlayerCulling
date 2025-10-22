@@ -26,7 +26,7 @@ run-paper = "2.3.1"
 netty = "4.1.121.Final"
 
 # generic fabric
-fabric-loader = "0.16.14"
+fabric-loader = "0.17.3"
 
 # fabric 1.21.4
 minecraft-v1214 = "1.21.4"
