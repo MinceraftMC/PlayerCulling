@@ -15,7 +15,6 @@ dependencies {
     modImplementation(libs.fabricapi.v1217)
 
     modImplementation(libs.adventure.platform.fabric.v1217)
-    include(libs.adventure.platform.fabric.v1217)
 
     include(libs.fabric.permissions.v1217)
     modImplementation(libs.fabric.permissions.v1217)

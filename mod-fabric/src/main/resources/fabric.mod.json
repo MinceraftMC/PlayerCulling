@@ -32,7 +32,8 @@
       "1.21.10"
     ],
     "fabric-api": "*",
-    "fabric-permissions-api-v0": "*"
+    "fabric-permissions-api-v0": "*",
+    "adventure-platform-fabric": "*"
   },
   "suggests": {
     "moonrise": "*"

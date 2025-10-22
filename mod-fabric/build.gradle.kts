@@ -42,6 +42,7 @@ dependencies {
 
     // version-specific runtime mods
     productionRuntimeMods(libs.fabricapi.create("fabricapi.v$testTaskVersionFiltered"))
+    productionRuntimeMods(libs.adventure.platform.fabric.create("adventure.platform.fabric.v$testTaskVersionFiltered"))
 }
 
 tasks.named<ProcessResources>("processResources") {
