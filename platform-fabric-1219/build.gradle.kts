@@ -5,19 +5,19 @@ plugins {
 }
 
 dependencies {
-    minecraft(libs.minecraft.v1217)
+    minecraft(libs.minecraft.v1219)
     mappings(loom.layered {
         officialMojangMappings()
-        parchment(variantOf(libs.parchment.v1217) { artifactType("zip") })
+        parchment(variantOf(libs.parchment.v1219) { artifactType("zip") })
     })
 
     modImplementation(libs.fabric.loader)
-    modImplementation(libs.fabricapi.v1217)
+    modImplementation(libs.fabricapi.v1219)
 
-    modImplementation(libs.adventure.platform.fabric.v1217)
+    modImplementation(libs.adventure.platform.fabric.v1219)
 
-    include(libs.fabric.permissions.v1217)
-    modImplementation(libs.fabric.permissions.v1217)
+    include(libs.fabric.permissions.v1219)
+    modImplementation(libs.fabric.permissions.v1219)
 
     api(projects.core)
 

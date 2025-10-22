@@ -4,7 +4,7 @@ gradle-shadow = "8.3.6"
 
 paperweight-userdev = "2.0.0-beta.18"
 pluginyml-bukkit = "0.6.0"
-fabric-loom = "1.10-SNAPSHOT"
+fabric-loom = "1.11-SNAPSHOT"
 
 adventure-api = "4.20.0"
 
@@ -26,7 +26,7 @@ run-paper = "2.3.1"
 netty = "4.1.121.Final"
 
 # generic fabric
-fabric-loader = "0.16.14"
+fabric-loader = "0.17.3"
 
 # fabric 1.21.4
 minecraft-v1214 = "1.21.4"
@@ -47,7 +47,14 @@ minecraft-v1217 = "1.21.7"
 fabricapi-v1217 = "0.129.0+1.21.7"
 parchment-v1217 = "2025.06.29"
 fabric-permissions-v1217 = "0.4.1"
-adventure-platform-fabric-v1217 = "6.5.0-SNAPSHOT"
+adventure-platform-fabric-v1217 = "6.6.0"
+
+# fabric 1.21.9
+minecraft-v1219 = "1.21.9"
+fabricapi-v1219 = "0.134.0+1.21.9"
+parchment-v1219 = "2025.10.05"
+fabric-permissions-v1219 = "0.5.0"
+adventure-platform-fabric-v1219 = "6.7.0"
 
 [plugins]
 gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow" }
@@ -97,3 +104,9 @@ fabricapi-v1217 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref =
 parchment-v1217 = { module = "org.parchmentmc.data:parchment-1.21.6", version.ref = "parchment-v1217" }
 fabric-permissions-v1217 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v1217" }
 adventure-platform-fabric-v1217 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1217" }
+
+minecraft-v1219 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1219" }
+fabricapi-v1219 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1219" }
+parchment-v1219 = { module = "org.parchmentmc.data:parchment-1.21.9", version.ref = "parchment-v1219" }
+fabric-permissions-v1219 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v1219" }
+adventure-platform-fabric-v1219 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1219" }

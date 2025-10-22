@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.fabric.loom)
 }
 
-val testTaskVersion = "1.21.7"
+val testTaskVersion = "1.21.9"
 val testTaskVersionFiltered = testTaskVersion.replace(".", "")
 
 loom.noIntermediateMappings()
@@ -42,6 +42,7 @@ dependencies {
 
     // version-specific runtime mods
     productionRuntimeMods(libs.fabricapi.create("fabricapi.v$testTaskVersionFiltered"))
+    productionRuntimeMods(libs.adventure.platform.fabric.create("adventure.platform.fabric.v$testTaskVersionFiltered"))
 }
 
 tasks.named<ProcessResources>("processResources") {

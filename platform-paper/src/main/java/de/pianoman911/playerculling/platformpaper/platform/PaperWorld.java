@@ -21,13 +21,11 @@ public class PaperWorld extends PlatformWorld {
 
     private final World world;
     private final PaperPlatform platform;
-    private final int height;
 
     public PaperWorld(World world, PaperPlatform platform) {
         super(platform);
         this.world = world;
         this.platform = platform;
-        this.height = world.getMaxHeight() - world.getMinHeight();
 
         // inject into world to listen to block updates and into entity tracker
         this.platform.getNmsAdapter().injectWorld(this.platform, world);
@@ -51,11 +49,6 @@ public class PaperWorld extends PlatformWorld {
     @Override
     public int getMaxY() {
         return this.world.getMaxHeight();
-    }
-
-    @Override
-    public int getHeight() {
-        return this.height;
     }
 
     @Override

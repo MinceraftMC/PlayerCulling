@@ -17,7 +17,7 @@ dependencies {
 tasks {
     runServer {
         runDirectory = project.layout.projectDirectory.dir("run")
-        minecraftVersion("1.21.7")
+        minecraftVersion("1.21.10")
     }
 
     shadowJar {

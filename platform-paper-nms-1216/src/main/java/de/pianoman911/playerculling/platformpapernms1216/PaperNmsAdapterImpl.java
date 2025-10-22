@@ -14,6 +14,7 @@ import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.network.ChannelInitializeListenerHolder;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.SharedConstants;
@@ -53,6 +54,11 @@ import java.util.Map;
 public class PaperNmsAdapterImpl implements PaperNmsAdapter {
 
     private static final String HANDLER_NAME = "playerculling";
+    private static final IntSet SUPPORTED_PROTOCOLS = IntSet.of(
+            771, // 1.21.6
+            772, // 1.21.7
+            773 // 1.21.9
+    );
 
     private final List<LongSet> changedBlocks = new ArrayList<>();
     private final Map<Level, Integer> levels = new IdentityHashMap<>();
@@ -61,8 +67,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
 
     public PaperNmsAdapterImpl() {
         if (PaperNmsAdapter.isFolia() ||
-                (SharedConstants.getProtocolVersion() != 771 &&
-                        SharedConstants.getProtocolVersion() != 772)
+                !SUPPORTED_PROTOCOLS.contains(SharedConstants.getProtocolVersion())
         ) {
             throw new UnsupportedOperationException();
         }

@@ -17,9 +17,9 @@ public final class OcclusionChunkCache {
     public static final int VOXEL_LENGTH = 2 * 2 * 2;
     private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");
     private static final int MAX_CHUNK_COMPUTE_DEPTH = 5;
-    private final OcclusionWorldCache world;
     public final int x;
     public final int z;
+    private final OcclusionWorldCache world;
     private volatile long @MonotonicNonNull [] occlusionData = null;
     private volatile int minY;
     private volatile int minYX2;
@@ -44,7 +44,7 @@ public final class OcclusionChunkCache {
         this.minY = world.getWorld().getMinY();
         this.minYX2 = this.minY * 2;
         this.maxY = world.getWorld().getMaxY();
-        this.height = this.maxY - this.minY + 1;
+        this.height = this.maxY - this.minY;
         this.heightX2 = this.height * 2;
 
         this.resolveChunkAccess(); // Trigger cache building
