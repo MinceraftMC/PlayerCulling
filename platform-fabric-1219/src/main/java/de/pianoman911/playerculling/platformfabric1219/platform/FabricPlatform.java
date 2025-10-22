@@ -47,7 +47,7 @@ import java.util.UUID;
 public class FabricPlatform implements IPlatform {
 
     private static @MonotonicNonNull MethodHandle GET_SERVER_PLAYER;
-    private final de.pianoman911.playerculling.platformfabric1219.platform.FabricArgumentsProvider argumentsProvider = new de.pianoman911.playerculling.platformfabric1219.platform.FabricArgumentsProvider(this);
+    private final FabricArgumentsProvider argumentsProvider = new FabricArgumentsProvider(this);
     private final PlayerCullingMod mod;
     private final SimpleScheduler scheduler = new SimpleScheduler();
     private final OcclusionMappings occlusionMappings = new OcclusionMappings(Block.BLOCK_STATE_REGISTRY.size() * 8); // 8 voxels per block
@@ -75,7 +75,7 @@ public class FabricPlatform implements IPlatform {
     public Collection<PlatformWorld> getWorlds() {
         List<PlatformWorld> worlds = new ArrayList<>();
         for (ServerLevel level : this.server.getAllLevels()) {
-            de.pianoman911.playerculling.platformfabric1219.platform.FabricWorld world = ((IServerLevel) level).getCullWorld();
+            FabricWorld world = ((IServerLevel) level).getCullWorld();
             if (world != null) {
                 worlds.add(world);
             }
@@ -103,8 +103,8 @@ public class FabricPlatform implements IPlatform {
     }
 
     @Override
-    public @Unmodifiable Set<de.pianoman911.playerculling.platformfabric1219.platform.FabricPlayer> getPlayers() {
-        Set<de.pianoman911.playerculling.platformfabric1219.platform.FabricPlayer> players = new HashSet<>();
+    public @Unmodifiable Set<FabricPlayer> getPlayers() {
+        Set<FabricPlayer> players = new HashSet<>();
         for (ServerPlayer player : this.getServer().getPlayerList().getPlayers()) {
             players.add(this.providePlayer(player));
         }
@@ -149,11 +149,11 @@ public class FabricPlatform implements IPlatform {
     }
 
     @Override
-    public de.pianoman911.playerculling.platformfabric1219.platform.FabricArgumentsProvider getArgumentProvider() {
+    public FabricArgumentsProvider getArgumentProvider() {
         return this.argumentsProvider;
     }
 
-    public de.pianoman911.playerculling.platformfabric1219.platform.FabricPlayer providePlayer(Player player) {
+    public FabricPlayer providePlayer(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
             return this.providePlayer(serverPlayer);
         } else {
@@ -161,16 +161,16 @@ public class FabricPlatform implements IPlatform {
         }
     }
 
-    public de.pianoman911.playerculling.platformfabric1219.platform.FabricPlayer providePlayer(ServerPlayer player) {
+    public FabricPlayer providePlayer(ServerPlayer player) {
         return ((IServerPlayer) player).getCullPlayerOrCreate();
     }
 
     @SuppressWarnings("unchecked")
-    public <I extends Entity, T extends de.pianoman911.playerculling.platformfabric1219.platform.FabricEntity<I>> T provideEntity(I entity) {
+    public <I extends Entity, T extends FabricEntity<I>> T provideEntity(I entity) {
         return (T) switch (entity) {
             case ServerPlayer player -> this.providePlayer(player);
-            case LivingEntity livingEntity -> new de.pianoman911.playerculling.platformfabric1219.platform.FabricLivingEntity<>(this, livingEntity);
-            default -> new de.pianoman911.playerculling.platformfabric1219.platform.FabricEntity<>(this, entity);
+            case LivingEntity livingEntity -> new FabricLivingEntity<>(this, livingEntity);
+            default -> new FabricEntity<>(this, entity);
         };
     }
 
@@ -185,11 +185,11 @@ public class FabricPlatform implements IPlatform {
                 throw new IllegalStateException(throwable);
             }
         }
-        return new de.pianoman911.playerculling.platformfabric1219.platform.FabricCommandSender<>(this, sender);
+        return new FabricCommandSender<>(this, sender);
     }
 
-    public de.pianoman911.playerculling.platformfabric1219.platform.FabricCommandSourceStack provideCommandSourceStack(CommandSourceStack source) {
-        return new de.pianoman911.playerculling.platformfabric1219.platform.FabricCommandSourceStack(this, source);
+    public FabricCommandSourceStack provideCommandSourceStack(CommandSourceStack source) {
+        return new FabricCommandSourceStack(this, source);
     }
 
     public void invalidatePlayer(ServerPlayer player) {

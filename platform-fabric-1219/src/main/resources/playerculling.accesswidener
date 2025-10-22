@@ -14,7 +14,6 @@ accessible field net/minecraft/server/level/ChunkMap serverViewDistance I
 accessible field net/minecraft/server/level/ServerLevel serverLevelData Lnet/minecraft/world/level/storage/ServerLevelData;
 accessible field net/minecraft/commands/CommandSourceStack source Lnet/minecraft/commands/CommandSource;
 accessible field net/minecraft/commands/arguments/EntityArgument single Z
-accessible field net/minecraft/server/level/ServerPlayer server Lnet/minecraft/server/MinecraftServer;
 
 # classes
 accessible class net/minecraft/server/level/ChunkMap$TrackedEntity

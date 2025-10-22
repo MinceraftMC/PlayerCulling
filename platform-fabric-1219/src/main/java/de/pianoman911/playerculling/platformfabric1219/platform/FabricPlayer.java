@@ -125,7 +125,7 @@ public class FabricPlayer extends FabricLivingEntity<ServerPlayer> implements Pl
     @Override
     public void addDirectPairing(PlatformPlayer... players) {
         ServerPlayer handle = this.getDelegate();
-        handle.server.executeIfPossible(() -> {
+        handle.level().getServer().executeIfPossible(() -> {
             for (PlatformPlayer target : players) {
                 ServerPlayer mcTarget = ((FabricPlayer) target).getDelegate();
                 ChunkMap.TrackedEntity trackedTarget = mcTarget.level().getChunkSource().chunkMap.entityMap.get(mcTarget.getId());
