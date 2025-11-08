@@ -57,9 +57,10 @@ public final class DelegatedTrackedEntity {
 
             private final CullPlayer cullPlayer = ship.getPlayer(mcEntity.getUUID());
             private final MethodHandle getCullPlayer = ReflectionUtil.getGetter(this.getClass(), CullPlayer.class, 0);
+            private final MethodHandle setCullPlayer = ReflectionUtil.getSetter(this.getClass(), CullPlayer.class, 0);
 
             @Override
-            public void updatePlayer(@NotNull ServerPlayer player) {
+            public void updatePlayer(ServerPlayer player) {
                 AsyncCatcher.catchOp("player tracker update");
                 if (player == mcEntity) {
                     return;
@@ -72,6 +73,14 @@ public final class DelegatedTrackedEntity {
                 }
                 try {
                     CullPlayer cullPlayer = (CullPlayer) getCullPlayer.invoke(trackedPlayer);
+                    if (cullPlayer == null) { // Lazy loading cull player, prevents nullable cullPlayer access on join for folia
+                        Entity targetEntity = (Entity) GET_ENTITY.invoke(trackedPlayer);
+                        this.setCullPlayer.invoke(trackedPlayer, ship.getPlayer(targetEntity.getUUID()));
+                        if (cullPlayer == null) {
+                            super.updatePlayer(player); // No culling possible, delegate
+                            return;
+                        }
+                    }
 
                     // check if player culling allows seeing this player
                     if (!cullPlayer.isHidden(mcEntity.getUUID())) {
@@ -94,12 +103,7 @@ public final class DelegatedTrackedEntity {
         return delegated;
     }
 
-    private static boolean isVisible(ServerPlayer player, Entity target, CullShip ship) {
-        CullPlayer cullPlayer = ship.getPlayer(player.getUUID());
-        return cullPlayer == null || !cullPlayer.isHidden(target.getUUID());
-    }
-
-    public static void injectPlayer(@NotNull Player player, CullShip ship) throws Throwable {
+    public static void injectPlayer(Player player, CullShip ship) throws Throwable {
         ServerPlayer handle = ((CraftPlayer) player).getHandle();
         ChunkMap.TrackedEntity custom = constructDelegate(handle.serverLevel().chunkSource.chunkMap, handle.moonrise$getTrackedEntity(), ship);
         handle.moonrise$setTrackedEntity(custom);

@@ -26,9 +26,9 @@ public class TickRefreshSupplier<T> implements Supplier<T> {
         if (this.lastTick != currentTick) {
             synchronized (this) {
                 if (this.lastTick != currentTick) {
-                    this.lastTick = currentTick;
                     T value = this.delegate.get();
                     this.value = value;
+                    this.lastTick = currentTick;
                     return value;
                 }
             }

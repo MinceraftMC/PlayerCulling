@@ -27,20 +27,19 @@ import org.jspecify.annotations.NullMarked;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @NullMarked
 public class PaperPlatform implements IPlatform {
 
-    protected final Map<Player, PaperPlayer> playerMap = new WeakHashMap<>();
-    private final Map<UUID, PaperWorld> worldMap = new HashMap<>();
+    private final Map<UUID, PaperPlayer> playerMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
+    private final Map<UUID, PaperWorld> worldMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
     private final PaperArgumentsProvider argumentsProvider = new PaperArgumentsProvider(this);
     private final Int2ObjectMap<ScheduledTask> taskMap = new Int2ObjectArrayMap<>();
     private final AtomicInteger taskIdCounter = new AtomicInteger(0);
@@ -93,7 +92,9 @@ public class PaperPlatform implements IPlatform {
     public @Unmodifiable Set<PaperPlayer> getPlayers() {
         Set<PaperPlayer> players = new HashSet<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            players.add(this.providePlayer(player));
+            if (player.isConnected()) {
+                players.add(this.providePlayer(player));
+            }
         }
         return Collections.unmodifiableSet(players);
     }
@@ -147,7 +148,7 @@ public class PaperPlatform implements IPlatform {
     }
 
     public PaperPlayer providePlayer(Player player) {
-        return this.playerMap.computeIfAbsent(player, id -> new PaperPlayer(this, id));
+        return this.playerMap.computeIfAbsent(player.getUniqueId(), id -> new PaperPlayer(this, player));
     }
 
     @SuppressWarnings("unchecked")
@@ -164,7 +165,7 @@ public class PaperPlatform implements IPlatform {
     }
 
     public void invalidatePlayer(Player player) {
-        this.playerMap.remove(player);
+        this.playerMap.remove(player.getUniqueId());
 
         CullShip ship = this.plugin.getCullShip();
         ship.removePlayer(player.getUniqueId());
