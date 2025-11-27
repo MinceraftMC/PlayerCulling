@@ -38,8 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NullMarked
 public class PaperPlatform implements IPlatform {
 
-    private final Map<UUID, PaperPlayer> playerMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
-    private final Map<UUID, PaperWorld> worldMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
+    protected final Map<UUID, PaperPlayer> playerMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
+    protected final Map<UUID, PaperWorld> worldMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
     private final PaperArgumentsProvider argumentsProvider = new PaperArgumentsProvider(this);
     private final Int2ObjectMap<ScheduledTask> taskMap = new Int2ObjectArrayMap<>();
     private final AtomicInteger taskIdCounter = new AtomicInteger(0);
