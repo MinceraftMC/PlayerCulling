@@ -12,7 +12,7 @@ public class TickRefreshSupplier<T> implements Supplier<T> {
 
     private final IPlatform platform;
     private final Supplier<T> delegate;
-    private volatile long lastTick;
+    private volatile long lastTick = Integer.MIN_VALUE;
     private volatile @MonotonicNonNull T value;
 
     public TickRefreshSupplier(IPlatform platform, Supplier<T> delegate) {
