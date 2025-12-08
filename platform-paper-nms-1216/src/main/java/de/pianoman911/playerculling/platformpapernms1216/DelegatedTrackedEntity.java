@@ -16,6 +16,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spigotmc.AsyncCatcher;
 
 import java.lang.invoke.MethodHandle;
@@ -23,6 +25,8 @@ import java.util.Set;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class DelegatedTrackedEntity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");
 
     // ChunkMap setter
     private static final MethodHandle SET_ENTITY_MAP = ReflectionUtil.getSetter(ChunkMap.class, Int2ObjectMap.class, 0);
@@ -77,10 +81,18 @@ public final class DelegatedTrackedEntity {
         int updateInterval = (int) GET_UPDATE_INTERVAL.invoke(entity.serverEntity);
         boolean trackDelta = (boolean) GET_TRACK_DELTA.invoke(entity.serverEntity);
 
+        CullPlayer player = ship.getPlayer(mcEntity.getUUID());
+        if (player == null) {
+            LOGGER.error("Failed to construct delegated tracked entity for player {} ({}), no CullPlayer found - " +
+                            "This is a rare edge case, please report this! PlayerCulling will be disabled for this player.",
+                    mcEntity.getScoreboardName(), mcEntity.getUUID());
+            return entity;
+        }
+
         // Anonymous class due non-static inner class
         ChunkMap.TrackedEntity delegated = map.new TrackedEntity(mcEntity, range, updateInterval, trackDelta) {
 
-            private final CullPlayer cullPlayer = ship.getPlayer(mcEntity.getUUID());
+            private final CullPlayer cullPlayer = player;
             private final MethodHandle getCullPlayer = ReflectionUtil.getGetter(this.getClass(), CullPlayer.class, 0);
 
             @Override
@@ -96,7 +108,7 @@ public final class DelegatedTrackedEntity {
                     return;
                 }
                 try {
-                    CullPlayer cullPlayer = (CullPlayer) getCullPlayer.invoke(trackedPlayer);
+                    CullPlayer cullPlayer = (CullPlayer) this.getCullPlayer.invoke(trackedPlayer);
 
                     // check if player culling allows seeing this player
                     if (!cullPlayer.isHidden(mcEntity.getUUID())) {
