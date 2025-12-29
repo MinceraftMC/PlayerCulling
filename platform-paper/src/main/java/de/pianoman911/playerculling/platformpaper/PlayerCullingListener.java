@@ -1,5 +1,6 @@
 package de.pianoman911.playerculling.platformpaper;
 
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
@@ -12,7 +13,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerCullingListener implements Listener {
 
     private final PlayerCullingPlugin plugin;
@@ -24,7 +27,7 @@ public class PlayerCullingListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        PlatformPlayer platformPlayer = this.plugin.getPlatform().providePlayer(player);
+        PlatformPlayer platformPlayer = (PlatformPlayer) this.plugin.getPlatform().provideEntity(player);
 
         CullShip cullShip = this.plugin.getCullShip();
         cullShip.addPlayer(new CullPlayer(platformPlayer));
@@ -41,7 +44,13 @@ public class PlayerCullingListener implements Listener {
         this.plugin.getPlatform().tick();
         for (PaperWorld world : this.plugin.getPlatform().getPaperWorlds()) {
             this.plugin.getPlatform().getNmsAdapter().tickChangedBlocks(world);
+            world.collectEntities();
         }
+    }
+
+    @EventHandler
+    public void onEntityAdd(EntityAddToWorldEvent event) {
+        this.plugin.getPlatform().getNmsAdapter().injectEntity(event.getEntity(), this.plugin);
     }
 
     @EventHandler

@@ -2,6 +2,7 @@ package de.pianoman911.playerculling.platformcommon.platform.world;
 
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
 import de.pianoman911.playerculling.platformcommon.platform.IPlatform;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.util.TickRefreshSupplier;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
@@ -17,9 +18,11 @@ public abstract class PlatformWorld {
 
     protected final OcclusionWorldCache cache = new OcclusionWorldCache(this);
     protected final TickRefreshSupplier<List<PlatformPlayer>> playersInWorld;
+    protected final TickRefreshSupplier<List<PlatformEntity>> entitiesInWorld;
 
     public PlatformWorld(IPlatform platform) {
         this.playersInWorld = new TickRefreshSupplier<>(platform, this::getPlayers0);
+        this.entitiesInWorld = new TickRefreshSupplier<>(platform, this::getEntities0);
     }
 
     public OcclusionWorldCache getOcclusionWorldCache() {
@@ -49,7 +52,17 @@ public abstract class PlatformWorld {
         return this.playersInWorld.get().size();
     }
 
+    public List<PlatformEntity> getEntities() {
+        return this.entitiesInWorld.get();
+    }
+
+    public int getEntityCount() {
+        return this.entitiesInWorld.get().size();
+    }
+
     protected abstract List<PlatformPlayer> getPlayers0();
+
+    protected abstract List<PlatformEntity> getEntities0();
 
     @Nullable
     public abstract Vec3d rayTraceBlocks(Vec3d start, Vec3d dir, double maxDistance);

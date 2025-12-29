@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -72,21 +73,47 @@ public final class DelegatedTrackedEntity {
         }
     }
 
+    public static void injectEntity(Entity entity, CullShip ship) {
+        try {
+            ChunkMap.TrackedEntity trackedEntity = entity.moonrise$getTrackedEntity();
+            if (entity instanceof ServerPlayer) {
+                return; // players are handled via CustomEntityMap
+            }
+
+            ChunkMap chunkMap = ((ServerLevel) entity.level()).getChunkSource().chunkMap;
+
+            // Anonymous class due non-static inner class
+            ChunkMap.TrackedEntity injected = constructDelegate(chunkMap, trackedEntity, ship);
+
+            if (!chunkMap.entityMap.replace(entity.getId(), trackedEntity, injected)) {
+                LOGGER.error("Failed to inject entity {} ({}) into ChunkMap - PlayerCulling will not work for this entity!",
+                        entity.getScoreboardName(), entity.getUUID());
+            } else {
+                entity.moonrise$setTrackedEntity(injected);
+            }
+        } catch (Throwable throwable) {
+            SneakyThrow.sneaky(throwable);
+        }
+    }
+
     public static ChunkMap.TrackedEntity constructDelegate(ChunkMap map, ChunkMap.TrackedEntity entity, CullShip ship) throws Throwable {
         Entity mcEntity = (Entity) GET_ENTITY.invoke(entity);
-        if (!(mcEntity instanceof ServerPlayer)) {
-            return entity; // skip useless delegation
-        }
+
         int range = (int) GET_RANGE.invoke(entity);
         int updateInterval = (int) GET_UPDATE_INTERVAL.invoke(entity.serverEntity);
         boolean trackDelta = (boolean) GET_TRACK_DELTA.invoke(entity.serverEntity);
 
-        CullPlayer player = ship.getPlayer(mcEntity.getUUID());
-        if (player == null) {
-            LOGGER.error("Failed to construct delegated tracked entity for player {} ({}), no CullPlayer found - " +
-                            "This is a rare edge case, please report this! PlayerCulling will be disabled for this player.",
-                    mcEntity.getScoreboardName(), mcEntity.getUUID());
-            return entity;
+        CullPlayer player;
+        if (mcEntity instanceof ServerPlayer) {
+            player = ship.getPlayer(mcEntity.getUUID());
+            if (player == null) {
+                LOGGER.error("Failed to construct delegated tracked entity for player {} ({}), no CullPlayer found - " +
+                                "This is a rare edge case, please report this! PlayerCulling will be disabled for this player.",
+                        mcEntity.getScoreboardName(), mcEntity.getUUID());
+                return entity;
+            }
+        } else {
+            player = null;
         }
 
         // Anonymous class due non-static inner class
@@ -154,7 +181,7 @@ public final class DelegatedTrackedEntity {
         public ChunkMap.TrackedEntity put(int entityId, ChunkMap.TrackedEntity entity) {
             try {
                 Entity mcEntity = (Entity) GET_ENTITY.invoke(entity);
-                if (!(mcEntity instanceof ServerPlayer)) {
+                if (!(mcEntity instanceof ServerPlayer)) { // Entities have need other injection handling
                     return super.put(entityId, entity);
                 }
                 if (this.nextInsert != null) {

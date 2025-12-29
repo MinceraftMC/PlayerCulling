@@ -7,6 +7,8 @@ import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
 import de.pianoman911.playerculling.platformcommon.AABB;
 import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformLivingEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.FastStack;
@@ -37,7 +39,7 @@ public final class CullPlayer {
     private final OcclusionCullingInstance cullingInstance;
     private final DataProvider provider = new ChunkOcclusionDataProvider(this);
 
-    private final FastStack<PlatformPlayer> tracked;
+    private final FastStack<PlatformEntity> tracked;
     private final Vec3d viewerPosition = new Vec3d(0, 0, 0);
     private final Vec3d viewerDirection = new Vec3d(0, 0, 0);
     private final Vec3d viewerBack = new Vec3d(0, 0, 0);
@@ -139,8 +141,8 @@ public final class CullPlayer {
         }
 
         PlatformWorld world = this.player.getWorld();
-        List<PlatformPlayer> playersInWorld = world.getPlayers();
-        if (playersInWorld.size() <= 1) {
+        List<PlatformEntity> entitiesInWorld = world.getEntities();
+        if (entitiesInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
         }
         this.provider.world(world);
@@ -170,31 +172,34 @@ public final class CullPlayer {
             this.hidden.clear();
             return;
         }
-        this.tracked.grow(playersInWorld.size()); // Ensure tracked stack capacity
+        this.tracked.grow(entitiesInWorld.size()); // Ensure tracked stack capacity
 
         double trackingDistSq = trackingDist * trackingDist;
 
-        for (PlatformPlayer worldPlayer : playersInWorld) {
-            if (worldPlayer == this.player) {
+        for (PlatformEntity worldEntity : entitiesInWorld) {
+            if (worldEntity == this.player) {
                 continue;
             }
-            boolean nameTag = this.player.canSeeNameTag(worldPlayer);
+            boolean nameTag = this.player.canSeeNameTag(worldEntity);
 
-            double distSq = eye.distanceSquared(worldPlayer.getPosition());
+            double distSq = eye.distanceSquared(worldEntity.getPosition());
 
-            if (
-                    worldPlayer.isGlowing() || // Glowing player
-                            !worldPlayer.isSneaking() && nameTag // Name tag visible and not sneaking
-            ) { // Always visible
-                this.unHideWithDirectPairing(worldPlayer);
+            if (worldEntity instanceof PlatformLivingEntity livingEntity ) {
+                if (livingEntity.isGlowing() || (livingEntity instanceof PlatformPlayer targetPlayer
+                        && !targetPlayer.isSneaking() && nameTag)) {
+                    this.unHideWithDirectPairing(worldEntity);
+                }
+            }
+            if (nameTag) {
+                this.unHideWithDirectPairing(worldEntity);
             } else if (
                     distSq < trackingDistSq && // In regular tracking distance
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
                             (!darkness || distSq < DARKNESS_DISTANCE_SQUARED) // In darkness distance
             ) { // cull
-                this.tracked.push(worldPlayer);
+                this.tracked.push(worldEntity);
             } else { // not visible
-                this.hidden.add(worldPlayer.getUniqueId());
+                this.hidden.add(worldEntity.getUniqueId());
             }
         }
         if (this.tracked.isEmpty()) { // No players to cull
@@ -212,7 +217,7 @@ public final class CullPlayer {
         boolean frontPos = false;
 
         while (this.tracked.hasEntries()) {
-            PlatformPlayer target = this.tracked.pop();
+            PlatformEntity target = this.tracked.pop();
             if (target == null) {
                 continue;
             }
@@ -287,7 +292,7 @@ public final class CullPlayer {
         }
     }
 
-    private void unHideWithDirectPairing(PlatformPlayer target) {
+    private void unHideWithDirectPairing(PlatformEntity target) {
         if (this.hidden.remove(target.getUniqueId())) {
             this.player.addDirectPairing(target);
         }

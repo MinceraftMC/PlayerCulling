@@ -18,25 +18,17 @@ public interface PlatformPlayer extends PlatformLivingEntity {
 
     Vec3d getDirection();
 
-    Vec3d getEyePosition();
-
-    double getYaw();
-
-    double getPitch();
-
     /**
      * @return the blindness ticks, or -1 if the player is not blind
      */
     long getBlindnessTicks();
-
-    boolean isGlowing();
 
     /**
      * @return the darkness ticks, or -1 if the player is not dark
      */
     long getDarknessTicks();
 
-    boolean canSeeNameTag(PlatformPlayer targetPlayer);
+    boolean canSeeNameTag(PlatformEntity targetEntity);
 
     boolean isSneaking();
 
@@ -46,5 +38,5 @@ public interface PlatformPlayer extends PlatformLivingEntity {
 
     void hideBossBar(BossBar bossBar);
 
-    void addDirectPairing(PlatformPlayer... players);
+    void addDirectPairing(PlatformEntity... targets);
 }

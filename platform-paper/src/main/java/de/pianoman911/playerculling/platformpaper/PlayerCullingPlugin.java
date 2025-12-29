@@ -3,6 +3,7 @@ package de.pianoman911.playerculling.platformpaper;
 import de.pianoman911.playerculling.core.commands.PlayerCullingCommand;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformpaper.platform.PaperCommandSourceStack;
 import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
@@ -40,7 +41,7 @@ public class PlayerCullingPlugin extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new PlayerCullingListener(this), this);
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            this.cullShip.addPlayer(new CullPlayer(this.getPlatform().providePlayer(onlinePlayer)));
+            this.cullShip.addPlayer(new CullPlayer((PlatformPlayer) this.getPlatform().provideEntity(onlinePlayer)));
         }
 
         // inject into netty pipeline

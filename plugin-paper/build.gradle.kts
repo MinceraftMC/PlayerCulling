@@ -6,12 +6,13 @@ plugins {
 runPaper.folia.registerTask()
 
 dependencies {
-    listOf("1.21.1", "1.21.4", "1.21.6")
-        .map { "paper-nms-${it.replace(".", "")}" }
-        .forEach { implementation(project(":platform-$it")) }
-    listOf("1.21.4", "1.21.6")
-        .map { "folia-nms-${it.replace(".", "")}" }
-        .forEach { implementation(project(":platform-$it")) }
+//    listOf("1.21.1", "1.21.4", "1.21.6")
+//        .map { "paper-nms-${it.replace(".", "")}" }
+//        .forEach { implementation(project(":platform-$it")) }
+//    listOf("1.21.4", "1.21.6")
+//        .map { "folia-nms-${it.replace(".", "")}" }
+//        .forEach { implementation(project(":platform-$it")) }
+    implementation(project(":platform-paper-nms-1216"))
 }
 
 tasks {

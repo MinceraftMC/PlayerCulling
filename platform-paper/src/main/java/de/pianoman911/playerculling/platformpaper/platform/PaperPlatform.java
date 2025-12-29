@@ -19,6 +19,8 @@ import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.jetbrains.annotations.Unmodifiable;
@@ -38,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NullMarked
 public class PaperPlatform implements IPlatform {
 
-    protected final Map<UUID, PaperPlayer> playerMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
+    protected final Map<UUID, PaperEntity<?>> entityMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
     protected final Map<UUID, PaperWorld> worldMap = new ConcurrentHashMap<>(); // Concurrent -> folia support
     private final PaperArgumentsProvider argumentsProvider = new PaperArgumentsProvider(this);
     private final Int2ObjectMap<ScheduledTask> taskMap = new Int2ObjectArrayMap<>();
@@ -85,7 +87,7 @@ public class PaperPlatform implements IPlatform {
         if (player == null) {
             throw new IllegalArgumentException("Can't find player with uuid " + playerId);
         }
-        return this.providePlayer(player);
+        return (PlatformPlayer) this.provideEntity(player);
     }
 
     @Override
@@ -93,7 +95,7 @@ public class PaperPlatform implements IPlatform {
         Set<PaperPlayer> players = new HashSet<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.isConnected()) {
-                players.add(this.providePlayer(player));
+                players.add((PaperPlayer) this.provideEntity(player));
             }
         }
         return Collections.unmodifiableSet(players);
@@ -147,14 +149,22 @@ public class PaperPlatform implements IPlatform {
         });
     }
 
-    public PaperPlayer providePlayer(Player player) {
-        return this.playerMap.computeIfAbsent(player.getUniqueId(), id -> new PaperPlayer(this, player));
+    public PaperEntity<?> provideEntity(Entity entity) {
+        return this.entityMap.computeIfAbsent(entity.getUniqueId(), __ -> {
+            if (entity instanceof Player player) {
+                return new PaperPlayer(this, player);
+            }
+            if (entity instanceof LivingEntity livingEntity) {
+                return new PaperLivingEntity<>(this, livingEntity);
+            }
+            return new PaperEntity<>(this, entity);
+        });
     }
 
     @SuppressWarnings("unchecked")
     public <I extends CommandSender, T extends PaperCommandSender<I>> T provideCommandSender(I sender) {
-        if (sender instanceof Player) {
-            return (T) this.providePlayer((Player) sender);
+        if (sender instanceof Entity entity) {
+            return (T) this.provideEntity(entity);
         }
         return (T) new PaperCommandSender<>(this, sender);
     }
@@ -164,8 +174,9 @@ public class PaperPlatform implements IPlatform {
         return new PaperCommandSourceStack(this, source);
     }
 
+    // TODO: invalidate entities too
     public void invalidatePlayer(Player player) {
-        this.playerMap.remove(player.getUniqueId());
+        this.entityMap.remove(player.getUniqueId());
 
         CullShip ship = this.plugin.getCullShip();
         ship.removePlayer(player.getUniqueId());

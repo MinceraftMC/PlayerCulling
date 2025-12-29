@@ -1,5 +1,6 @@
 package de.pianoman911.playerculling.platformpaper.util;
 
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
@@ -8,7 +9,9 @@ import de.pianoman911.playerculling.platformpaper.PlayerCullingPlugin;
 import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -46,12 +49,14 @@ public interface PaperNmsAdapter {
 
     void lazyBuildOcclusionMappings(OcclusionMappings occlusionMappings, PaperWorld world);
 
-    void addPairing(PlatformPlayer player, PlatformPlayer... targets);
+    void addPairing(PlatformPlayer player, PlatformEntity... target);
 
     @Nullable
     Vec3d rayTraceBlocks(PaperWorld world, Vec3d start, Vec3d dir, double maxDistance);
 
-    boolean canSeeNametag(Player player, Player target);
+    boolean canSeeNametag(Player player, Entity target);
 
     boolean isSpectator(Player player);
+
+    void injectEntity(Entity entity, PlayerCullingPlugin plugin);
 }

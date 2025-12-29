@@ -3,11 +3,13 @@ package de.pianoman911.playerculling.platformpapernms1216;
 import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformpaper.PlayerCullingPlugin;
+import de.pianoman911.playerculling.platformpaper.platform.PaperEntity;
 import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import de.pianoman911.playerculling.platformpaper.platform.PaperPlayer;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
@@ -39,7 +41,9 @@ import net.minecraft.world.scores.PlayerTeam;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
@@ -168,7 +172,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
 
     @Override
     @SuppressWarnings({"resource", "UnstableApiUsage"})
-    public void addPairing(PlatformPlayer player, PlatformPlayer... targets) {
+    public void addPairing(PlatformPlayer player, PlatformEntity... targets) {
         ServerPlayer handle = ((CraftPlayer) ((PaperPlayer) player).getDelegate()).getHandle();
         ServerLevel world = handle.level();
 
@@ -176,14 +180,14 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
                 world.chunkSource.mainThreadProcessor : world.getServer();
 
         eventLoop.executeIfPossible(() -> {
-            for (PlatformPlayer target : targets) {
-                ChunkMap.TrackedEntity tracked = ((CraftPlayer) ((PaperPlayer) target).getDelegate()).getHandle().moonrise$getTrackedEntity();
+            for (PlatformEntity target : targets) {
+                ChunkMap.TrackedEntity tracked = ((CraftEntity) ((PaperEntity<?>) target).getDelegate()).getHandle().moonrise$getTrackedEntity();
                 if (tracked == null) {
                     continue; // Could be offline or not loaded
                 }
                 if (tracked.seenBy.add(handle.connection)) {
                     if (PlayerTrackEntityEvent.getHandlerList().getRegisteredListeners().length == 0 || // Refire event
-                            (new PlayerTrackEntityEvent(((PaperPlayer) player).getDelegate(), ((PaperPlayer) target).getDelegate()).callEvent())) {
+                            (new PlayerTrackEntityEvent(((PaperPlayer) player).getDelegate(), ((PaperEntity<?>) target).getDelegate()).callEvent())) {
                         tracked.serverEntity.addPairing(handle);
                     }
 
@@ -213,8 +217,11 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     }
 
     @Override
-    public boolean canSeeNametag(Player player, Player target) {
-        PlayerTeam targetTeam = MinecraftServer.getServer().getScoreboard().getPlayersTeam(target.getName());
+    public boolean canSeeNametag(Player player, Entity target) {
+        if (!target.isCustomNameVisible()) {
+            return false;
+        }
+        PlayerTeam targetTeam = MinecraftServer.getServer().getScoreboard().getPlayersTeam(target.getScoreboardEntryName());
         if (targetTeam == null) {
             return true; // Always visible
         }
@@ -229,6 +236,12 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     @Override
     public boolean isSpectator(Player player) {
         return ((CraftPlayer) player).getHandle().isSpectator();
+    }
+
+    @Override
+    public void injectEntity(Entity entity, PlayerCullingPlugin plugin) {
+        net.minecraft.world.entity.Entity handle = ((CraftEntity) entity).getHandle();
+        DelegatedTrackedEntity.injectEntity(handle, plugin.getCullShip());
     }
 
     private LongSet getLevelSet(Level level) {

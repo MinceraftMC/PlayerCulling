@@ -1,9 +1,11 @@
 package de.pianoman911.playerculling.platformpaper.platform;
 
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -43,33 +45,12 @@ public class PaperPlayer extends PaperLivingEntity<Player> implements PlatformPl
     }
 
     @Override
-    public Vec3d getEyePosition() {
-        Location loc = this.getDelegate().getEyeLocation();
-        return new Vec3d(loc.getX(), loc.getY(), loc.getZ());
-    }
-
-    @Override
-    public double getYaw() {
-        return this.getDelegate().getLocation().getYaw();
-    }
-
-    @Override
-    public double getPitch() {
-        return this.getDelegate().getLocation().getPitch();
-    }
-
-    @Override
     public long getBlindnessTicks() {
         PotionEffect blindnessEffect = this.getDelegate().getPotionEffect(PotionEffectType.BLINDNESS);
         if (blindnessEffect != null) {
             return blindnessEffect.getDuration();
         }
         return -1;
-    }
-
-    @Override
-    public boolean isGlowing() {
-        return this.getDelegate().isGlowing();
     }
 
     @Override
@@ -82,8 +63,8 @@ public class PaperPlayer extends PaperLivingEntity<Player> implements PlatformPl
     }
 
     @Override
-    public boolean canSeeNameTag(PlatformPlayer targetPlayer) {
-        Player target = ((PaperPlayer) targetPlayer).getDelegate();
+    public boolean canSeeNameTag(PlatformEntity targetEntity) {
+        Entity target = ((PaperEntity<?>) targetEntity).getDelegate();
         return this.platform.getNmsAdapter().canSeeNametag(this.getDelegate(), target);
     }
 
@@ -108,7 +89,7 @@ public class PaperPlayer extends PaperLivingEntity<Player> implements PlatformPl
     }
 
     @Override
-    public void addDirectPairing(PlatformPlayer... players) {
-        this.platform.getNmsAdapter().addPairing(this, players);
+    public void addDirectPairing(PlatformEntity... targets) {
+        this.platform.getNmsAdapter().addPairing(this, targets);
     }
 }

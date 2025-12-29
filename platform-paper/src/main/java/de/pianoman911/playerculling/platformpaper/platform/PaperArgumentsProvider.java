@@ -45,7 +45,7 @@ public class PaperArgumentsProvider implements PlatformArgumentProvider {
     public ArgumentType<SinglePlayerResolver> player() {
         return this.wrap(ArgumentTypes.player(), paper -> src -> {
             Player player = paper.resolve(((PaperCommandSourceStack) src).getPaperSourceStack()).getFirst();
-            return this.platform.providePlayer(player);
+            return (PlatformPlayer) this.platform.provideEntity(player);
         });
     }
 
@@ -55,7 +55,7 @@ public class PaperArgumentsProvider implements PlatformArgumentProvider {
             List<Player> resolved = paper.resolve(((PaperCommandSourceStack) src).getPaperSourceStack());
             List<PlatformPlayer> players = new ArrayList<>(resolved.size());
             for (Player player : resolved) {
-                players.add(this.platform.providePlayer(player));
+                players.add((PlatformPlayer) this.platform.provideEntity(player));
             }
             return players;
         });
