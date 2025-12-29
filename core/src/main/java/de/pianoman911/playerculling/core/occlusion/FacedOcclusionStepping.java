@@ -188,9 +188,7 @@ public final class FacedOcclusionStepping {
             yC = y0 + mainY;
             zC = z0 + mainZ;
 
-            if (provider.isOpaqueFullCube(xC, yC, zC)) { // If the voxel is opaque break
-                return currentDistance;
-            } else if (secondError > 0 && thirdError > 0) { // If we are at the second and third intersection
+            if (secondError > 0 && thirdError > 0) { // If we are at the second and third intersection
                 x0 += mainSecondThirdX;
                 y0 += mainSecondThirdY;
                 z0 += mainSecondThirdZ;
@@ -216,6 +214,9 @@ public final class FacedOcclusionStepping {
                 x0 = xC;
                 y0 = yC;
                 z0 = zC;
+            }
+            if (provider.isOpaqueFullCube(x0, y0, z0)) { // If the voxel is opaque break
+                return currentDistance;
             }
         }
         return -currentDistance;

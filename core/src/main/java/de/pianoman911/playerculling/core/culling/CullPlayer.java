@@ -22,8 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CullPlayer {
 
-    public static final double AABB_EXPANSION = 0.5d;
-
     private static final double MAX_ANGLE = Math.toRadians(90D); // 90 degrees, impossible fov, but we can't detect the real fov
 
     // Minecraft related magic values
@@ -53,7 +51,7 @@ public final class CullPlayer {
 
     public CullPlayer(PlatformPlayer player) {
         this.player = player;
-        this.cullingInstance = new OcclusionCullingInstance(this.provider, AABB_EXPANSION);
+        this.cullingInstance = new OcclusionCullingInstance(this.provider);
         this.provider.world(player.getWorld());
         this.tracked = new FastStack<>(player.getWorld().getPlayerCount());
     }

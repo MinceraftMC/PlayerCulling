@@ -1,6 +1,5 @@
 package de.pianoman911.playerculling.core.occlusion;
 
-
 import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
@@ -23,6 +22,12 @@ public final class OcclusionCullingInstance {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");
 
+    private static final double SAFE_POINT_OFFSET = 0.05d;
+    private static final double TWO_SAFE_POINT_OFFSET = SAFE_POINT_OFFSET * 2d;
+    private static final double POINT_START = SAFE_POINT_OFFSET;
+    private static final double POINT_END = 1d - SAFE_POINT_OFFSET;
+    private static final double POINT_MIDDLE = 1d / 2d;
+
     private static final double DELTA = 1;
     private static final byte ON_MIN_X = 1;
     private static final byte ON_MAX_X = 1 << 1;
@@ -31,20 +36,30 @@ public final class OcclusionCullingInstance {
     private static final byte ON_MIN_Z = 1 << 4;
     private static final byte ON_MAX_Z = 1 << 5;
 
-    private final double aabbExpansion;
     private final DataProvider provider;
 
     // Reused allocated data structures
     private final Vec3i startVoxel = new Vec3i(0, 0, 0);
     private long raySteps;
 
-    public OcclusionCullingInstance(DataProvider provider, double aabbExpansion) {
+    public OcclusionCullingInstance(DataProvider provider) {
         this.provider = provider;
-        this.aabbExpansion = aabbExpansion;
     }
 
     private static boolean deltaLowerThanX(double a, double b) {
         return Math.abs(a - b) < DELTA;
+    }
+
+    private static double safePointEndOffset(double target, double max) {
+        return Math.min(target + POINT_END, max - SAFE_POINT_OFFSET);
+    }
+
+    private static double safeMiddleOffset(double target, double max) {
+        if (target + POINT_MIDDLE < max - SAFE_POINT_OFFSET) {
+            return target + POINT_MIDDLE;
+        }
+        // choose point in middle between target and max
+        return target + SAFE_POINT_OFFSET + ((max - SAFE_POINT_OFFSET) - (target + SAFE_POINT_OFFSET)) * POINT_MIDDLE;
     }
 
     public boolean isAABBVisible(Vec3d aabbMin, Vec3d aabbMax, Vec3d viewerPosition) {
@@ -57,19 +72,12 @@ public final class OcclusionCullingInstance {
 
     @SuppressWarnings({"DuplicatedCode", "SuspiciousNameCombination"})
     public boolean isAABBVisible(
-            double aabbMinX, double aabbMinY, double aabbMinZ,
-            double aabbMaxX, double aabbMaxY, double aabbMaxZ,
+            double minX, double minY, double minZ,
+            double maxX, double maxY, double maxZ,
             Vec3d viewerPosition
     ) {
         try {
             Vec3i startVoxel = viewerPosition.toVec3iFloored(this.startVoxel);
-
-            double maxX = aabbMaxX + this.aabbExpansion;
-            double maxY = aabbMaxY + this.aabbExpansion;
-            double maxZ = aabbMaxZ + this.aabbExpansion;
-            double minX = aabbMinX - this.aabbExpansion;
-            double minY = aabbMinY - this.aabbExpansion;
-            double minZ = aabbMinZ - this.aabbExpansion;
 
             Relative relX = Relative.from(minX, maxX, viewerPosition.x);
             Relative relY = Relative.from(minY, maxY, viewerPosition.y);
@@ -81,7 +89,7 @@ public final class OcclusionCullingInstance {
             // We are outside the AABB -> Go for culling
 
             // Loop for voxel positions -> only check the faces that have faces to the outside
-            for (double x = minX; x <= maxX; x++) {
+            for (double x = minX; x < maxX - TWO_SAFE_POINT_OFFSET; x++) {
                 byte visibleOnFaceX = 0; // visible faces on the x-axis
                 byte faceEdgeDataX = 0; // visible corners on the  x-axis
 
@@ -94,7 +102,7 @@ public final class OcclusionCullingInstance {
                 visibleOnFaceX |= (deltaLowerThanX(x, maxX) && relX == Relative.NEGATIVE) ? ON_MAX_X : 0;
 
                 // Same for Y and Z
-                for (double y = minY; y <= maxY; y++) {
+                for (double y = minY; y < maxY - TWO_SAFE_POINT_OFFSET; y++) {
                     byte faceEdgeDataY = faceEdgeDataX;
                     byte visibleOnFaceY = visibleOnFaceX;
 
@@ -104,7 +112,7 @@ public final class OcclusionCullingInstance {
                     visibleOnFaceY |= (deltaLowerThanX(y, minY) && relY == Relative.POSITIVE) ? ON_MIN_Y : 0;
                     visibleOnFaceY |= (deltaLowerThanX(y, maxY) && relY == Relative.NEGATIVE) ? ON_MAX_Y : 0;
 
-                    for (double z = minZ; z <= maxZ; z++) {
+                    for (double z = minZ; z < maxZ - TWO_SAFE_POINT_OFFSET; z++) {
                         byte faceEdgeData = faceEdgeDataY;
                         byte visibleOnFace = visibleOnFaceY;
 
@@ -115,7 +123,8 @@ public final class OcclusionCullingInstance {
                         visibleOnFace |= (deltaLowerThanX(z, maxZ) && relZ == Relative.NEGATIVE) ? ON_MAX_Z : 0;
 
                         if (visibleOnFace != 0) {
-                            if (this.isVoxelVisible(viewerPosition, startVoxel, x, y, z, faceEdgeData, visibleOnFace)) {
+                            if (this.isVoxelVisible(viewerPosition, startVoxel, x, y, z, faceEdgeData, visibleOnFace,
+                                    maxX, maxY, maxZ)) {
                                 return true;
                             }
                         }
@@ -139,8 +148,10 @@ public final class OcclusionCullingInstance {
      * @param visibleOnFace contains rather a face should be considered
      * @return true if the voxel is visible, false otherwise
      */
-    private boolean isVoxelVisible(Vec3d posStart, Vec3i startVoxel, double targetX, double targetY, double targetZ,
-                                   byte faceData, byte visibleOnFace) {
+    private boolean isVoxelVisible(
+            Vec3d posStart, Vec3i startVoxel, double targetX, double targetY, double targetZ,
+            byte faceData, byte visibleOnFace, double maxX, double maxY, double maxZ
+    ) {
         short dotselectors = 0; // 8 corners + 6 middle faces -> Cuboid, 14 bools
 
         // Select faces and corners that are visible of the voxel
@@ -163,9 +174,15 @@ public final class OcclusionCullingInstance {
             }
         }
 
+        // we assume the target is always at least SAFE_POINT_OFFSET away from max, otherwise there
+        // is not enough space to perform a raycast; this is guaranteed by our for-loop upper bound in #isAABBVisible
+        double targetBeginX = targetX + POINT_START;
+        double targetBeginY = targetY + POINT_START;
+        double targetBeginZ = targetZ + POINT_START;
+
         // corners
         if ((dotselectors & (1 << 0)) == 1 << 0 // minX, minY, minZ
-                && this.scanVisible(posStart, startVoxel, targetX + 0.05d, targetY + 0.05d, targetZ + 0.05d)) {
+                && this.scanVisible(posStart, startVoxel, targetBeginX, targetBeginY, targetBeginZ)) {
             return true;
         }
 
@@ -175,9 +192,9 @@ public final class OcclusionCullingInstance {
                 dotselectors |= (1 << 2) | (1 << 5) | (1 << 6);
             }
         }
-
+        double targetEndY = safePointEndOffset(targetY, maxY);
         if ((dotselectors & (1 << 1)) == 1 << 1 // minX, maxY, minZ
-                && this.scanVisible(posStart, startVoxel, targetX + 0.05d, targetY + (1d - 0.05d), targetZ + 0.05d)) {
+                && this.scanVisible(posStart, startVoxel, targetBeginX, targetEndY, targetBeginZ)) {
             return true;
         }
 
@@ -187,13 +204,13 @@ public final class OcclusionCullingInstance {
                 dotselectors |= (1 << 3) | (1 << 6) | (1 << 7);
             }
         }
-
+        double targetEndZ = safePointEndOffset(targetZ, maxZ);
         if ((dotselectors & (1 << 2)) == 1 << 2 // minX, maxY, maxZ
-                && this.scanVisible(posStart, startVoxel, targetX + 0.05d, targetY + (1d - 0.05d), targetZ + (1d - 0.05d))) {
+                && this.scanVisible(posStart, startVoxel, targetBeginX, targetEndY, targetEndZ)) {
             return true;
         }
         if ((dotselectors & (1 << 3)) == 1 << 3 // minX, minY, maxZ
-                && this.scanVisible(posStart, startVoxel, targetX + 0.05d, targetY + 0.05d, targetZ + (1d - 0.05d))) {
+                && this.scanVisible(posStart, startVoxel, targetBeginX, targetBeginY, targetEndZ)) {
             return true;
         }
 
@@ -203,46 +220,51 @@ public final class OcclusionCullingInstance {
                 dotselectors |= (1 << 5) | (1 << 6) | (1 << 7);
             }
         }
-
+        double targetEndX = safePointEndOffset(targetX, maxX);
         if ((dotselectors & (1 << 4)) == 1 << 4 // maxX, minY, minZ
-                && this.scanVisible(posStart, startVoxel, targetX + (1d - 0.05d), targetY + 0.05d, targetZ + 0.05d)) {
+                && this.scanVisible(posStart, startVoxel, targetEndX, targetBeginY, targetBeginZ)) {
             return true;
         }
         if ((dotselectors & (1 << 5)) == 1 << 5 // maxX, maxY, minZ
-                && this.scanVisible(posStart, startVoxel, targetX + (1d - 0.05d), targetY + (1d - 0.05d), targetZ + 0.05d)) {
+                && this.scanVisible(posStart, startVoxel, targetEndX, targetEndY, targetBeginZ)) {
             return true;
         }
         if ((dotselectors & (1 << 6)) == 1 << 6 // maxX, maxY, maxZ
-                && this.scanVisible(posStart, startVoxel, targetX + (1d - 0.05d), targetY + (1d - 0.05d), targetZ + (1d - 0.05d))) {
+                && this.scanVisible(posStart, startVoxel, targetEndX, targetEndY, targetEndZ)) {
             return true;
         }
         if ((dotselectors & (1 << 7)) == 1 << 7 // maxX, minY, maxZ
-                && this.scanVisible(posStart, startVoxel, targetX + (1d - 0.05d), targetY + 0.05d, targetZ + (1d - 0.05d))) {
+                && this.scanVisible(posStart, startVoxel, targetEndX, targetBeginY, targetEndZ)) {
             return true;
         }
+
         // middle points
+        double safeMiddleY = safeMiddleOffset(targetY, maxY);
+        double safeMiddleZ = safeMiddleOffset(targetZ, maxZ);
         if ((dotselectors & (1 << 8)) == 1 << 8 // minX, 0.5, 0.5
-                && this.scanVisible(posStart, startVoxel, targetX + 0.05d, targetY + 0.5d, targetZ + 0.5d)) {
+                && this.scanVisible(posStart, startVoxel, targetBeginX, safeMiddleY, safeMiddleZ)) {
             return true;
         }
+        double safeMiddleX = safeMiddleOffset(targetX, maxX);
         if ((dotselectors & (1 << 9)) == 1 << 9 // 0.5, minY, 0.5
-                && this.scanVisible(posStart, startVoxel, targetX + 0.5d, targetY + 0.05d, targetZ + 0.5d)) {
+                && this.scanVisible(posStart, startVoxel, safeMiddleX, targetBeginY, safeMiddleZ)) {
             return true;
         }
         if ((dotselectors & (1 << 10)) == 1 << 10 // 0.5, 0.5, minZ
-                && this.scanVisible(posStart, startVoxel, targetX + 0.5d, targetY + 0.5d, targetZ + 0.05d)) {
+                && this.scanVisible(posStart, startVoxel, safeMiddleX, safeMiddleY, targetBeginZ)) {
             return true;
         }
+
         if ((dotselectors & (1 << 11)) == 1 << 11 // maxX, 0.5, 0.5
-                && this.scanVisible(posStart, startVoxel, targetX + 0.05d, targetY + 0.5d, targetZ + 0.5d)) {
+                && this.scanVisible(posStart, startVoxel, targetEndX, safeMiddleY, safeMiddleZ)) {
             return true;
         }
         if ((dotselectors & (1 << 12)) == 1 << 12 // 0.5, maxY, 0.5
-                && this.scanVisible(posStart, startVoxel, targetX + 0.5d, targetY + 0.05d, targetZ + 0.5d)) {
+                && this.scanVisible(posStart, startVoxel, safeMiddleX, targetEndY, safeMiddleZ)) {
             return true;
         }
         return (dotselectors & (1 << 13)) == 1 << 13 // 0.5, 0.5, maxZ
-                && this.scanVisible(posStart, startVoxel, targetX + 0.5d, targetY + 0.5d, targetZ + 0.05d);
+                && this.scanVisible(posStart, startVoxel, safeMiddleX, safeMiddleY, targetEndZ);
     }
 
     private boolean scanVisible(Vec3d posStart, Vec3i startVoxel, double x, double y, double z) {

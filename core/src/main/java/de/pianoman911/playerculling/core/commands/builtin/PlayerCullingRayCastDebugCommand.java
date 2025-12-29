@@ -23,7 +23,6 @@ import java.awt.Color;
 
 import static de.pianoman911.playerculling.core.commands.PlayerCullingCommand.argument;
 import static de.pianoman911.playerculling.core.commands.PlayerCullingCommand.literal;
-import static de.pianoman911.playerculling.core.culling.CullPlayer.AABB_EXPANSION;
 import static net.kyori.adventure.text.Component.text;
 
 
@@ -77,7 +76,7 @@ public final class PlayerCullingRayCastDebugCommand {
         CullPlayer cullPlayer = ship.getPlayer(executor.getUniqueId());
         PlatformPlayer platformPlayer = cullPlayer.getPlatformPlayer();
         DataProvider provider = new DebuggingDataProviderChunk(cullPlayer, sender, showRay, blocks);
-        OcclusionCullingInstance instance = new OcclusionCullingInstance(provider, AABB_EXPANSION);
+        OcclusionCullingInstance instance = new OcclusionCullingInstance(provider);
 
         if (!target.getWorld().equals(executor.getWorld())) {
             sender.sendMessage(text("Target is not in the same world", NamedTextColor.RED));
