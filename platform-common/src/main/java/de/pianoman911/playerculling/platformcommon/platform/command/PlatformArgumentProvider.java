@@ -12,6 +12,8 @@ public interface PlatformArgumentProvider {
 
     ArgumentType<MultiPlayerResolver> players();
 
+    ArgumentType<SingleEntityResolver> entity();
+
     default ArgumentType<?> mapFromNms(ArgumentType<?> instance) {
         return instance;
     }

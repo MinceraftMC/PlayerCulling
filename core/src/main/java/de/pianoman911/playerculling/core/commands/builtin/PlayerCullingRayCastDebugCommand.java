@@ -12,7 +12,8 @@ import de.pianoman911.playerculling.platformcommon.AABB;
 import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSender;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
-import de.pianoman911.playerculling.platformcommon.platform.command.SinglePlayerResolver;
+import de.pianoman911.playerculling.platformcommon.platform.command.SingleEntityResolver;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.DebugUtil;
@@ -34,14 +35,14 @@ public final class PlayerCullingRayCastDebugCommand {
     public static LiteralArgumentBuilder<PlatformCommandSourceStack> getNode(CullShip ship) {
         return literal("raycastdebug")
                 .requires(ctx -> ctx.getExecutor() instanceof PlatformPlayer && ctx.getSender().hasPermission("playerculling.command.raycastdebug"))
-                .then(argument("target", ship.getPlatform().getArgumentProvider().player())
+                .then(argument("target", ship.getPlatform().getArgumentProvider().entity())
                         .executes(ctx -> execute(
                                 ctx.getSource().getSender(),
                                 (PlatformPlayer) ctx.getSource().getExecutor(),
                                 ship,
                                 false,
                                 false,
-                                ctx.getArgument("target", SinglePlayerResolver.class).resolve(ctx.getSource())))
+                                ctx.getArgument("target", SingleEntityResolver.class).resolve(ctx.getSource())))
                         .then(argument("showRay", BoolArgumentType.bool())
                                 .executes(ctx -> execute(
                                         ctx.getSource().getSender(),
@@ -49,7 +50,7 @@ public final class PlayerCullingRayCastDebugCommand {
                                         ship,
                                         ctx.getArgument("showRay", Boolean.class),
                                         false,
-                                        ctx.getArgument("target", SinglePlayerResolver.class).resolve(ctx.getSource())))
+                                        ctx.getArgument("target", SingleEntityResolver.class).resolve(ctx.getSource())))
                         )
                         .then(argument("blocks", BoolArgumentType.bool())
                                 .executes(ctx -> execute(
@@ -58,7 +59,7 @@ public final class PlayerCullingRayCastDebugCommand {
                                         ship,
                                         false,
                                         ctx.getArgument("blocks", Boolean.class),
-                                        ctx.getArgument("target", SinglePlayerResolver.class).resolve(ctx.getSource())))
+                                        ctx.getArgument("target", SingleEntityResolver.class).resolve(ctx.getSource())))
                                 .then(argument("showRay", BoolArgumentType.bool())
                                         .executes(ctx -> execute(
                                                 ctx.getSource().getSender(),
@@ -66,13 +67,14 @@ public final class PlayerCullingRayCastDebugCommand {
                                                 ship,
                                                 ctx.getArgument("showRay", Boolean.class),
                                                 ctx.getArgument("blocks", Boolean.class),
-                                                ctx.getArgument("target", SinglePlayerResolver.class).resolve(ctx.getSource())))
+                                                ctx.getArgument("target", SingleEntityResolver.class).resolve(ctx.getSource())))
                                 )
                         )
                 );
     }
 
-    public static int execute(PlatformCommandSender sender, PlatformPlayer executor, CullShip ship, boolean showRay, boolean blocks, PlatformPlayer target) {
+    public static int execute(PlatformCommandSender sender, PlatformPlayer executor, CullShip ship,
+                              boolean showRay, boolean blocks, PlatformEntity target) {
         CullPlayer cullPlayer = ship.getPlayer(executor.getUniqueId());
         PlatformPlayer platformPlayer = cullPlayer.getPlatformPlayer();
         DataProvider provider = new DebuggingDataProviderChunk(cullPlayer, sender, showRay, blocks);

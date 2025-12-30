@@ -11,12 +11,14 @@ import de.pianoman911.playerculling.platformcommon.platform.command.MultiPlayerR
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformArgument;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformArgumentProvider;
 import de.pianoman911.playerculling.platformcommon.platform.command.ResultConverter;
+import de.pianoman911.playerculling.platformcommon.platform.command.SingleEntityResolver;
 import de.pianoman911.playerculling.platformcommon.platform.command.SinglePlayerResolver;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
 import io.papermc.paper.math.BlockPosition;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -58,6 +60,14 @@ public class PaperArgumentsProvider implements PlatformArgumentProvider {
                 players.add((PlatformPlayer) this.platform.provideEntity(player));
             }
             return players;
+        });
+    }
+
+    @Override
+    public ArgumentType<SingleEntityResolver> entity() {
+        return this.wrap(ArgumentTypes.entity(), paper -> src -> {
+            Entity first = paper.resolve(((PaperCommandSourceStack) src).getPaperSourceStack()).getFirst();
+            return this.platform.provideEntity(first);
         });
     }
 
