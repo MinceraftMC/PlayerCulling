@@ -22,6 +22,10 @@ public final class NumberUtil {
         return (int) (num + (double) 0.5f);
     }
 
+    public static int floorPositive(double num) {
+        return (int) num;
+    }
+
     public static int round(double num) {
         // inlined version of "return floor(num + (double) 0.5f);"
         int floor = (int) (num + (double) 0.5f);

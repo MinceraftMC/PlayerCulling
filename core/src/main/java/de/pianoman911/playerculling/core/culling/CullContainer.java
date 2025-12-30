@@ -98,12 +98,14 @@ public class CullContainer extends Thread {
     }
 
     private void panic() {
-        if (this.players.size() < 2 // only 1 player in the container
-                && this.lastPanic + 10000L > System.currentTimeMillis()) { // 10 seconds panic cooldown
-            LOGGER.warn("Culling is to slow! Extreme panic, only 1 player is in the container, transferring is not worth...");
-            this.lastPanic = System.currentTimeMillis();
+        if (this.players.size() < 2) { // only 1 player in the container, transfer is not worth it
+            if (this.lastPanic + 10_000L < System.currentTimeMillis()) {  // 10 seconds panic cooldown
+                LOGGER.warn("Culling is to slow! Extreme panic, only 1 player is in the container, transferring is not worth...");
+                this.lastPanic = System.currentTimeMillis();
+            }
             return;
         }
+
         CullPlayer first;
         boolean removed;
         synchronized (this.players) {
@@ -181,9 +183,9 @@ public class CullContainer extends Thread {
         }
     }
 
-    public long getLastRayStepCount(){
+    public long getLastRayStepCount() {
         long sum = 0;
-        synchronized (this.players){
+        synchronized (this.players) {
             for (CullPlayer player : this.players) {
                 sum += player.getLastRaySteps();
             }
