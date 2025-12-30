@@ -143,7 +143,7 @@ public final class FacedOcclusionStepping {
             // Calculate the maximum distance
             {
                 final double dirLenSqrt = mainDirection * mainDirection + secondDirection * secondDirection + thirdDirection * thirdDirection;
-                maxDistanceInt = NumberUtil.roundPositive(Math.sqrt(maxDistanceSqrt / dirLenSqrt) * mainDirection);
+                maxDistanceInt = NumberUtil.floorPositive(Math.sqrt(maxDistanceSqrt / dirLenSqrt) * mainDirection);
             }
 
             // Vector of the main direction
@@ -178,7 +178,7 @@ public final class FacedOcclusionStepping {
 
         int currentDistance = 0; // Ray steps
 
-        while (currentDistance <= maxDistanceInt) {
+        while (currentDistance < maxDistanceInt) {
             // Step forward
             currentDistance++; // main
             secondError += secondStep; // secondary
