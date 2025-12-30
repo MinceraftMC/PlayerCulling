@@ -21,7 +21,7 @@ public final class DebugUtil {
     }
 
     public static void drawBoundingBox(PlatformEntity entity, Color color) {
-        drawBoundingBox(entity.getWorld(), entity.getBoundingBox(), color);
+        drawBoundingBox(entity.getWorld(), entity.getScaledBoundingBox().scaledCopy(0.5d), color);
     }
 
     public static void drawBoundingBox(PlatformWorld world, AABB box) {
@@ -29,23 +29,23 @@ public final class DebugUtil {
     }
 
     public static void drawBoundingBox(PlatformWorld world, AABB box, Color color) {
-        // minX -> maxX
-        drawLine(world, new Vec3d(box.minX(), box.minY(), box.minZ()), new Vec3d(box.maxX(), box.minY(), box.minZ()), color);
-        drawLine(world, new Vec3d(box.minX(), box.minY(), box.maxZ()), new Vec3d(box.maxX(), box.minY(), box.maxZ()), color);
-        drawLine(world, new Vec3d(box.minX(), box.maxY(), box.minZ()), new Vec3d(box.maxX(), box.maxY(), box.minZ()), color);
-        drawLine(world, new Vec3d(box.minX(), box.maxY(), box.maxZ()), new Vec3d(box.maxX(), box.maxY(), box.maxZ()), color);
+        // getMinX -> getMaxX
+        drawLine(world, new Vec3d(box.getMinX(), box.getMinY(), box.getMinZ()), new Vec3d(box.getMaxX(), box.getMinY(), box.getMinZ()), color);
+        drawLine(world, new Vec3d(box.getMinX(), box.getMinY(), box.getMaxZ()), new Vec3d(box.getMaxX(), box.getMinY(), box.getMaxZ()), color);
+        drawLine(world, new Vec3d(box.getMinX(), box.getMaxY(), box.getMinZ()), new Vec3d(box.getMaxX(), box.getMaxY(), box.getMinZ()), color);
+        drawLine(world, new Vec3d(box.getMinX(), box.getMaxY(), box.getMaxZ()), new Vec3d(box.getMaxX(), box.getMaxY(), box.getMaxZ()), color);
 
-        // minY -> maxY
-        drawLine(world, new Vec3d(box.minX(), box.minY(), box.minZ()), new Vec3d(box.minX(), box.maxY(), box.minZ()), color);
-        drawLine(world, new Vec3d(box.maxX(), box.minY(), box.minZ()), new Vec3d(box.maxX(), box.maxY(), box.minZ()), color);
-        drawLine(world, new Vec3d(box.minX(), box.minY(), box.maxZ()), new Vec3d(box.minX(), box.maxY(), box.maxZ()), color);
-        drawLine(world, new Vec3d(box.maxX(), box.minY(), box.maxZ()), new Vec3d(box.maxX(), box.maxY(), box.maxZ()), color);
+        // getMinY -> getMaxY
+        drawLine(world, new Vec3d(box.getMinX(), box.getMinY(), box.getMinZ()), new Vec3d(box.getMinX(), box.getMaxY(), box.getMinZ()), color);
+        drawLine(world, new Vec3d(box.getMaxX(), box.getMinY(), box.getMinZ()), new Vec3d(box.getMaxX(), box.getMaxY(), box.getMinZ()), color);
+        drawLine(world, new Vec3d(box.getMinX(), box.getMinY(), box.getMaxZ()), new Vec3d(box.getMinX(), box.getMaxY(), box.getMaxZ()), color);
+        drawLine(world, new Vec3d(box.getMaxX(), box.getMinY(), box.getMaxZ()), new Vec3d(box.getMaxX(), box.getMaxY(), box.getMaxZ()), color);
 
-        // minZ -> maxZ
-        drawLine(world, new Vec3d(box.minX(), box.minY(), box.minZ()), new Vec3d(box.minX(), box.minY(), box.maxZ()), color);
-        drawLine(world, new Vec3d(box.maxX(), box.minY(), box.minZ()), new Vec3d(box.maxX(), box.minY(), box.maxZ()), color);
-        drawLine(world, new Vec3d(box.minX(), box.maxY(), box.minZ()), new Vec3d(box.minX(), box.maxY(), box.maxZ()), color);
-        drawLine(world, new Vec3d(box.maxX(), box.maxY(), box.minZ()), new Vec3d(box.maxX(), box.maxY(), box.maxZ()), color);
+        // getMinZ -> getMaxZ
+        drawLine(world, new Vec3d(box.getMinX(), box.getMinY(), box.getMinZ()), new Vec3d(box.getMinX(), box.getMinY(), box.getMaxZ()), color);
+        drawLine(world, new Vec3d(box.getMaxX(), box.getMinY(), box.getMinZ()), new Vec3d(box.getMaxX(), box.getMinY(), box.getMaxZ()), color);
+        drawLine(world, new Vec3d(box.getMinX(), box.getMaxY(), box.getMinZ()), new Vec3d(box.getMinX(), box.getMaxY(), box.getMaxZ()), color);
+        drawLine(world, new Vec3d(box.getMaxX(), box.getMaxY(), box.getMinZ()), new Vec3d(box.getMaxX(), box.getMaxY(), box.getMaxZ()), color);
     }
 
     public static void drawLine(PlatformWorld world, Vec3d point1, Vec3d point2, Color color) {

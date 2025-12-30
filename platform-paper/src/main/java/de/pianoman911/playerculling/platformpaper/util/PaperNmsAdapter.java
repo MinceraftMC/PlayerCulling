@@ -1,5 +1,6 @@
 package de.pianoman911.playerculling.platformpaper.util;
 
+import de.pianoman911.playerculling.platformcommon.AABB;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
@@ -59,4 +60,8 @@ public interface PaperNmsAdapter {
     boolean isSpectator(Player player);
 
     void injectEntity(Entity entity, PlayerCullingPlugin plugin);
+
+    void getBoundingBox(Entity entity, AABB out);
+
+    void getPosition(Entity entity, Vec3d pos);
 }

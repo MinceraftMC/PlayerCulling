@@ -88,15 +88,15 @@ public final class PlayerCullingRayCastDebugCommand {
 
         provider.world(executor.getWorld());
 
-        AABB trackedBox = target.getBoundingBox();
-        DebugUtil.drawBoundingBox(executor.getWorld(), trackedBox, Color.ORANGE);
+        AABB trackedBox = target.getScaledBoundingBox();
+        DebugUtil.drawBoundingBox(target, Color.ORANGE);
         executor.getWorld().spawnColoredParticle(executor.getEyePosition(), Color.CYAN, 0.5f);
 
-        Vec3d centerBox = trackedBox.getCenter().mul(2);
+        Vec3d centerBox = trackedBox.getCenter();
         Vec3d dir = executor.getDirection();
 
-        Vec3d aabbMin = trackedBox.getMin().mul(2); // For 2x2x2 Shapes
-        Vec3d aabbMax = trackedBox.getMax().mul(2);
+        Vec3d aabbMin = trackedBox.getMin();
+        Vec3d aabbMax = trackedBox.getMax();
 
         Vec3d eye = new Vec3d(executor.getEyePosition().getX(), executor.getEyePosition().getY(), executor.getEyePosition().getZ());
 

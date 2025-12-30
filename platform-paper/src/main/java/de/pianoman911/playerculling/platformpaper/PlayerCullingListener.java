@@ -1,6 +1,7 @@
 package de.pianoman911.playerculling.platformpaper;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
@@ -36,7 +37,7 @@ public class PlayerCullingListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        this.plugin.getPlatform().invalidatePlayer(event.getPlayer());
+        this.plugin.getPlatform().invalidateEntity(event.getPlayer());
     }
 
     @EventHandler
@@ -51,6 +52,13 @@ public class PlayerCullingListener implements Listener {
     @EventHandler
     public void onEntityAdd(EntityAddToWorldEvent event) {
         this.plugin.getPlatform().getNmsAdapter().injectEntity(event.getEntity(), this.plugin);
+    }
+
+    @EventHandler
+    public void onEntityRemove(EntityRemoveFromWorldEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            this.plugin.getPlatform().invalidateEntity(event.getEntity());
+        }
     }
 
     @EventHandler

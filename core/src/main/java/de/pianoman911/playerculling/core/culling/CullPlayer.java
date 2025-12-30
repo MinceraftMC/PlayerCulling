@@ -46,7 +46,7 @@ public final class CullPlayer {
     private final Set<UUID> hidden = ConcurrentHashMap.newKeySet();
     private final Set<UUID> toRemove = new HashSet<>(); // diff queue for hidden players
 
-    private final List<CullPackage> cullPackages = new ArrayList<>();
+    private final List<CullWorker> cullWorkers = new ArrayList<>();
 
     private boolean cullingEnabled = true;
     private boolean spectating = false;
@@ -58,7 +58,7 @@ public final class CullPlayer {
         this.player = player;
         this.tracked = new AtomicFastStack<>(player.getWorld().getPlayerCount());
 
-        this.cullPackages.add(new CullPackage(this));
+        this.cullWorkers.add(new CullWorker(this));
     }
 
     /**
@@ -131,11 +131,11 @@ public final class CullPlayer {
             this.toRemove.clear();
         }
         synchronized (this) {
-            for (CullPackage cullPackage : this.cullPackages) {
-                long processingTime = cullPackage.getAverageProcessingTime();
+            for (CullWorker cullWorker : this.cullWorkers) {
+                long processingTime = cullWorker.getAverageProcessingTime();
                 if (processingTime > this.ship.getConfig().getDelegate().scheduler.getMaxCullTimeNs()) {
-                    if (this.cullPackages.size() * 2 <= this.ship.getConfig().getDelegate().scheduler.maxThreads) {
-                        this.cullPackages.add(new CullPackage(this));
+                    if (this.cullWorkers.size() <= this.ship.getConfig().getDelegate().scheduler.maxThreads * 2) {
+                        this.cullWorkers.add(new CullWorker(this));
                     } else if (System.currentTimeMillis() - this.lastWarn > 10_000L) {
                         LOGGER.warn("CullPlayer for player {} is taking too long to process ({} ns). Consider increasing the max threads setting.", this.player.getName(), processingTime);
                         this.lastWarn = System.currentTimeMillis();
@@ -143,8 +143,8 @@ public final class CullPlayer {
                     break;
                 }
                 if (processingTime < this.ship.getConfig().getDelegate().scheduler.getMaxMergeNs()) {
-                    if (this.cullPackages.size() > 1) {
-                        this.cullPackages.remove(cullPackage);
+                    if (this.cullWorkers.size() > 1) {
+                        this.cullWorkers.remove(cullWorker);
                     }
                     break;
                 }
@@ -168,8 +168,8 @@ public final class CullPlayer {
         if (entitiesInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
         }
-        for (CullPackage cullPackage : this.cullPackages) {
-            cullPackage.world(world);
+        for (CullWorker cullWorker : this.cullWorkers) {
+            cullWorker.world(world);
         }
         Vec3d eye = this.player.getEyePosition();
 
@@ -246,52 +246,44 @@ public final class CullPlayer {
     }
 
     void cull(PlatformEntity target, OcclusionCullingInstance cullingInstance) {
-        AABB trackedBox = target.getBoundingBox();
-
-        // For 2x2x2 Shapes
-        double aabbMinX = trackedBox.minX() * 2d;
-        double aabbMinY = trackedBox.minY() * 2d;
-        double aabbMinZ = trackedBox.minZ() * 2d;
-        double aabbMaxX = trackedBox.maxX() * 2d;
-        double aabbMaxY = trackedBox.maxY() * 2d;
-        double aabbMaxZ = trackedBox.maxZ() * 2d;
-        double aabbCenterX = aabbMinX + (aabbMaxX - aabbMinX) / 2;
-        double aabbCenterY = aabbMinY + (aabbMaxY - aabbMinY) / 2;
-        double aabbCenterZ = aabbMinZ + (aabbMaxZ - aabbMinZ) / 2;
+        AABB trackedBox = target.getScaledBoundingBox();
 
         // Check if the player is in the view frustum, if, so we can cull it
         boolean mainInner = isInnerAngle(
-                aabbCenterX, aabbCenterY, aabbCenterZ,
+                trackedBox.getCenterX(), trackedBox.getCenterY(), trackedBox.getCenterZ(),
                 this.viewerPosition.x, this.viewerPosition.y, this.viewerPosition.z,
                 this.viewerDirection.x, this.viewerDirection.y, this.viewerDirection.z
         );
 
         // First person view
         boolean canSee = mainInner && cullingInstance.isAABBVisible(
-                aabbMinX, aabbMinY, aabbMinZ, aabbMaxX, aabbMaxY, aabbMaxZ, this.viewerPosition);
+                trackedBox.getMinX(), trackedBox.getMinY(), trackedBox.getMinZ(),
+                trackedBox.getMaxX(), trackedBox.getMaxY(), trackedBox.getMaxZ(),
+                this.viewerPosition
+        );
         if (!canSee) {
             boolean secondaryInner = isInnerAngle(
-                    aabbCenterX, aabbCenterY, aabbCenterZ,
+                    trackedBox.getCenterX(), trackedBox.getCenterY(), trackedBox.getCenterZ(),
                     this.viewerBack.x, this.viewerBack.y, this.viewerBack.z,
                     this.viewerDirection.x, this.viewerDirection.y, this.viewerDirection.z
             );
 
             // Third person view from back
             canSee = secondaryInner && cullingInstance.isAABBVisible(
-                    aabbMinX, aabbMinY, aabbMinZ,
-                    aabbMaxX, aabbMaxY, aabbMaxZ,
+                    trackedBox.getMinX(), trackedBox.getMinY(), trackedBox.getMinZ(),
+                    trackedBox.getMaxX(), trackedBox.getMaxY(), trackedBox.getMaxZ(),
                     this.viewerBack
             );
             if (!canSee) {
                 boolean tertiaryInner = isInnerAngle(
-                        aabbCenterX, aabbCenterY, aabbCenterZ,
+                        trackedBox.getCenterX(), trackedBox.getCenterY(), trackedBox.getCenterZ(),
                         this.viewerFront.x, this.viewerFront.y, this.viewerFront.z,
                         this.inverseViewerDirection.x, this.inverseViewerDirection.y, this.inverseViewerDirection.z);
 
                 // Third person view from front
                 canSee = tertiaryInner && cullingInstance.isAABBVisible(
-                        aabbMinX, aabbMinY, aabbMinZ,
-                        aabbMaxX, aabbMaxY, aabbMaxZ,
+                        trackedBox.getMinX(), trackedBox.getMinY(), trackedBox.getMinZ(),
+                        trackedBox.getMaxX(), trackedBox.getMaxY(), trackedBox.getMaxZ(),
                         this.viewerFront
                 );
             }
@@ -323,9 +315,9 @@ public final class CullPlayer {
         this.resetHidden();
     }
 
-    public List<CullPackage> getCullPackages() {
-        synchronized (this.cullPackages) {
-            return this.cullPackages;
+    public List<CullWorker> getCullWorker() {
+        synchronized (this.cullWorkers) {
+            return this.cullWorkers;
         }
     }
 
@@ -347,11 +339,11 @@ public final class CullPlayer {
         this.hidden.clear();
     }
 
-    public void invalidateOther(UUID playerId) {
+    public void invalidateOther(UUID entityId) {
         // don't remove immediately, wait for async thread to finish processing
         // and then remove it to prevent the player from being added back again
         synchronized (this.toRemove) {
-            this.toRemove.add(playerId);
+            this.toRemove.add(entityId);
         }
     }
 

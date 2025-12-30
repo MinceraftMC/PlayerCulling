@@ -79,26 +79,24 @@ public class PaperWorld extends PlatformWorld {
 
     @Override
     protected List<PlatformEntity> getEntities0() {
-        synchronized (this.loadedEntities){
+        synchronized (this.loadedEntities) {
             return List.copyOf(this.loadedEntities);
         }
     }
 
     public void collectEntities() {
-        List<PlatformEntity> platformEntities = new ArrayList<>(this.world.getEntityCount());
-        for (Entity entity : this.world.getEntities()) {
-            PlatformEntity platformEntity = this.platform.provideEntity(entity);
-            if (platformEntity instanceof PlatformPlayer player) {
-                if (!player.isOnline() || player.isSpectator() || player.shouldPreventCulling()) {
-                    continue;
-                }
-            }
-
-            platformEntities.add(platformEntity);
-        }
-        synchronized (this.loadedEntities){
+        synchronized (this.loadedEntities) {
             this.loadedEntities.clear();
-            this.loadedEntities.addAll(platformEntities);
+            for (Entity entity : this.world.getEntities()) {
+                PlatformEntity platformEntity = this.platform.provideEntity(entity);
+                if (platformEntity instanceof PlatformPlayer player) {
+                    if (!player.isOnline() || player.isSpectator() || player.shouldPreventCulling()) {
+                        continue;
+                    }
+                }
+
+                loadedEntities.add(platformEntity);
+            }
         }
     }
 

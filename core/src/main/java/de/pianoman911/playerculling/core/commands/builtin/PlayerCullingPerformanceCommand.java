@@ -34,24 +34,18 @@ public final class PlayerCullingPerformanceCommand {
 
     private static Component generateChunkCacheInfo(CullShip ship) {
         return text("Occlusion Cache: ", NamedTextColor.GREEN)
-                .append(text(OcclusionWorldCache.CACHE_EXECUTOR.getActiveCount(), NamedTextColor.WHITE))
-                .append(text('/', NamedTextColor.WHITE))
-                .append(text(OcclusionWorldCache.CACHE_EXECUTOR.getLargestPoolSize(), NamedTextColor.WHITE))
-                .append(text(" Threads - C/S: ", NamedTextColor.WHITE))
+                .append(text( "C/S: ", NamedTextColor.WHITE))
                 .append(text(OcclusionWorldCache.CACHE_EXECUTOR.getCompletedTaskCount(), NamedTextColor.WHITE))
                 .append(text('/', NamedTextColor.WHITE))
                 .append(text(OcclusionWorldCache.chunksStored(ship.getPlatform().getWorlds()), NamedTextColor.WHITE))
-                .append(text(" chunks (", NamedTextColor.WHITE))
+                .append(text(" (", NamedTextColor.WHITE))
                 .append(text(OcclusionWorldCache.formattedByteSize(ship.getPlatform().getWorlds()), NamedTextColor.WHITE))
                 .append(text(")", NamedTextColor.WHITE));
     }
 
-    private static Component generateCulledPlayerInfo(float culledPerPlayer, int culledPlayers) {
-        return text("Culled Players: ", NamedTextColor.GREEN)
-                .append(text(String.format("%.2f", (culledPerPlayer * 100)), NamedTextColor.WHITE))
-                .append(text("% - ", NamedTextColor.WHITE))
-                .append(text(culledPlayers, NamedTextColor.WHITE))
-                .append(text(" players", NamedTextColor.WHITE));
+    private static Component generateCulledPlayerInfo(int culledEntities) {
+        return text("Culled Entities: ", NamedTextColor.GREEN)
+                .append(text(culledEntities, NamedTextColor.WHITE));
     }
 
     public static LiteralArgumentBuilder<PlatformCommandSourceStack> getNode(CullShip ship) {
@@ -100,7 +94,7 @@ public final class PlayerCullingPerformanceCommand {
 
                 double ms = ship.getLongestCullTime() / 1_000_000.0; // ns to ms
 
-                if (++this.ticks % 10 == 0) {
+                if (++this.ticks % 20 == 0) {
                     culling.name(generatePerformanceInfo(ship, ms));
                     double progress = Math.max(0, Math.min(1, ms / (50)));
                     if (progress > 1) {
@@ -118,13 +112,11 @@ public final class PlayerCullingPerformanceCommand {
                 }
 
                 Set<CullPlayer> cullPlayers = ship.getPlayers();
-                int culledPlayers = 0;
+                int culledEntities = 0;
                 for (CullPlayer cullPlayer : cullPlayers) {
-                    culledPlayers += cullPlayer.getHiddenCount();
+                    culledEntities += cullPlayer.getHiddenCount();
                 }
-                float culledPerPlayer = cullPlayers.size() <= 1 ? 0f : culledPlayers / (cullPlayers.size() * (cullPlayers.size() - 1f));
-                culled.name(generateCulledPlayerInfo(culledPerPlayer, culledPlayers));
-                culled.progress(Math.min(1, culledPerPlayer));
+                culled.name(generateCulledPlayerInfo(culledEntities));
             }
         }, 0, 50L);
     }

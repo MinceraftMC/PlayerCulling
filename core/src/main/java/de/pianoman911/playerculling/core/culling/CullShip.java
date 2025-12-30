@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -31,6 +30,7 @@ public class CullShip {
     private final PlayerCullingUpdater updater;
     private ExecutorService executor;
     private boolean culling = true;
+    private int cullWorkerCount = 0;
 
     public CullShip(IPlatform platform) {
         this.platform = platform;
@@ -95,8 +95,8 @@ public class CullShip {
         synchronized (this.players) {
             long longest = 0L;
             for (CullPlayer player : this.players.values()) {
-                for (CullPackage cullPackage : player.getCullPackages()) {
-                    long time = cullPackage.getAverageProcessingTime();
+                for (CullWorker cullWorker : player.getCullWorker()) {
+                    long time = cullWorker.getAverageProcessingTime();
                     if (time > longest) {
                         longest = time;
                     }
@@ -106,8 +106,16 @@ public class CullShip {
         }
     }
 
-    public long getCombinedLastRayStepCount() {
-        return -1L;
+    private long getCombinedLastRayStepCount() {
+        synchronized (this.players) {
+            long combined = 0L;
+            for (CullPlayer player : this.players.values()) {
+                for (CullWorker cullWorker : player.getCullWorker()) {
+                    combined += cullWorker.getLastRayStepCount();
+                }
+            }
+            return combined;
+        }
     }
 
     public void toggleCulling(boolean enabled) {
@@ -115,18 +123,7 @@ public class CullShip {
     }
 
     public String debugContainersFormat() {
-        int running = 0;
-        int parked = 0;
-        synchronized (this.players) {
-            for (CullPlayer player : this.players.values()) {
-                for (CullPackage cullPackage : player.getCullPackages()) {
-                    running += 1;
-                }
-            }
-        }
-        ThreadPoolExecutor pool = (ThreadPoolExecutor) this.executor;
-        parked = Math.toIntExact(pool.getPoolSize());
-        return "Containers R: " + running + " P: " + parked + " T: " + (0) + " R: " + this.getCombinedLastRayStepCount();
+        return "Worker: " + this.cullWorkerCount + " R: " + this.getCombinedLastRayStepCount() + "/s";
     }
 
     public boolean isCullingEnabled() {
@@ -152,17 +149,17 @@ public class CullShip {
         long startNano = System.nanoTime();
         CountDownLatch latch;
         synchronized (this.players) {
-            int packageCount = 0;
+            this.cullWorkerCount = 0;
             for (CullPlayer player : this.players.values()) {
                 player.prepareCull();
-                packageCount += player.getCullPackages().size();
+                this.cullWorkerCount += player.getCullWorker().size();
             }
-            latch = new CountDownLatch(packageCount);
+            latch = new CountDownLatch(this.cullWorkerCount);
             for (CullPlayer player : this.players.values()) {
-                for (CullPackage cullPackage : player.getCullPackages()) {
+                for (CullWorker cullWorker : player.getCullWorker()) {
                     this.executor.submit(() -> {
                         try {
-                            cullPackage.process(startNano);
+                            cullWorker.process(startNano);
                         } finally {
                             latch.countDown();
                         }

@@ -1,6 +1,7 @@
 package de.pianoman911.playerculling.platformpapernms1216;
 
 import de.pianoman911.playerculling.core.culling.CullShip;
+import de.pianoman911.playerculling.platformcommon.AABB;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
@@ -242,6 +243,23 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     public void injectEntity(Entity entity, PlayerCullingPlugin plugin) {
         net.minecraft.world.entity.Entity handle = ((CraftEntity) entity).getHandle();
         DelegatedTrackedEntity.injectEntity(handle, plugin.getCullShip());
+    }
+
+    @Override
+    public void getBoundingBox(Entity entity, AABB out) {
+        net.minecraft.world.phys.AABB box = ((CraftEntity) entity).getHandle().getBoundingBox();
+        out.setMinX(box.minX);
+        out.setMinY(box.minY);
+        out.setMinZ(box.minZ);
+        out.setMaxX(box.maxX);
+        out.setMaxY(box.maxY);
+        out.setMaxZ(box.maxZ);
+    }
+
+    @Override
+    public void getPosition(Entity entity, Vec3d pos) {
+        net.minecraft.world.entity.Entity handle = ((CraftEntity) entity).getHandle();
+        pos.set(handle.getX(), handle.getY(), handle.getZ());
     }
 
     private LongSet getLevelSet(Level level) {

@@ -6,7 +6,7 @@ import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 
-public class CullPackage {
+public class CullWorker {
 
     private final CullPlayer player;
     private final DataProvider provider;
@@ -14,7 +14,7 @@ public class CullPackage {
     private final long[] timings = new long[5];
     private int timingIndex = 0;
 
-    public CullPackage(CullPlayer player) {
+    public CullWorker(CullPlayer player) {
         this.player = player;
         this.provider = new ChunkOcclusionDataProvider(this.player);
         this.provider.world(player.getPlatformPlayer().getWorld());
@@ -33,6 +33,10 @@ public class CullPackage {
             this.timings[this.timingIndex] = System.nanoTime() - startNano;
             this.timingIndex = (this.timingIndex + 1) % this.timings.length;
         }
+    }
+
+    public long getLastRayStepCount() {
+        return this.cullingInstance.getAndResetRaySteps();
     }
 
     public void world(PlatformWorld world) {

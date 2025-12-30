@@ -19,7 +19,7 @@ public interface PlatformEntity extends PlatformCommandSender {
 
     Vec3d getPosition();
 
-    AABB getBoundingBox();
+    AABB getScaledBoundingBox();
 
     void teleport(PlatformWorld world, double x, double y, double z);
 }
