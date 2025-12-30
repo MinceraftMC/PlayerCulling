@@ -31,8 +31,6 @@ public final class PlayerCullingCleanContainersCommand {
     }
 
     private static int execute(PlatformCommandSender sender, CullShip chip, boolean force) {
-        int cleaned = chip.cleanContainers(force);
-        sender.sendMessage(text("Cleaned " + cleaned + " containers"));
 
         return Command.SINGLE_SUCCESS;
     }

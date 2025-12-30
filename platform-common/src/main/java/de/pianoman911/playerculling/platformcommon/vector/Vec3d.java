@@ -250,6 +250,22 @@ public final class Vec3d implements Cloneable {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
+    public Vec3d inverse() {
+        this.x = -this.x;
+        this.y = -this.y;
+        this.z = -this.z;
+
+        return this;
+    }
+
+    public Vec3d copyFrom(Vec3d other) {
+        this.x = other.x;
+        this.y = other.y;
+        this.z = other.z;
+        this.len = other.len;
+        return this;
+    }
+
     public final boolean isZero() {
         return this.x == 0 && this.y == 0 && this.z == 0;
     }

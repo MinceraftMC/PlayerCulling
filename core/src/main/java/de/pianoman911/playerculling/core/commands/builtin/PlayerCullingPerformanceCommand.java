@@ -100,7 +100,7 @@ public final class PlayerCullingPerformanceCommand {
 
                 double ms = ship.getLongestCullTime() / 1_000_000.0; // ns to ms
 
-                if (++this.ticks % 20 == 0) {
+                if (++this.ticks % 10 == 0) {
                     culling.name(generatePerformanceInfo(ship, ms));
                     double progress = Math.max(0, Math.min(1, ms / (50)));
                     if (progress > 1) {

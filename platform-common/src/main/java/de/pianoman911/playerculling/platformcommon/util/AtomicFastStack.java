@@ -4,40 +4,45 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @NullMarked
-public final class FastStack<T> {
+public final class AtomicFastStack<T> {
 
     private static final int GROW_RATE = 3;
-
+    private final AtomicInteger index = new AtomicInteger(-1);
     private int capacity;
-    private int index;
     private T[] stack;
 
     @SuppressWarnings("unchecked")
-    public FastStack(int initialCapacity) {
+    public AtomicFastStack(int initialCapacity) {
         this.capacity = initialCapacity;
         this.stack = (T[]) new Object[initialCapacity];
     }
 
     public void push(T o) {
-        this.stack[this.index++] = o;
+        this.stack[this.index.incrementAndGet()] = o;
     }
 
     @Nullable
     public T pop() {
-        if (this.index == 0) {
+        int index = this.index.getAndUpdate(i -> Math.max(-1, i - 1));
+        if (index < 0) {
             return null;
         }
-        return this.stack[--this.index];
+        return this.stack[index];
     }
 
     public boolean isEmpty() {
-        return this.index == 0;
+        return this.index.get() < 0;
     }
 
     public boolean hasEntries() {
-        return this.index > 0;
+        return this.index.get() >= 0;
+    }
+
+    public int size() {
+        return this.index.get() + 1;
     }
 
     public void grow(int targetIndex) {

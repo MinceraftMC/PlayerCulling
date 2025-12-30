@@ -30,7 +30,7 @@ public class PlayerCullingListener implements Listener {
         PlatformPlayer platformPlayer = (PlatformPlayer) this.plugin.getPlatform().provideEntity(player);
 
         CullShip cullShip = this.plugin.getCullShip();
-        cullShip.addPlayer(new CullPlayer(platformPlayer));
+        cullShip.addPlayer(new CullPlayer(cullShip, platformPlayer));
         cullShip.getUpdater().onJoin(platformPlayer);
     }
 

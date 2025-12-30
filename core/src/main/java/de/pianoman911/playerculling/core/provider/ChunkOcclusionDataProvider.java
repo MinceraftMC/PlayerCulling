@@ -43,12 +43,4 @@ public final class ChunkOcclusionDataProvider implements DataProvider {
         this.prepareChunk(x >> POS2CHUNK_SHIFT, z >> POS2CHUNK_SHIFT);
         return this.chunk.isVoxelOccluded(x, y, z);
     }
-
-    @Override
-    public final int getPlayerViewDistance() {
-        if (this.world != null) {
-            return this.world.getTrackingDistance(this.player.getPlatformPlayer());
-        }
-        return -1;
-    }
 }

@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.core.occlusion.OcclusionCullingInstance;
+import de.pianoman911.playerculling.core.provider.ChunkOcclusionDataProvider;
 import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
 import de.pianoman911.playerculling.platformcommon.AABB;
@@ -140,7 +141,7 @@ public final class PlayerCullingRayCastDebugCommand {
         private final boolean showRays;
 
         private DebuggingDataProviderChunk(CullPlayer player, PlatformCommandSender sender, boolean showRays, boolean blocks) {
-            this.delegate = player.getProvider();
+            this.delegate = new ChunkOcclusionDataProvider(player);
             this.player = player;
             this.sender = sender;
             this.showRays = showRays;
@@ -164,11 +165,6 @@ public final class PlayerCullingRayCastDebugCommand {
         @Override
         public void world(PlatformWorld world) {
             this.delegate.world(world);
-        }
-
-        @Override
-        public int getPlayerViewDistance() {
-            return this.delegate.getPlayerViewDistance();
         }
     }
 }

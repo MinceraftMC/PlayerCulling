@@ -2,19 +2,20 @@ package de.pianoman911.playerculling.core.culling;
 
 
 import de.pianoman911.playerculling.core.occlusion.OcclusionCullingInstance;
-import de.pianoman911.playerculling.core.provider.ChunkOcclusionDataProvider;
 import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
 import de.pianoman911.playerculling.platformcommon.AABB;
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformLivingEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
-import de.pianoman911.playerculling.platformcommon.util.FastStack;
+import de.pianoman911.playerculling.platformcommon.util.AtomicFastStack;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import org.jetbrains.annotations.Unmodifiable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class CullPlayer {
 
     private static final double MAX_ANGLE = Math.toRadians(90D); // 90 degrees, impossible fov, but we can't detect the real fov
+    private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");
 
     // Minecraft related magic values
     private static final double BLINDNESS_DISTANCE_SQUARED = 6 * 6;
@@ -32,30 +34,31 @@ public final class CullPlayer {
     private static final long DARKNESS_MIN_MS = 2000;
     private static final long BLINDNESS_FADE_OUT_TICKS = 25;
     private static final long DARKNESS_FADE_OUT_TICKS = 30;
-
+    final AtomicFastStack<PlatformEntity> tracked;
+    private final CullShip ship;
     private final PlatformPlayer player;
-    private final OcclusionCullingInstance cullingInstance;
-    private final DataProvider provider = new ChunkOcclusionDataProvider(this);
-
-    private final FastStack<PlatformEntity> tracked;
     private final Vec3d viewerPosition = new Vec3d(0, 0, 0);
     private final Vec3d viewerDirection = new Vec3d(0, 0, 0);
+    private final Vec3d inverseViewerDirection = new Vec3d(0, 0, 0);
     private final Vec3d viewerBack = new Vec3d(0, 0, 0);
     private final Vec3d viewerFront = new Vec3d(0, 0, 0);
 
     private final Set<UUID> hidden = ConcurrentHashMap.newKeySet();
     private final Set<UUID> toRemove = new HashSet<>(); // diff queue for hidden players
 
+    private final List<CullPackage> cullPackages = new ArrayList<>();
+
     private boolean cullingEnabled = true;
     private boolean spectating = false;
     private long lastDarkness = -1;
-    private long lastRaySteps = 0L;
+    private long lastWarn = 0;
 
-    public CullPlayer(PlatformPlayer player) {
+    public CullPlayer(CullShip ship, PlatformPlayer player) {
+        this.ship = ship;
         this.player = player;
-        this.cullingInstance = new OcclusionCullingInstance(this.provider);
-        this.provider.world(player.getWorld());
-        this.tracked = new FastStack<>(player.getWorld().getPlayerCount());
+        this.tracked = new AtomicFastStack<>(player.getWorld().getPlayerCount());
+
+        this.cullPackages.add(new CullPackage(this));
     }
 
     /**
@@ -116,18 +119,40 @@ public final class CullPlayer {
         return Math.acos(targetVecDotDir / Math.sqrt(targetVecLengthSqrt));
     }
 
-    public void cull() {
+    public void prepareCull() {
         synchronized (this) {
-            this.cull0();
-            this.lastRaySteps = this.cullingInstance.getAndResetRaySteps();
+            this.prepareCull0();
         }
+    }
+
+    public void finishCull() {
         synchronized (this.toRemove) {
             this.hidden.removeAll(this.toRemove);
             this.toRemove.clear();
         }
+        synchronized (this) {
+            for (CullPackage cullPackage : this.cullPackages) {
+                long processingTime = cullPackage.getAverageProcessingTime();
+                if (processingTime > this.ship.getConfig().getDelegate().scheduler.getMaxCullTimeNs()) {
+                    if (this.cullPackages.size() * 2 <= this.ship.getConfig().getDelegate().scheduler.maxThreads) {
+                        this.cullPackages.add(new CullPackage(this));
+                    } else if (System.currentTimeMillis() - this.lastWarn > 10_000L) {
+                        LOGGER.warn("CullPlayer for player {} is taking too long to process ({} ns). Consider increasing the max threads setting.", this.player.getName(), processingTime);
+                        this.lastWarn = System.currentTimeMillis();
+                    }
+                    break;
+                }
+                if (processingTime < this.ship.getConfig().getDelegate().scheduler.getMaxMergeNs()) {
+                    if (this.cullPackages.size() > 1) {
+                        this.cullPackages.remove(cullPackage);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
-    private void cull0() {
+    private void prepareCull0() {
         if (!this.cullingEnabled
                 || this.player.shouldPreventCulling()
                 || this.player.isSpectator()
@@ -143,7 +168,9 @@ public final class CullPlayer {
         if (entitiesInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
         }
-        this.provider.world(world);
+        for (CullPackage cullPackage : this.cullPackages) {
+            cullPackage.world(world);
+        }
         Vec3d eye = this.player.getEyePosition();
 
         boolean blindness;
@@ -165,7 +192,7 @@ public final class CullPlayer {
             darkness = false;
         }
 
-        int trackingDist = this.provider.getPlayerViewDistance();
+        int trackingDist = this.player.getWorld().getTrackingDistance(this.player);
         if (trackingDist <= 0) { // No view distance set
             this.hidden.clear();
             return;
@@ -182,7 +209,7 @@ public final class CullPlayer {
 
             double distSq = eye.distanceSquared(worldEntity.getPosition());
 
-            if (worldEntity instanceof PlatformLivingEntity livingEntity ) {
+            if (worldEntity instanceof PlatformLivingEntity livingEntity) {
                 if (livingEntity.isGlowing() || (livingEntity instanceof PlatformPlayer targetPlayer
                         && !targetPlayer.isSneaking() && nameTag)) {
                     this.unHideWithDirectPairing(worldEntity);
@@ -207,86 +234,73 @@ public final class CullPlayer {
         // Refresh positions
         this.viewerPosition.set(eye.getX(), eye.getY(), eye.getZ()).mul(2);
         this.viewerDirection.set(this.player.getDirection());
-        double inverseViewerDirX = -this.viewerDirection.x;
-        double inverseViewerDirY = -this.viewerDirection.y;
-        double inverseViewerDirZ = -this.viewerDirection.z;
+        this.inverseViewerDirection.copyFrom(this.viewerDirection).inverse();
 
-        boolean backPos = false;
-        boolean frontPos = false;
+        this.viewerBack.set(eye.getX(), eye.getY(), eye.getZ());
+        ClientsideUtil.addPlayerViewOffset(this.viewerBack, this.player, CameraMode.THIRD_PERSON_BACK);
+        this.viewerBack.mul(2);
 
-        while (this.tracked.hasEntries()) {
-            PlatformEntity target = this.tracked.pop();
-            if (target == null) {
-                continue;
-            }
-            AABB trackedBox = target.getBoundingBox();
+        this.viewerFront.set(eye.getX(), eye.getY(), eye.getZ());
+        ClientsideUtil.addPlayerViewOffset(this.viewerFront, this.player, CameraMode.THIRD_PERSON_FRONT);
+        this.viewerFront.mul(2);
+    }
 
-            // For 2x2x2 Shapes
-            double aabbMinX = trackedBox.minX() * 2d;
-            double aabbMinY = trackedBox.minY() * 2d;
-            double aabbMinZ = trackedBox.minZ() * 2d;
-            double aabbMaxX = trackedBox.maxX() * 2d;
-            double aabbMaxY = trackedBox.maxY() * 2d;
-            double aabbMaxZ = trackedBox.maxZ() * 2d;
-            double aabbCenterX = aabbMinX + (aabbMaxX - aabbMinX) / 2;
-            double aabbCenterY = aabbMinY + (aabbMaxY - aabbMinY) / 2;
-            double aabbCenterZ = aabbMinZ + (aabbMaxZ - aabbMinZ) / 2;
+    void cull(PlatformEntity target, OcclusionCullingInstance cullingInstance) {
+        AABB trackedBox = target.getBoundingBox();
 
-            // Check if the player is in the view frustum, if, so we can cull it
-            boolean mainInner = isInnerAngle(
+        // For 2x2x2 Shapes
+        double aabbMinX = trackedBox.minX() * 2d;
+        double aabbMinY = trackedBox.minY() * 2d;
+        double aabbMinZ = trackedBox.minZ() * 2d;
+        double aabbMaxX = trackedBox.maxX() * 2d;
+        double aabbMaxY = trackedBox.maxY() * 2d;
+        double aabbMaxZ = trackedBox.maxZ() * 2d;
+        double aabbCenterX = aabbMinX + (aabbMaxX - aabbMinX) / 2;
+        double aabbCenterY = aabbMinY + (aabbMaxY - aabbMinY) / 2;
+        double aabbCenterZ = aabbMinZ + (aabbMaxZ - aabbMinZ) / 2;
+
+        // Check if the player is in the view frustum, if, so we can cull it
+        boolean mainInner = isInnerAngle(
+                aabbCenterX, aabbCenterY, aabbCenterZ,
+                this.viewerPosition.x, this.viewerPosition.y, this.viewerPosition.z,
+                this.viewerDirection.x, this.viewerDirection.y, this.viewerDirection.z
+        );
+
+        // First person view
+        boolean canSee = mainInner && cullingInstance.isAABBVisible(
+                aabbMinX, aabbMinY, aabbMinZ, aabbMaxX, aabbMaxY, aabbMaxZ, this.viewerPosition);
+        if (!canSee) {
+            boolean secondaryInner = isInnerAngle(
                     aabbCenterX, aabbCenterY, aabbCenterZ,
-                    this.viewerPosition.x, this.viewerPosition.y, this.viewerPosition.z,
+                    this.viewerBack.x, this.viewerBack.y, this.viewerBack.z,
                     this.viewerDirection.x, this.viewerDirection.y, this.viewerDirection.z
             );
 
-            // First person view
-            boolean canSee = mainInner && this.cullingInstance.isAABBVisible(
-                    aabbMinX, aabbMinY, aabbMinZ, aabbMaxX, aabbMaxY, aabbMaxZ, this.viewerPosition);
+            // Third person view from back
+            canSee = secondaryInner && cullingInstance.isAABBVisible(
+                    aabbMinX, aabbMinY, aabbMinZ,
+                    aabbMaxX, aabbMaxY, aabbMaxZ,
+                    this.viewerBack
+            );
             if (!canSee) {
-                if (!backPos) {
-                    this.viewerBack.set(eye.getX(), eye.getY(), eye.getZ());
-                    ClientsideUtil.addPlayerViewOffset(this.viewerBack, this.player, CameraMode.THIRD_PERSON_BACK);
-                    this.viewerBack.mul(2);
-                    backPos = true;
-                }
-                boolean secondaryInner = isInnerAngle(
+                boolean tertiaryInner = isInnerAngle(
                         aabbCenterX, aabbCenterY, aabbCenterZ,
-                        this.viewerBack.x, this.viewerBack.y, this.viewerBack.z,
-                        this.viewerDirection.x, this.viewerDirection.y, this.viewerDirection.z
-                );
+                        this.viewerFront.x, this.viewerFront.y, this.viewerFront.z,
+                        this.inverseViewerDirection.x, this.inverseViewerDirection.y, this.inverseViewerDirection.z);
 
-                // Third person view from back
-                canSee = secondaryInner && this.cullingInstance.isAABBVisible(
+                // Third person view from front
+                canSee = tertiaryInner && cullingInstance.isAABBVisible(
                         aabbMinX, aabbMinY, aabbMinZ,
                         aabbMaxX, aabbMaxY, aabbMaxZ,
-                        this.viewerBack
+                        this.viewerFront
                 );
-                if (!canSee) {
-                    if (!frontPos) {
-                        this.viewerFront.set(eye.getX(), eye.getY(), eye.getZ());
-                        ClientsideUtil.addPlayerViewOffset(this.viewerFront, this.player, CameraMode.THIRD_PERSON_FRONT);
-                        this.viewerFront.mul(2);
-                        frontPos = true;
-                    }
-                    boolean tertiaryInner = isInnerAngle(
-                            aabbCenterX, aabbCenterY, aabbCenterZ,
-                            this.viewerFront.x, this.viewerFront.y, this.viewerFront.z,
-                            inverseViewerDirX, inverseViewerDirY, inverseViewerDirZ);
-
-                    // Third person view from front
-                    canSee = tertiaryInner && this.cullingInstance.isAABBVisible(
-                            aabbMinX, aabbMinY, aabbMinZ,
-                            aabbMaxX, aabbMaxY, aabbMaxZ,
-                            this.viewerFront
-                    );
-                }
             }
+        }
 
-            if (canSee) {
-                this.unHideWithDirectPairing(target);
-            } else {
-                this.hidden.add(target.getUniqueId());
-            }
+        if (canSee) {
+            this.unHideWithDirectPairing(target);
+        } else {
+            this.hidden.add(target.getUniqueId());
         }
     }
 
@@ -294,10 +308,6 @@ public final class CullPlayer {
         if (this.hidden.remove(target.getUniqueId())) {
             this.player.addDirectPairing(target);
         }
-    }
-
-    public long getLastRaySteps() {
-        return this.lastRaySteps;
     }
 
     public PlatformPlayer getPlatformPlayer() {
@@ -311,6 +321,12 @@ public final class CullPlayer {
     public void setCullingEnabled(boolean cullingEnabled) {
         this.cullingEnabled = cullingEnabled;
         this.resetHidden();
+    }
+
+    public List<CullPackage> getCullPackages() {
+        synchronized (this.cullPackages) {
+            return this.cullPackages;
+        }
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted") // this is a getter
@@ -329,10 +345,6 @@ public final class CullPlayer {
 
     public void resetHidden() {
         this.hidden.clear();
-    }
-
-    public DataProvider getProvider() {
-        return this.provider;
     }
 
     public void invalidateOther(UUID playerId) {
