@@ -119,7 +119,6 @@ public final class PlayerCullingRayCastDebugCommand {
         a = Math.toDegrees(CullPlayer.angle(centerBox, viewerBack, dir));
         sender.sendMessage(text("ThirdPersonBack Visible: " + visible + " Angle(" + a + "): " + angle + " -> " + (visible && angle)));
 
-
         viewerFront.set(eye.getX(), eye.getY(), eye.getZ());
         ClientsideUtil.addPlayerViewOffset(viewerFront, platformPlayer, CameraMode.THIRD_PERSON_FRONT);
         viewerFront.mul(2);

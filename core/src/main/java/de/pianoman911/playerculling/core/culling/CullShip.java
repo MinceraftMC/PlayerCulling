@@ -47,15 +47,12 @@ public class CullShip {
 
             @Override
             public void accept(PlayerCullingConfig config) {
-                System.out.println("Reloading CullShip with new configuration...");
                 if (this.taskId != -1) {
                     CullShip.this.platform.cancelTask(this.taskId);
                 }
                 synchronized (CullShip.this.players) {
                     if (CullShip.this.executor != null) {
-                        System.out.println("Shutting down previous executor...");
                         CullShip.this.executor.shutdown();
-                        System.out.println("Previous executor shut down.");
                     }
 
                     CullShip.this.executor = Executors.newFixedThreadPool(CullShip.this.config.getDelegate().scheduler.maxThreads);
