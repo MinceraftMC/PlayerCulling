@@ -6,6 +6,8 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkA
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
@@ -23,7 +25,7 @@ public class PaperWorld extends PlatformWorld {
 
     private final World world;
     private final PaperPlatform platform;
-    private final List<PlatformEntity> loadedEntities = new ArrayList<>();
+    private final Int2ObjectMap<PlatformEntity> loadedEntities = new Int2ObjectArrayMap<>();
 
     public PaperWorld(World world, PaperPlatform platform) {
         super(platform);
@@ -32,6 +34,7 @@ public class PaperWorld extends PlatformWorld {
 
         // inject into world to listen to block updates and into entity tracker
         this.platform.getNmsAdapter().injectWorld(this.platform, world);
+        this.collectEntities();
     }
 
     @Override
@@ -65,38 +68,16 @@ public class PaperWorld extends PlatformWorld {
     }
 
     @Override
-    protected List<PlatformPlayer> getPlayers0() {
-        List<PlatformPlayer> players = new ArrayList<>(this.world.getPlayerCount());
-        for (PaperPlayer platformPlayer : this.platform.getPlayers()) {
-            Player paperPlayer = platformPlayer.getDelegate();
-            if (paperPlayer.isConnected() && paperPlayer.getWorld() == this.world
-                    && !platformPlayer.isSpectator() && !platformPlayer.shouldPreventCulling()) {
-                players.add(platformPlayer);
-            }
-        }
-        return players;
-    }
-
-    @Override
     protected List<PlatformEntity> getEntities0() {
         synchronized (this.loadedEntities) {
-            return List.copyOf(this.loadedEntities);
+            return List.copyOf(this.loadedEntities.values());
         }
     }
 
     public void collectEntities() {
         synchronized (this.loadedEntities) {
             this.loadedEntities.clear();
-            for (Entity entity : this.world.getEntities()) {
-                PlatformEntity platformEntity = this.platform.provideEntity(entity);
-                if (platformEntity instanceof PlatformPlayer player) {
-                    if (!player.isOnline() || player.isSpectator() || player.shouldPreventCulling()) {
-                        continue;
-                    }
-                }
-
-                loadedEntities.add(platformEntity);
-            }
+            this.platform.getNmsAdapter().collectEntities(this.platform, this.world, this.loadedEntities);
         }
     }
 
@@ -126,5 +107,21 @@ public class PaperWorld extends PlatformWorld {
 
     public World getWorld() {
         return this.world;
+    }
+
+    public void addEntity(PlatformEntity platformEntity) {
+        synchronized (this.loadedEntities) {
+            this.loadedEntities.put(platformEntity.getEntityId(), platformEntity);
+        }
+    }
+
+    public void removeEntity(PlatformEntity entity) {
+        this.removeEntity(entity.getEntityId());
+    }
+
+    public void removeEntity(int entityId) {
+        synchronized (this.loadedEntities) {
+            this.loadedEntities.remove(entityId);
+        }
     }
 }

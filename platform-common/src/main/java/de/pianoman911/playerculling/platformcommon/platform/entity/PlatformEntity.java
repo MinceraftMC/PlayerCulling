@@ -11,6 +11,8 @@ import java.util.UUID;
 @NullMarked
 public interface PlatformEntity extends PlatformCommandSender {
 
+    int getEntityId();
+
     UUID getUniqueId();
 
     String getName();

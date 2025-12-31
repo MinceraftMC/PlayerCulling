@@ -31,6 +31,11 @@ public class PaperEntity<T extends Entity> extends PaperCommandSender<T> impleme
     }
 
     @Override
+    public int getEntityId() {
+        return this.getDelegate().getEntityId();
+    }
+
+    @Override
     public UUID getUniqueId() {
         return this.getDelegate().getUniqueId();
     }
@@ -41,7 +46,7 @@ public class PaperEntity<T extends Entity> extends PaperCommandSender<T> impleme
     }
 
     @Override
-    public PlatformWorld getWorld() {
+    public PaperWorld getWorld() {
         return this.platform.provideWorld(this.getDelegate().getWorld());
     }
 

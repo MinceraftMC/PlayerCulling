@@ -5,17 +5,19 @@ import de.pianoman911.playerculling.core.occlusion.OcclusionCullingInstance;
 import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
 import de.pianoman911.playerculling.platformcommon.AABB;
+import de.pianoman911.playerculling.platformcommon.PlayerCullingConstants;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformLivingEntity;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
-import de.pianoman911.playerculling.platformcommon.util.AtomicFastStack;
+import de.pianoman911.playerculling.platformcommon.util.atomics.AtomicCooldownRunnable;
+import de.pianoman911.playerculling.platformcommon.util.atomics.AtomicFastStack;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -25,8 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CullPlayer {
 
-    private static final double MAX_ANGLE = Math.toRadians(90D); // 90 degrees, impossible fov, but we can't detect the real fov
     private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");
+    private static final double MAX_ANGLE = Math.toRadians(90D); // 90 degrees, impossible fov, but we can't detect the real fov
 
     // Minecraft related magic values
     private static final double BLINDNESS_DISTANCE_SQUARED = 6 * 6;
@@ -46,17 +48,18 @@ public final class CullPlayer {
     private final Set<UUID> hidden = ConcurrentHashMap.newKeySet();
     private final Set<UUID> toRemove = new HashSet<>(); // diff queue for hidden players
 
-    private final List<CullWorker> cullWorkers = new ArrayList<>();
+    private final Set<CullWorker> cullWorkers = ConcurrentHashMap.newKeySet();
+
+    private final AtomicCooldownRunnable warnCooldown = new AtomicCooldownRunnable(PlayerCullingConstants.PANIC_LOG_INTERVAL);
 
     private boolean cullingEnabled = true;
     private boolean spectating = false;
     private long lastDarkness = -1;
-    private long lastWarn = 0;
 
     public CullPlayer(CullShip ship, PlatformPlayer player) {
         this.ship = ship;
         this.player = player;
-        this.tracked = new AtomicFastStack<>(player.getWorld().getPlayerCount());
+        this.tracked = new AtomicFastStack<>(player.getWorld().getEntityCount());
 
         this.cullWorkers.add(new CullWorker(this));
     }
@@ -132,21 +135,22 @@ public final class CullPlayer {
         }
         synchronized (this) {
             for (CullWorker cullWorker : this.cullWorkers) {
+                if (!cullWorker.hasAccurateTimings()) {
+                    continue; // skip if we don't have enough data yet
+                }
                 long processingTime = cullWorker.getAverageProcessingTime();
-                if (processingTime > this.ship.getConfig().getDelegate().scheduler.getMaxCullTimeNs()) {
+                if (processingTime > this.ship.getConfig().getDelegate().scheduler.getForkThresholdNs()) {
                     if (this.cullWorkers.size() <= this.ship.getConfig().getDelegate().scheduler.maxThreads * 2) {
                         this.cullWorkers.add(new CullWorker(this));
-                    } else if (System.currentTimeMillis() - this.lastWarn > 10_000L) {
-                        LOGGER.warn("CullPlayer for player {} is taking too long to process ({} ns). Consider increasing the max threads setting.", this.player.getName(), processingTime);
-                        this.lastWarn = System.currentTimeMillis();
                     }
-                    break;
-                }
-                if (processingTime < this.ship.getConfig().getDelegate().scheduler.getMaxMergeNs()) {
+                    this.warnCooldown.run(() -> LOGGER.warn("CullPlayer for player {} is taking too long to process ({} ns). " +
+                            "Consider increasing the max threads setting.", this.player.getName(), processingTime));
+                    cullWorker.resetTimings();
+                    break; // only fork one worker per finishCull call
+                } else if (processingTime < this.ship.getConfig().getDelegate().scheduler.getDestroyThresholdNs()) {
                     if (this.cullWorkers.size() > 1) {
                         this.cullWorkers.remove(cullWorker);
                     }
-                    break;
                 }
             }
         }
@@ -166,7 +170,7 @@ public final class CullPlayer {
         PlatformWorld world = this.player.getWorld();
         List<PlatformEntity> entitiesInWorld = world.getEntities();
         if (entitiesInWorld.size() <= 1) {
-            return; // No need to cull if no other players are in the world
+            return; // No need to cull if no other entities are in the world
         }
         for (CullWorker cullWorker : this.cullWorkers) {
             cullWorker.world(world);
@@ -198,6 +202,9 @@ public final class CullPlayer {
             return;
         }
         this.tracked.grow(entitiesInWorld.size()); // Ensure tracked stack capacity
+        if (this.tracked.fastClear() >= 0) {
+            LOGGER.warn("CullPlayer tracked stack for player {} was not empty during prepareCull!", this.player.getName());
+        }
 
         double trackingDistSq = trackingDist * trackingDist;
 
@@ -315,7 +322,7 @@ public final class CullPlayer {
         this.resetHidden();
     }
 
-    public List<CullWorker> getCullWorker() {
+    public Collection<CullWorker> getCullWorker() {
         synchronized (this.cullWorkers) {
             return this.cullWorkers;
         }

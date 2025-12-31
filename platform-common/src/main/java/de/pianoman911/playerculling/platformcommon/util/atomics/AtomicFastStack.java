@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformcommon.util;
+package de.pianoman911.playerculling.platformcommon.util.atomics;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -43,6 +43,18 @@ public final class AtomicFastStack<T> {
 
     public int size() {
         return this.index.get() + 1;
+    }
+
+    public int capacity() {
+        return this.capacity;
+    }
+
+    public int remainingCapacity() {
+        return this.capacity - size();
+    }
+
+    public int fastClear() {
+        return this.index.getAndSet(-1);
     }
 
     public void grow(int targetIndex) {

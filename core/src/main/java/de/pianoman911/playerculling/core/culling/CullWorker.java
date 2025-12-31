@@ -6,12 +6,15 @@ import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 
+import java.util.Arrays;
+
 public class CullWorker {
 
     private final CullPlayer player;
     private final DataProvider provider;
     private final OcclusionCullingInstance cullingInstance;
-    private final long[] timings = new long[5];
+    private final long[] timings = new long[10];
+    private boolean accurateTimings = false;
     private int timingIndex = 0;
 
     public CullWorker(CullPlayer player) {
@@ -30,8 +33,11 @@ public class CullWorker {
                 }
                 this.player.cull(target, cullingInstance);
             }
-            this.timings[this.timingIndex] = System.nanoTime() - startNano;
-            this.timingIndex = (this.timingIndex + 1) % this.timings.length;
+            this.timings[this.timingIndex++] = System.nanoTime() - startNano;
+            if (this.timingIndex >= this.timings.length - 1) {
+                this.timingIndex = 0;
+                this.accurateTimings = true;
+            }
         }
     }
 
@@ -44,10 +50,23 @@ public class CullWorker {
     }
 
     public long getAverageProcessingTime() {
-        long total = 0;
-        for (long timing : this.timings) {
-            total += timing;
+        synchronized (this) {
+            long total = 0;
+            for (long timing : this.timings) {
+                total += timing;
+            }
+            return total / this.timings.length;
         }
-        return total / this.timings.length;
+    }
+
+    public boolean hasAccurateTimings() {
+        return this.accurateTimings;
+    }
+
+    public void resetTimings() {
+        synchronized (this) {
+            this.accurateTimings = false;
+            Arrays.fill(this.timings, 0L);
+        }
     }
 }

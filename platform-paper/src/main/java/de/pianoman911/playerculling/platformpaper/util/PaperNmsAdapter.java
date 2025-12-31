@@ -9,12 +9,14 @@ import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformpaper.PlayerCullingPlugin;
 import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 @NullMarked
 public interface PaperNmsAdapter {
@@ -64,4 +66,6 @@ public interface PaperNmsAdapter {
     void getBoundingBox(Entity entity, AABB out);
 
     void getPosition(Entity entity, Vec3d pos);
+
+    void collectEntities(PaperPlatform platform, World world, Int2ObjectMap<PlatformEntity> loadedEntities);
 }

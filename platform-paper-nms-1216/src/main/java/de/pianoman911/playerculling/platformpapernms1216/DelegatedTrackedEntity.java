@@ -8,13 +8,17 @@ import de.pianoman911.playerculling.platformcommon.util.ForwardedInt2ObjectMap;
 import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import net.minecraft.core.SectionPos;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ThrownEgg;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -50,6 +54,26 @@ public final class DelegatedTrackedEntity {
     private static final MethodHandle GET_UPDATE_INTERVAL = ReflectionUtil.getGetter(ServerEntity.class, int.class, 3);
     private static final MethodHandle GET_TRACK_DELTA = ReflectionUtil.getGetter(ServerEntity.class, boolean.class, 0);
 
+    // Delegated TrackedEntity getter
+    private static final MethodHandle GET_CULL_PLAYER;
+
+    static {
+        try {
+            ServerLevel overworld = MinecraftServer.getServer().overworld();
+            ThrownEgg dummyEntity = new ThrownEgg(overworld, 0, 0, 0,
+                    net.minecraft.world.item.Items.EGG.getDefaultInstance());
+
+            ChunkMap.TrackedEntity delegated = createCustomTrackedEntity(overworld.getChunkSource().chunkMap, null,
+                    dummyEntity, 0, 0, false);
+
+            GET_CULL_PLAYER = ReflectionUtil.getGetter(delegated.getClass(), CullPlayer.class, 0);
+
+            dummyEntity.remove(Entity.RemovalReason.DISCARDED);
+        } catch (Throwable throwable) {
+            throw new RuntimeException("Failed to create dummy for anonymous DelegatedTrackedEntity class", throwable);
+        }
+    }
+
     private DelegatedTrackedEntity() {
     }
 
@@ -83,7 +107,7 @@ public final class DelegatedTrackedEntity {
             ChunkMap chunkMap = ((ServerLevel) entity.level()).getChunkSource().chunkMap;
 
             // Anonymous class due non-static inner class
-            ChunkMap.TrackedEntity injected = constructDelegate(chunkMap, trackedEntity, ship);
+            ChunkMap.TrackedEntity injected = createInjectedDelegate(chunkMap, trackedEntity, ship);
 
             if (!chunkMap.entityMap.replace(entity.getId(), trackedEntity, injected)) {
                 LOGGER.error("Failed to inject entity {} ({}) into ChunkMap - PlayerCulling will not work for this entity!",
@@ -96,7 +120,44 @@ public final class DelegatedTrackedEntity {
         }
     }
 
-    public static ChunkMap.TrackedEntity constructDelegate(ChunkMap map, ChunkMap.TrackedEntity entity, CullShip ship) throws Throwable {
+    public static ChunkMap.TrackedEntity createCustomTrackedEntity(ChunkMap map, @Nullable CullPlayer player, Entity entity, int range,
+                                                                   int updateInterval, boolean trackDelta) throws Throwable {
+        // Anonymous class due non-static inner class
+        ChunkMap.TrackedEntity delegated = map.new TrackedEntity(entity, range, updateInterval, trackDelta) {
+
+            private final CullPlayer cullPlayer = player;
+
+            @Override
+            public void updatePlayer(@NotNull ServerPlayer player) {
+                AsyncCatcher.catchOp("player tracker update");
+                if (player == entity) {
+                    return;
+                }
+                ChunkMap.TrackedEntity trackedPlayer = player.moonrise$getTrackedEntity();
+                if (!this.getClass().isInstance(trackedPlayer)) {
+                    // not a delegated entity, skip
+                    super.updatePlayer(player);
+                    return;
+                }
+                try {
+                    CullPlayer cullPlayer = (CullPlayer) GET_CULL_PLAYER.invoke(trackedPlayer);
+
+                    // check if player culling allows seeing this player
+                    if (!cullPlayer.isHidden(entity.getUUID())) {
+                        // not culled, delegate
+                        super.updatePlayer(player);
+                    } else if (this.seenBy.remove(player.connection)) {
+                        this.serverEntity.removePairing(player);
+                    }
+                } catch (Throwable throwable) {
+                    SneakyThrow.sneaky(throwable);
+                }
+            }
+        };
+        return delegated;
+    }
+
+    private static ChunkMap.TrackedEntity createInjectedDelegate(ChunkMap chunkMap, ChunkMap.TrackedEntity entity, CullShip ship) throws Throwable {
         Entity mcEntity = (Entity) GET_ENTITY.invoke(entity);
 
         int range = (int) GET_RANGE.invoke(entity);
@@ -116,45 +177,15 @@ public final class DelegatedTrackedEntity {
             player = null;
         }
 
-        // Anonymous class due non-static inner class
-        ChunkMap.TrackedEntity delegated = map.new TrackedEntity(mcEntity, range, updateInterval, trackDelta) {
+        ChunkMap.TrackedEntity delegated = createCustomTrackedEntity(chunkMap, player, mcEntity, range, updateInterval, trackDelta);
 
-            private final CullPlayer cullPlayer = player;
-            private final MethodHandle getCullPlayer = ReflectionUtil.getGetter(this.getClass(), CullPlayer.class, 0);
-
-            @Override
-            public void updatePlayer(@NotNull ServerPlayer player) {
-                AsyncCatcher.catchOp("player tracker update");
-                if (player == mcEntity) {
-                    return;
-                }
-                ChunkMap.TrackedEntity trackedPlayer = player.moonrise$getTrackedEntity();
-                if (!this.getClass().isInstance(trackedPlayer)) {
-                    // not a delegated entity, skip
-                    super.updatePlayer(player);
-                    return;
-                }
-                try {
-                    CullPlayer cullPlayer = (CullPlayer) this.getCullPlayer.invoke(trackedPlayer);
-
-                    // check if player culling allows seeing this player
-                    if (!cullPlayer.isHidden(mcEntity.getUUID())) {
-                        // not culled, delegate
-                        super.updatePlayer(player);
-                    } else if (this.seenBy.remove(player.connection)) {
-                        this.serverEntity.removePairing(player);
-                    }
-                } catch (Throwable throwable) {
-                    SneakyThrow.sneaky(throwable);
-                }
-            }
-        };
         // copy over fields from delegate
         SET_SERVER_ENTITY.invoke(delegated, entity.serverEntity);
         SET_LAST_SECTION_POS.invoke(delegated, GET_LAST_SECTION_POS.invoke(entity));
         SET_SEEN_BY.invoke(delegated, entity.seenBy);
         SET_LAST_CHUNK_UPDATE.invoke(delegated, GET_LAST_CHUNK_UPDATE.invoke(entity));
         SET_LAST_TRACKED_CHUNK.invoke(delegated, GET_LAST_TRACKED_CHUNK.invoke(entity));
+
         return delegated;
     }
 
@@ -205,7 +236,7 @@ public final class DelegatedTrackedEntity {
             try {
                 Entity mcEntity = (Entity) GET_ENTITY.invoke(this.nextInsert);
                 // construct delegate which implements player culling
-                ChunkMap.TrackedEntity delegate = constructDelegate(this.chunkMap, this.nextInsert, this.ship);
+                ChunkMap.TrackedEntity delegate = createInjectedDelegate(this.chunkMap, this.nextInsert, this.ship);
                 if (delegate != this.nextInsert) {
                     this.uninjectedMap.put(mcEntity.getId(), this.nextInsert);
                     mcEntity.moonrise$setTrackedEntity(delegate);

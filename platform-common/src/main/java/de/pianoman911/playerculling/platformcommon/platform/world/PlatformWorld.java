@@ -17,11 +17,9 @@ import java.util.List;
 public abstract class PlatformWorld {
 
     protected final OcclusionWorldCache cache = new OcclusionWorldCache(this);
-    protected final TickRefreshSupplier<List<PlatformPlayer>> playersInWorld;
     protected final TickRefreshSupplier<List<PlatformEntity>> entitiesInWorld;
 
     public PlatformWorld(IPlatform platform) {
-        this.playersInWorld = new TickRefreshSupplier<>(platform, this::getPlayers0);
         this.entitiesInWorld = new TickRefreshSupplier<>(platform, this::getEntities0);
     }
 
@@ -44,14 +42,6 @@ public abstract class PlatformWorld {
 
     public abstract int getTrackingDistance(PlatformPlayer player);
 
-    public List<PlatformPlayer> getPlayers() {
-        return this.playersInWorld.get();
-    }
-
-    public int getPlayerCount() {
-        return this.playersInWorld.get().size();
-    }
-
     public List<PlatformEntity> getEntities() {
         return this.entitiesInWorld.get();
     }
@@ -59,8 +49,6 @@ public abstract class PlatformWorld {
     public int getEntityCount() {
         return this.entitiesInWorld.get().size();
     }
-
-    protected abstract List<PlatformPlayer> getPlayers0();
 
     protected abstract List<PlatformEntity> getEntities0();
 

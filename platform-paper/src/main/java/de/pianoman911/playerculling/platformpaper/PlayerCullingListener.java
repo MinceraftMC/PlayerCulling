@@ -7,6 +7,7 @@ import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
+import de.pianoman911.playerculling.platformpaper.platform.PaperEntity;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,13 +46,15 @@ public class PlayerCullingListener implements Listener {
         this.plugin.getPlatform().tick();
         for (PaperWorld world : this.plugin.getPlatform().getPaperWorlds()) {
             this.plugin.getPlatform().getNmsAdapter().tickChangedBlocks(world);
-            world.collectEntities();
         }
     }
 
     @EventHandler
     public void onEntityAdd(EntityAddToWorldEvent event) {
         this.plugin.getPlatform().getNmsAdapter().injectEntity(event.getEntity(), this.plugin);
+
+        PaperEntity<?> paperEntity = this.plugin.getPlatform().provideEntity(event.getEntity());
+        this.plugin.getPlatform().provideWorld(event.getWorld()).addEntity(paperEntity);
     }
 
     @EventHandler

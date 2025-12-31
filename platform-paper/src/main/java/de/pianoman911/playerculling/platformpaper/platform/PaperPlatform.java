@@ -174,18 +174,19 @@ public class PaperPlatform implements IPlatform {
         return new PaperCommandSourceStack(this, source);
     }
 
-    // TODO: invalidate entities too
     public void invalidateEntity(Entity entity) {
         CullShip ship = this.plugin.getCullShip();
-        this.entityMap.remove(entity.getUniqueId());
+        PaperEntity<?> removed = this.entityMap.remove(entity.getUniqueId());
+        if (removed == null) {
+            return; // not present
+        }
+        removed.getWorld().removeEntity(entity.getEntityId());
 
         if (entity instanceof Player) {
             ship.removePlayer(entity.getUniqueId());
         }
         // queue invalidation from hidden set
-        for (CullPlayer cullPlayer : ship.getPlayers()) {
-            cullPlayer.invalidateOther(entity.getUniqueId());
-        }
+        ship.forPlayers(player -> player.invalidateOther(entity.getUniqueId()));
     }
 
     @Unmodifiable

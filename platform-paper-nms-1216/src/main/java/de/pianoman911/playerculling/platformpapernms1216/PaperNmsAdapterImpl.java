@@ -17,6 +17,7 @@ import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.network.ChannelInitializeListenerHolder;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -260,6 +261,20 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     public void getPosition(Entity entity, Vec3d pos) {
         net.minecraft.world.entity.Entity handle = ((CraftEntity) entity).getHandle();
         pos.set(handle.getX(), handle.getY(), handle.getZ());
+    }
+
+    @Override
+    public void collectEntities(PaperPlatform platform, World world, Int2ObjectMap<PlatformEntity> loadedEntities) {
+        ServerLevel handle = ((CraftWorld) world).getHandle();
+        for (net.minecraft.world.entity.Entity entity : handle.getEntities().getAll()) {
+            PaperEntity<?> platformEntity = platform.provideEntity(entity.getBukkitEntity());
+            if (platformEntity instanceof PlatformPlayer player) {
+                if (!player.isOnline() || player.isSpectator() || player.shouldPreventCulling()) {
+                    continue;
+                }
+            }
+            loadedEntities.put(entity.getId(), platformEntity);
+        }
     }
 
     private LongSet getLevelSet(Level level) {

@@ -17,30 +17,20 @@ public final class PlayerCullingConfig {
     public final static class Scheduler {
 
         public int maxThreads = Runtime.getRuntime().availableProcessors() / 3;
-        public int cleanupInterval = 30; // sec
-        public int containerTtl = 30; // sec
         public int maxCullTime = 45; // ms
-        public double maxTransferFactor = 0.7;
-        public double maxMergeFactor = 0.5;
+        public double forkThresholdFactor = 0.7;
+        public double destroyThresholdFactor = 0.2;
 
         public long getMaxCullTimeNs() {
             return this.maxCullTime * 1_000_000L;
         }
 
-        public long getCleanupIntervalMs() {
-            return this.cleanupInterval * 1_000L;
+        public long getForkThresholdNs() {
+            return (long) (getMaxCullTimeNs() * this.forkThresholdFactor);
         }
 
-        public long getContainerTtlMs() {
-            return this.containerTtl * 1_000L;
-        }
-
-        public double getMaxTransferNs() {
-            return this.maxTransferFactor * this.getMaxCullTimeNs();
-        }
-
-        public double getMaxMergeNs() {
-            return this.maxMergeFactor * this.getMaxCullTimeNs();
+        public long getDestroyThresholdNs() {
+            return (long) (getMaxCullTimeNs() * this.destroyThresholdFactor);
         }
     }
 
