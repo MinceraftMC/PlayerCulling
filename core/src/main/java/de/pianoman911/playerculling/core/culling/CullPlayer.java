@@ -323,9 +323,7 @@ public final class CullPlayer {
     }
 
     public Collection<CullWorker> getCullWorker() {
-        synchronized (this.cullWorkers) {
-            return this.cullWorkers;
-        }
+        return this.cullWorkers;
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted") // this is a getter

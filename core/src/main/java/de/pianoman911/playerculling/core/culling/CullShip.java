@@ -12,10 +12,10 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +30,10 @@ public class CullShip {
 
     private final IPlatform platform;
     private final YamlConfigHolder<PlayerCullingConfig> config;
-    private final Map<UUID, CullPlayer> players = new HashMap<>();
+
+    private final Map<UUID, CullPlayer> players = new ConcurrentHashMap<>();
+    private Set<CullPlayer> playerSet = Set.of();
+
     private final PlayerCullingUpdater updater;
     private final AtomicCooldownRunnable outerCullSkipWarn = new AtomicCooldownRunnable(PlayerCullingConstants.PANIC_LOG_INTERVAL);
     private final AtomicCooldownRunnable innerCullSkipWarn = new AtomicCooldownRunnable(PlayerCullingConstants.PANIC_LOG_INTERVAL);
@@ -57,7 +60,7 @@ public class CullShip {
                 if (this.taskId != -1) {
                     CullShip.this.platform.cancelTask(this.taskId);
                 }
-                synchronized (CullShip.this.players) {
+                synchronized (CullShip.this) {
                     if (CullShip.this.executor != null) {
                         CullShip.this.executor.shutdown();
                     }
@@ -81,66 +84,56 @@ public class CullShip {
     }
 
     public Set<CullPlayer> getPlayers() {
-        synchronized (this.players) {
-            return Set.copyOf(this.players.values());
-        }
+        return this.playerSet;
     }
 
     public void forPlayers(Consumer<CullPlayer> consumer) {
-        synchronized (this.players) {
-            for (CullPlayer player : this.players.values()) {
-                consumer.accept(player);
-            }
-        }
+        this.playerSet.forEach(consumer);
     }
 
     public CullPlayer getPlayer(UUID playerId) {
-        synchronized (this.players) {
-            return this.players.get(playerId);
-        }
+        return this.players.get(playerId);
     }
 
     public void addPlayer(CullPlayer player) {
         if (!player.getPlatformPlayer().isOnline()) {
             return; // skip adding player if they are disconnected
         }
-        synchronized (this.players) {
-            this.players.put(player.getPlatformPlayer().getUniqueId(), player);
+        UUID playerId = player.getPlatformPlayer().getUniqueId();
+        if (this.players.putIfAbsent(playerId, player) != null) {
+            throw new IllegalArgumentException("Player " + playerId + " is already added");
         }
+        this.playerSet = Set.copyOf(this.players.values());
     }
 
 
     public void removePlayer(UUID uniqueId) {
-        synchronized (this.players) {
-            this.players.remove(uniqueId);
+        if (this.players.remove(uniqueId) != null) {
+            this.playerSet = Set.copyOf(this.players.values());
         }
     }
 
     public long getLongestCullTime() {
-        synchronized (this.players) {
-            long longest = 0L;
-            for (CullPlayer player : this.players.values()) {
-                for (CullWorker cullWorker : player.getCullWorker()) {
-                    long time = cullWorker.getAverageProcessingTime();
-                    if (time > longest) {
-                        longest = time;
-                    }
+        long longest = 0L;
+        for (CullPlayer player : this.playerSet) {
+            for (CullWorker cullWorker : player.getCullWorker()) {
+                long time = cullWorker.getAverageProcessingTime();
+                if (time > longest) {
+                    longest = time;
                 }
             }
-            return longest;
         }
+        return longest;
     }
 
     private long getCombinedLastRayStepCount() {
-        synchronized (this.players) {
-            long combined = 0L;
-            for (CullPlayer player : this.players.values()) {
-                for (CullWorker cullWorker : player.getCullWorker()) {
-                    combined += cullWorker.getLastRayStepCount();
-                }
+        long combined = 0L;
+        for (CullPlayer player : this.playerSet) {
+            for (CullWorker cullWorker : player.getCullWorker()) {
+                combined += cullWorker.getLastRayStepCount();
             }
-            return combined;
         }
+        return combined;
     }
 
     public void toggleCulling(boolean enabled) {
@@ -173,18 +166,18 @@ public class CullShip {
         }
         long startNano = System.nanoTime();
         CountDownLatch latch;
-        synchronized (this.players) {
+        synchronized (this) {
             if (System.nanoTime() - startNano > this.config.getDelegate().scheduler.getMaxCullTimeNs()) {
                 this.outerCullSkipWarn.run(() -> LOGGER.warn("Culling is falling behind! Skipping this cull cycle, culling could be too slow."));
                 return;
             }
             this.cullWorkerCount = 0;
-            for (CullPlayer player : this.players.values()) {
+            for (CullPlayer player : this.playerSet) {
                 player.prepareCull();
                 this.cullWorkerCount += player.getCullWorker().size();
             }
             latch = new CountDownLatch(this.cullWorkerCount);
-            for (CullPlayer player : this.players.values()) {
+            for (CullPlayer player : this.playerSet) {
                 for (CullWorker cullWorker : player.getCullWorker()) {
                     this.executor.submit(() -> {
                         long offsetNano = System.nanoTime() - startNano;
@@ -209,10 +202,8 @@ public class CullShip {
             }
         } catch (InterruptedException ignored) {
         }
-        synchronized (this.players) {
-            for (CullPlayer value : this.players.values()) {
-                value.finishCull();
-            }
+        for (CullPlayer value : this.playerSet) {
+            value.finishCull();
         }
     }
 }
