@@ -143,7 +143,7 @@ public final class DelegatedTrackedEntity {
                     CullPlayer cullPlayer = (CullPlayer) GET_CULL_PLAYER.invoke(trackedPlayer);
 
                     // check if player culling allows seeing this player
-                    if (!cullPlayer.isHidden(entity.getUUID())) {
+                    if (!cullPlayer.isHidden(entity.getId())) {
                         // not culled, delegate
                         super.updatePlayer(player);
                     } else if (this.seenBy.remove(player.connection)) {

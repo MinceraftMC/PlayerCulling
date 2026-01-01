@@ -186,7 +186,7 @@ public class PaperPlatform implements IPlatform {
             ship.removePlayer(entity.getUniqueId());
         }
         // queue invalidation from hidden set
-        ship.forPlayers(player -> player.invalidateOther(entity.getUniqueId()));
+        ship.forPlayers(player -> player.invalidateOther(entity.getEntityId()));
     }
 
     @Unmodifiable

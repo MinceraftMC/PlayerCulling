@@ -249,7 +249,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
             if (cullPlayer == null) {
                 return; // cull player is null, ignore
             }
-            if (cullPlayer.isHidden(waypoint.getUUID())) {
+            if (cullPlayer.isHidden(waypoint.getId())) {
                 this.disconnectWaypoint(player, waypoint);
                 return;
             }
@@ -266,7 +266,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         switch (this.ship.getConfig().getDelegate().waypointMode) {
             case CULLED_AZIMUTH: {
                 CullPlayer cullPlayer = this.ship.getPlayer(player.getUUID());
-                if (cullPlayer == null || cullPlayer.isHidden(waypoint.getUUID())) {
+                if (cullPlayer == null || cullPlayer.isHidden(waypoint.getId())) {
                     // cull player is null or target is hidden, ignore
                     connection = null;
                     break;

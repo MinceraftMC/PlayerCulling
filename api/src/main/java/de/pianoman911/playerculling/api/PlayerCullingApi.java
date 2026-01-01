@@ -40,15 +40,6 @@ public interface PlayerCullingApi {
     void setCullingEnabled(UUID playerId, boolean enabled);
 
     /**
-     * Returns a set of player IDs that are hidden from the given player.
-     *
-     * @param playerId the unique ID of the player
-     * @return an immutable set of player IDs that are hidden from the player
-     */
-    @Unmodifiable
-    Set<UUID> getHiddenPlayers(UUID playerId);
-
-    /**
      * Calculates the number of bytes used by the occlusion cache.
      *
      * @return bytes

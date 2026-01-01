@@ -48,15 +48,6 @@ public class PlayerCullingApiImpl implements PlayerCullingApi {
     }
 
     @Override
-    public @Unmodifiable Set<UUID> getHiddenPlayers(UUID playerId) {
-        CullPlayer player = this.cullShip.getPlayer(playerId);
-        if (player == null) {
-            return Set.of();
-        }
-        return player.getHidden();
-    }
-
-    @Override
     public long calcOcclusionCacheBytes() {
         return OcclusionWorldCache.byteSize(this.cullShip.getPlatform().getWorlds());
     }

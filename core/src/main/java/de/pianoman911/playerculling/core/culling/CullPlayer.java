@@ -13,16 +13,17 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.atomics.AtomicCooldownRunnable;
 import de.pianoman911.playerculling.platformcommon.util.atomics.AtomicFastStack;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSets;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class CullPlayer {
@@ -45,8 +46,8 @@ public final class CullPlayer {
     private final Vec3d viewerBack = new Vec3d(0, 0, 0);
     private final Vec3d viewerFront = new Vec3d(0, 0, 0);
 
-    private final Set<UUID> hidden = ConcurrentHashMap.newKeySet();
-    private final Set<UUID> toRemove = new HashSet<>(); // diff queue for hidden players
+    private final IntSet hidden = IntSets.synchronize(new IntOpenHashSet());
+    private final IntSet toRemove = new IntOpenHashSet(); // diff queue for hidden players
 
     private final Set<CullWorker> cullWorkers = ConcurrentHashMap.newKeySet();
 
@@ -231,7 +232,7 @@ public final class CullPlayer {
             ) { // cull
                 this.tracked.push(worldEntity);
             } else { // not visible
-                this.hidden.add(worldEntity.getUniqueId());
+                this.hidden.add(worldEntity.getEntityId());
             }
         }
         if (this.tracked.isEmpty()) { // No players to cull
@@ -299,12 +300,12 @@ public final class CullPlayer {
         if (canSee) {
             this.unHideWithDirectPairing(target);
         } else {
-            this.hidden.add(target.getUniqueId());
+            this.hidden.add(target.getEntityId());
         }
     }
 
     private void unHideWithDirectPairing(PlatformEntity target) {
-        if (this.hidden.remove(target.getUniqueId())) {
+        if (this.hidden.remove(target.getEntityId())) {
             this.player.addDirectPairing(target);
         }
     }
@@ -327,7 +328,7 @@ public final class CullPlayer {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted") // this is a getter
-    public boolean isHidden(UUID playerId) {
+    public boolean isHidden(int playerId) {
         return this.hidden.contains(playerId);
     }
 
@@ -336,15 +337,15 @@ public final class CullPlayer {
     }
 
     @Unmodifiable
-    public Set<UUID> getHidden() {
-        return Set.copyOf(this.hidden);
+    public IntSet getHidden() {
+        return IntSets.unmodifiable(this.hidden);
     }
 
     public void resetHidden() {
         this.hidden.clear();
     }
 
-    public void invalidateOther(UUID entityId) {
+    public void invalidateOther(int entityId) {
         // don't remove immediately, wait for async thread to finish processing
         // and then remove it to prevent the player from being added back again
         synchronized (this.toRemove) {

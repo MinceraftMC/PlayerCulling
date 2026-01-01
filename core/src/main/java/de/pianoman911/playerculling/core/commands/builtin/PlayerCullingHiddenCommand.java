@@ -7,6 +7,7 @@ import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSender;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.HashSet;
@@ -37,12 +38,12 @@ public final class PlayerCullingHiddenCommand {
             sender.sendMessage(text(executor == sender ? "You are not culling." : executor.getName() + " is not a culling player.", NamedTextColor.RED));
             return 0;
         }
-        Set<UUID> hidden = cullPlayer.getHidden();
+        IntSet hidden = cullPlayer.getHidden();
         Set<String> names = new HashSet<>(hidden.size());
-        for (UUID uuid : hidden) {
-            PlatformPlayer player = ship.getPlatform().getPlayer(uuid);
-            names.add(player.getName());
-        }
+//        for (UUID uuid : hidden) {
+//            PlatformPlayer player = ship.getPlatform().getPlayer(uuid);
+//            names.add(player.getName());
+//        }
 
         if (names.isEmpty()) {
             sender.sendMessage(text(executor == sender ? "You see all players." : executor.getName() + " sees all players.", NamedTextColor.GREEN));
