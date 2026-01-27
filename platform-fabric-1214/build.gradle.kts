@@ -25,25 +25,6 @@ dependencies {
     implementation(libs.configurate.yaml)
 }
 
-tasks.named<Jar>("jar") {
-    manifest.attributes(
-        "Implementation-Title" to rootProject.name,
-        "Implementation-Vendor" to "pianoman911",
-        "Implementation-Contributors" to "booky10",
-        "Implementation-Version" to project.version,
-        "License" to "AGPL-3.0",
-
-        "Build-Date" to rootProject.ext["compileDate"],
-        "Build-Timestamp" to rootProject.ext["compileTime"].toString(),
-
-        "Git-Commit" to rootProject.ext["gitHash"],
-        "Git-Branch" to rootProject.ext["gitBranch"],
-        "Git-Tag" to rootProject.ext["gitTag"],
-
-        "Environment" to project.gradle.startParameter.taskNames,
-    )
-}
-
 tasks.named<ProcessResources>("processResources") {
     inputs.property("version", project.version)
     filesMatching("fabric.mod.json") {
