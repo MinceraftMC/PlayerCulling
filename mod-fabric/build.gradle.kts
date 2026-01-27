@@ -73,12 +73,12 @@ tasks.named<Jar>("jar") {
         "Implementation-Version" to project.version,
         "License" to "AGPL-3.0",
 
-        "Build-Date" to rootProject.ext["compileDate"],
+        "Build-Date" to rootProject.ext["compileDate"].toString(),
         "Build-Timestamp" to rootProject.ext["compileTime"].toString(),
 
-        "Git-Commit" to rootProject.ext["gitHash"],
-        "Git-Branch" to rootProject.ext["gitBranch"],
-        "Git-Tag" to rootProject.ext["gitTag"],
+        "Git-Commit" to rootProject.ext["gitHash"].toString(),
+        "Git-Branch" to rootProject.ext["gitBranch"].toString(),
+        "Git-Tag" to rootProject.ext["gitTag"].toString(),
 
         "paperweight-mappings-namespace" to "mojang",
         "Environment" to project.gradle.startParameter.taskNames
@@ -94,21 +94,21 @@ loom {
     mixin.defaultRefmapName = "${rootProject.name}-${project.name}-refmap.json".lowercase()
 }
 
-// fabric's default task doesn't allow us to specify that we want to have standard input
-@UntrackedTask(because = "Always rerun this task.")
-abstract class CustomServerProductionRunTask : ServerProductionRunTask {
+//// fabric's default task doesn't allow us to specify that we want to have standard input
+//@UntrackedTask(because = "Always rerun this task.")
+//abstract class CustomServerProductionRunTask : ServerProductionRunTask {
+//
+//    @Inject
+//    constructor() : super()
+//
+//    override fun configureProgramArgs(exec: ExecSpec?) {
+//        super.configureProgramArgs(exec)
+//        exec!!.standardInput = System.`in`
+//    }
+//}
 
-    @Inject
-    constructor() : super()
-
-    override fun configureProgramArgs(exec: ExecSpec?) {
-        super.configureProgramArgs(exec)
-        exec!!.standardInput = System.`in`
-    }
-}
-
-tasks.register<CustomServerProductionRunTask>("prodServer") {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
+//tasks.register<CustomServerProductionRunTask>("prodServer") {
+//    javaLauncher = javaToolchains.launcherFor {
+//        languageVersion = JavaLanguageVersion.of(21)
+//    }
+//}

@@ -43,12 +43,12 @@ tasks {
             "Implementation-Version" to project.version,
             "License" to "AGPL-3.0",
 
-            "Build-Date" to rootProject.ext["compileDate"],
+            "Build-Date" to rootProject.ext["compileDate"].toString(),
             "Build-Timestamp" to rootProject.ext["compileTime"].toString(),
 
-            "Git-Commit" to rootProject.ext["gitHash"],
-            "Git-Branch" to rootProject.ext["gitBranch"],
-            "Git-Tag" to rootProject.ext["gitTag"],
+            "Git-Commit" to rootProject.ext["gitHash"].toString(),
+            "Git-Branch" to rootProject.ext["gitBranch"].toString(),
+            "Git-Tag" to rootProject.ext["gitTag"].toString(),
 
             "paperweight-mappings-namespace" to "mojang",
             "Environment" to project.gradle.startParameter.taskNames

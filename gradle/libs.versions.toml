@@ -4,7 +4,7 @@ gradle-shadow = "8.3.6"
 
 paperweight-userdev = "2.0.0-beta.18"
 pluginyml-bukkit = "0.6.0"
-fabric-loom = "1.11-SNAPSHOT"
+fabric-loom = "1.14-SNAPSHOT"
 
 adventure-api = "4.20.0"
 
@@ -26,7 +26,7 @@ run-paper = "2.3.1"
 netty = "4.1.121.Final"
 
 # generic fabric
-fabric-loader = "0.17.3"
+fabric-loader = "0.18.4"
 
 # fabric 1.21.4
 minecraft-v1214 = "1.21.4"
@@ -51,7 +51,7 @@ adventure-platform-fabric-v1217 = "6.6.0"
 
 # fabric 1.21.9
 minecraft-v1219 = "1.21.9"
-fabricapi-v1219 = "0.134.0+1.21.9"
+fabricapi-v1219 = "0.134.1+1.21.9"
 parchment-v1219 = "2025.10.05"
 fabric-permissions-v1219 = "0.5.0"
 adventure-platform-fabric-v1219 = "6.7.0"
@@ -61,7 +61,7 @@ gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow" }
 
 paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight-userdev" }
 pluginyml-bukkit = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "pluginyml-bukkit" }
-fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
+fabric-loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "fabric-loom" }
 
 runtask-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
 

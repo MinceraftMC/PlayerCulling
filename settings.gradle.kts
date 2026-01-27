@@ -30,3 +30,6 @@ include("mod-fabric")
 
 include("platform-paper-nms-1216")
 
+
+include("meme")
+include("meme-codec")

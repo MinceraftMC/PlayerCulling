@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "playercullingmeme",
+  "version": "${version}",
+  "name": "PlayerCullingMeme",
+  "description": "Player Culling Model Extraction Module Engine extracts entity models.",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/playercullingmeme/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "de.pianoman911.playerculling.meme.PlayerCullingMemeMod"
+    ]
+  },
+  "mixins": [
+    "playercullingmeme.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.9",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
