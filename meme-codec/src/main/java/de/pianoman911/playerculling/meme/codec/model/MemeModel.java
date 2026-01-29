@@ -6,10 +6,7 @@ import java.util.Map;
 
 @NullMarked
 public record MemeModel(
-        Meta meta,
+        MemeModelMeta meta,
         Map<String, MemeModelPart> parts
 ) {
-
-    public record Meta(String name, String entityType) {
-    }
 }

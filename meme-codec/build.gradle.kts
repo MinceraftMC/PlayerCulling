@@ -3,4 +3,5 @@ dependencies{
     compileOnlyApi(libs.checkerframework)
 
     compileOnlyApi(libs.configurate.core)
+    compileOnlyApi(libs.configurate.yaml)
 }
