@@ -12,10 +12,6 @@ import de.pianoman911.playerculling.platformpaper.platform.PaperPlatform;
 import de.pianoman911.playerculling.platformpaper.platform.PaperPlayer;
 import de.pianoman911.playerculling.platformpaper.platform.PaperWorld;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
-import de.pianoman911.playerculling.platformpapernms12111.DelegatedChunkPacketBlockController;
-import de.pianoman911.playerculling.platformpapernms12111.DelegatedTrackedEntity;
-import de.pianoman911.playerculling.platformpapernms12111.DelegatedWaypointManager;
-import de.pianoman911.playerculling.platformpapernms12111.NmsPacketListener;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.network.ChannelInitializeListenerHolder;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -126,7 +122,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     public @Nullable PlatformChunkAccess provideChunkAccess(PaperPlatform platform, World world, int chunkX, int chunkZ) {
         ChunkAccess chunk = ((CraftWorld) world).getHandle().moonrise$getSpecificChunkIfLoaded(
                 chunkX, chunkZ, ChunkStatus.FEATURES);
-        return chunk != null ? new de.pianoman911.playerculling.platformpapernms12111.PaperNmsChunkAccess(platform, chunk) : null;
+        return chunk != null ? new PaperNmsChunkAccess(platform, chunk) : null;
     }
 
     @Override
