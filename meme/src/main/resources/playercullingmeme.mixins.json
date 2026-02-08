@@ -4,6 +4,7 @@
   "package": "de.pianoman911.playerculling.meme.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "EntityRenderDispatcherMixin"
   ],
   "injectors": {
     "defaultRequire": 1,

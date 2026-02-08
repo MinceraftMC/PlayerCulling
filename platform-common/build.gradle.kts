@@ -4,4 +4,5 @@ dependencies {
     compileOnlyApi(libs.brigadier)
     compileOnly(libs.netty.all)
     api(projects.api)
+    api(projects.common)
 }

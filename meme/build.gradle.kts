@@ -13,6 +13,9 @@ dependencies {
 
     modImplementation(libs.fabric.loader)
     modImplementation(libs.fabricapi.v1219)
+
+    api(projects.memeCodec)
+    api(projects.common)
 }
 
 tasks.named<Jar>("jar") {

@@ -1,12 +1,15 @@
 package de.pianoman911.playerculling.meme;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import de.pianoman911.playerculling.meme.codec.model.MemeModel;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
@@ -20,9 +23,9 @@ public class PlayerCullingMemeMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ResourceLoader.get(PackType.CLIENT_RESOURCES)
-                .registerReloader(DUMMY, (sharedState, exectutor, barrier, applyExectutor) ->
-                        barrier.wait(exectutor).thenRunAsync(this::extractRenderStates, applyExectutor));
+//        ResourceLoader.get(PackType.CLIENT_RESOURCES)
+//                .registerReloader(DUMMY, (sharedState, exectutor, barrier, applyExectutor) ->
+//                        barrier.wait(exectutor).thenRunAsync(this::extractRenderStates, applyExectutor));
     }
 
     private void extractRenderStates() {

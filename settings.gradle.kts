@@ -9,6 +9,7 @@ pluginManagement {
     }
 }
 
+include("common")
 include("core")
 include("api")
 include("platform-common")

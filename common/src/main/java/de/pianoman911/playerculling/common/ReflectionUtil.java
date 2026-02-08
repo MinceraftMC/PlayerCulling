@@ -1,5 +1,4 @@
-package de.pianoman911.playerculling.platformcommon.util;
-// Created by booky10 in SimplePacketApi (22:27 15.05.23)
+package de.pianoman911.playerculling.common;
 
 import sun.misc.Unsafe;
 
@@ -125,5 +124,52 @@ public final class ReflectionUtil {
         }
         throw new IllegalArgumentException("Can't find field " + type
                 + " with offset " + offset + " in " + clazz.getName());
+    }
+
+    public static <T> FieldAccessor<T> createFieldAccessor(Class<?> clazz, Class<?> type, int offset) {
+        Field field = lookupField(clazz, type, offset);
+        MethodHandle getter = getGetter(clazz, type, offset);
+        MethodHandle setter = getSetter(clazz, type, offset);
+        return new FieldAccessor<>(field, getter, setter);
+    }
+
+    public static FieldAccessor<?>[] createFieldAccessors(Class<?> clazz) {
+        return createFieldAccessors(clazz, Modifier.fieldModifiers());
+    }
+
+    public static FieldAccessor<?>[] createNonStaticFieldAccessors(Class<?> clazz) {
+        return createFieldAccessors(clazz, ~Modifier.STATIC);
+    }
+
+    public static FieldAccessor<?>[] createFieldAccessors(Class<?> clazz, int modifiersMask) {
+        Field[] fields = clazz.getDeclaredFields();
+        return Arrays.stream(fields)
+                .filter(field -> (field.getModifiers() & modifiersMask) == modifiersMask)
+                .map(field -> {
+                    MethodHandle getter = getGetter(field);
+                    MethodHandle setter = getSetter(field);
+                    return new FieldAccessor<>(field, getter, setter);
+                })
+                .toArray(FieldAccessor<?>[]::new);
+    }
+
+    public record FieldAccessor<T>(Field field, MethodHandle getter, MethodHandle setter) {
+
+        @SuppressWarnings("unchecked")
+        public T get(Object instance) {
+            try {
+                return (T) getter.invoke(instance);
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        }
+
+        public void set(Object instance, T value) {
+            try {
+                setter.invoke(instance, value);
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        }
     }
 }
