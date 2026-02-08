@@ -120,6 +120,7 @@ environment with an AMD Ryzen 5 3600X CPU.
 
 | Server Version | Paper | Folia | Fabric |
 |:--------------:|:-----:|:-----:|:------:|
+|    1.21.11     |   ✅   |   ✅   |   ✅    |  
 |    1.21.10     |   ✅   |   ✅   |   ✅    |  
 |     1.21.9     |   ✅   |   ✅   |   ✅    |  
 |     1.21.8     |   ✅   |   ✅   |   ✅    |  
@@ -245,7 +246,7 @@ of the executed command. For example:
     <dependency>
         <groupId>de.pianoman911</groupId>
         <artifactId>playerculling-api</artifactId>
-        <version>2.1.2-SNAPSHOT</version>
+        <version>2.1.3-SNAPSHOT</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -265,7 +266,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'de.pianoman911:playerculling-api:2.1.2-SNAPSHOT'
+    compileOnly 'de.pianoman911:playerculling-api:2.1.3-SNAPSHOT'
 }
 ```
 
@@ -282,7 +283,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("de.pianoman911:playerculling-api:2.1.2-SNAPSHOT")
+    compileOnly("de.pianoman911:playerculling-api:2.1.3-SNAPSHOT")
 }
 ```
 
