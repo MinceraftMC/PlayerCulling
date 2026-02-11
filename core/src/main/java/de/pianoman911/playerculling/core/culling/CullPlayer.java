@@ -31,6 +31,7 @@ public final class CullPlayer {
     private static final long BLINDNESS_FADE_OUT_TICKS = 25;
     private static final long DARKNESS_FADE_OUT_TICKS = 30;
 
+    private final CullShip ship;
     private final PlatformPlayer player;
     private final OcclusionCullingInstance cullingInstance;
     private final DataProvider provider = new ChunkOcclusionDataProvider(this);
@@ -49,7 +50,8 @@ public final class CullPlayer {
     private long lastDarkness = -1;
     private long lastRaySteps = 0L;
 
-    public CullPlayer(PlatformPlayer player) {
+    public CullPlayer(CullShip ship, PlatformPlayer player) {
+        this.ship = ship;
         this.player = player;
         this.cullingInstance = new OcclusionCullingInstance(this.provider);
         this.provider.world(player.getWorld());
@@ -137,6 +139,8 @@ public final class CullPlayer {
         }
 
         PlatformWorld world = this.player.getWorld();
+
+
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
@@ -182,7 +186,8 @@ public final class CullPlayer {
 
             if (
                     worldPlayer.isGlowing() || // Glowing player
-                            !worldPlayer.isSneaking() && nameTag // Name tag visible and not sneaking
+                            !worldPlayer.isSneaking() && (nameTag && // Name tag visible and not sneaking
+                                    !this.ship.getConfig().getDelegate().culling.ignoreNametags) // Nametag culling disabled
             ) { // Always visible
                 this.unHideWithDirectPairing(worldPlayer);
             } else if (
@@ -190,7 +195,11 @@ public final class CullPlayer {
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
                             (!darkness || distSq < DARKNESS_DISTANCE_SQUARED) // In darkness distance
             ) { // cull
-                this.tracked.push(worldPlayer);
+                if (this.ship.getConfig().getDelegate().culling.getBeginCullDistanceSquared() > distSq) { // too close to cull
+                    this.unHideWithDirectPairing(worldPlayer);
+                } else {
+                    this.tracked.push(worldPlayer);
+                }
             } else { // not visible
                 this.hidden.add(worldPlayer.getUniqueId());
             }
@@ -283,6 +292,10 @@ public final class CullPlayer {
                 this.hidden.add(target.getUniqueId());
             }
         }
+    }
+
+    private boolean blacklistedWorldCheck() {
+        this.player.getWorld().get
     }
 
     private void unHideWithDirectPairing(PlatformPlayer target) {

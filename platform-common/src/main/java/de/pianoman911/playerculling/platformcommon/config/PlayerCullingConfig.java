@@ -1,8 +1,11 @@
 package de.pianoman911.playerculling.platformcommon.config;
 
 import de.pianoman911.playerculling.platformcommon.util.WaypointMode;
+import net.kyori.adventure.key.Key;
 import org.jspecify.annotations.NullUnmarked;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+
+import java.util.Set;
 
 @ConfigSerializable
 @NullUnmarked
@@ -10,6 +13,7 @@ public final class PlayerCullingConfig {
 
     public int configVersion = 1;
     public Scheduler scheduler = new Scheduler();
+    public Culling culling = new Culling();
     public Updater updater = new Updater();
     public WaypointMode waypointMode = WaypointMode.HIDDEN;
 
@@ -41,6 +45,18 @@ public final class PlayerCullingConfig {
 
         public double getMaxMergeNs() {
             return this.maxMergeFactor * this.getMaxCullTimeNs();
+        }
+    }
+
+    @ConfigSerializable
+    public final static class Culling {
+
+        public boolean ignoreNametags = false;
+        public int beginCullDistance = 0;
+        public Set<Key> blacklistedWorlds = Set.of();
+
+        public int getBeginCullDistanceSquared() {
+            return this.beginCullDistance * this.beginCullDistance;
         }
     }
 
