@@ -140,7 +140,6 @@ public final class CullPlayer {
 
         PlatformWorld world = this.player.getWorld();
 
-
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
@@ -189,14 +188,14 @@ public final class CullPlayer {
                             !worldPlayer.isSneaking() && (nameTag && // Name tag visible and not sneaking
                                     !this.ship.getConfig().getDelegate().culling.ignoreNametags) // Nametag culling disabled
             ) { // Always visible
-                this.unHideWithDirectPairing(worldPlayer);
+                this.unhide(worldPlayer, distSq <= trackingDistSq);
             } else if (
                     distSq < trackingDistSq && // In regular tracking distance
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
                             (!darkness || distSq < DARKNESS_DISTANCE_SQUARED) // In darkness distance
             ) { // cull
                 if (this.ship.getConfig().getDelegate().culling.getBeginCullDistanceSquared() > distSq) { // too close to cull
-                    this.unHideWithDirectPairing(worldPlayer);
+                    this.unhide(worldPlayer, true);
                 } else {
                     this.tracked.push(worldPlayer);
                 }
@@ -287,7 +286,7 @@ public final class CullPlayer {
             }
 
             if (canSee) {
-                this.unHideWithDirectPairing(target);
+                this.unhide(target, true);
             } else {
                 this.hidden.add(target.getUniqueId());
             }
@@ -298,8 +297,8 @@ public final class CullPlayer {
         this.player.getWorld().get
     }
 
-    private void unHideWithDirectPairing(PlatformPlayer target) {
-        if (this.hidden.remove(target.getUniqueId())) {
+    private void unhide(PlatformPlayer target, boolean directPairing) {
+        if (this.hidden.remove(target.getUniqueId()) && directPairing) {
             this.player.addDirectPairing(target);
         }
     }
