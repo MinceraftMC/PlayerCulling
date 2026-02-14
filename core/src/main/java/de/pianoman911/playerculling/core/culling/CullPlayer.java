@@ -184,7 +184,7 @@ public final class CullPlayer {
                     worldPlayer.isGlowing() || // Glowing player
                             !worldPlayer.isSneaking() && nameTag // Name tag visible and not sneaking
             ) { // Always visible
-                this.unHideWithDirectPairing(worldPlayer);
+                this.unhide(worldPlayer, distSq <= trackingDistSq);
             } else if (
                     distSq < trackingDistSq && // In regular tracking distance
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
@@ -278,15 +278,15 @@ public final class CullPlayer {
             }
 
             if (canSee) {
-                this.unHideWithDirectPairing(target);
+                this.unhide(target, true);
             } else {
                 this.hidden.add(target.getUniqueId());
             }
         }
     }
 
-    private void unHideWithDirectPairing(PlatformPlayer target) {
-        if (this.hidden.remove(target.getUniqueId())) {
+    private void unhide(PlatformPlayer target, boolean directPairing) {
+        if (this.hidden.remove(target.getUniqueId()) && directPairing) {
             this.player.addDirectPairing(target);
         }
     }
