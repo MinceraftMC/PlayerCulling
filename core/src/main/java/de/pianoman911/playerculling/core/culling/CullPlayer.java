@@ -128,17 +128,17 @@ public final class CullPlayer {
     }
 
     private void cull0() {
+        PlatformWorld world = this.player.getWorld();
         if (!this.cullingEnabled
                 || this.player.shouldPreventCulling()
                 || this.player.isSpectator()
                 || this.spectating
                 || this.player.hasPermission("playerculling.bypass", false)
+                || this.ship.getConfig().getDelegate().culling.blacklistedWorlds.contains(world.getKey())
         ) {
             this.hidden.clear();
             return;
         }
-
-        PlatformWorld world = this.player.getWorld();
 
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
@@ -175,13 +175,15 @@ public final class CullPlayer {
 
         double trackingDistSq = trackingDist * trackingDist;
 
+        double nametagVisibilityDistSq = this.ship.getConfig().getDelegate().culling.getNametagVisibleDistanceSquared();
+
         for (PlatformPlayer worldPlayer : playersInWorld) {
             if (worldPlayer == this.player) {
                 continue;
             }
-            boolean nameTag = this.player.canSeeNameTag(worldPlayer);
 
             double distSq = eye.distanceSquared(worldPlayer.getPosition());
+            boolean nameTag = distSq <= nametagVisibilityDistSq && this.player.canSeeNameTag(worldPlayer);
 
             if (
                     worldPlayer.isGlowing() || // Glowing player
@@ -194,11 +196,7 @@ public final class CullPlayer {
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
                             (!darkness || distSq < DARKNESS_DISTANCE_SQUARED) // In darkness distance
             ) { // cull
-                if (this.ship.getConfig().getDelegate().culling.getBeginCullDistanceSquared() > distSq) { // too close to cull
-                    this.unhide(worldPlayer, true);
-                } else {
-                    this.tracked.push(worldPlayer);
-                }
+                this.tracked.push(worldPlayer);
             } else { // not visible
                 this.hidden.add(worldPlayer.getUniqueId());
             }
@@ -291,10 +289,6 @@ public final class CullPlayer {
                 this.hidden.add(target.getUniqueId());
             }
         }
-    }
-
-    private boolean blacklistedWorldCheck() {
-        this.player.getWorld().get
     }
 
     private void unhide(PlatformPlayer target, boolean directPairing) {

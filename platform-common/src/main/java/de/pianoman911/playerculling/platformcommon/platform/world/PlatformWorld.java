@@ -6,6 +6,7 @@ import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlaye
 import de.pianoman911.playerculling.platformcommon.util.TickRefreshSupplier;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
+import net.kyori.adventure.key.Key;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -30,6 +31,8 @@ public abstract class PlatformWorld {
     public abstract PlatformChunkAccess getChunkAccess(int x, int z);
 
     public abstract String getName();
+
+    public abstract Key getKey();
 
     // Exclusive
     public abstract int getMinY();

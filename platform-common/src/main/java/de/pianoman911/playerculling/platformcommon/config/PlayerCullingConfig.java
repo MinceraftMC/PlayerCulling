@@ -52,11 +52,11 @@ public final class PlayerCullingConfig {
     public final static class Culling {
 
         public boolean ignoreNametags = false;
-        public int beginCullDistance = 0;
+        public double nametagVisibleDistance = 64; // blocks
         public Set<Key> blacklistedWorlds = Set.of();
 
-        public int getBeginCullDistanceSquared() {
-            return this.beginCullDistance * this.beginCullDistance;
+        public double getNametagVisibleDistanceSquared() {
+            return this.nametagVisibleDistance * this.nametagVisibleDistance;
         }
     }
 

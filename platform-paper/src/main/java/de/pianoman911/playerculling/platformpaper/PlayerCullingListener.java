@@ -27,7 +27,7 @@ public class PlayerCullingListener implements Listener {
         PlatformPlayer platformPlayer = this.plugin.getPlatform().providePlayer(player);
 
         CullShip cullShip = this.plugin.getCullShip();
-        cullShip.addPlayer(new CullPlayer(platformPlayer));
+        cullShip.addPlayer(new CullPlayer(this.plugin.getCullShip(), platformPlayer));
         cullShip.getUpdater().onJoin(platformPlayer);
     }
 

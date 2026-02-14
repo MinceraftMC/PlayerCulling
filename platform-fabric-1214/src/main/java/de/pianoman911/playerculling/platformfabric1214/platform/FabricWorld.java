@@ -7,6 +7,7 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
 import de.pianoman911.playerculling.platformfabric1214.common.ILevel;
+import net.kyori.adventure.key.Key;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -54,6 +55,11 @@ public class FabricWorld extends PlatformWorld {
     @Override
     public String getName() {
         return this.world.serverLevelData.getLevelName();
+    }
+
+    @Override
+    public Key getKey() {
+        return this.world.dimension().key();
     }
 
     @Override

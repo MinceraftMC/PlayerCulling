@@ -40,7 +40,7 @@ public class PlayerCullingPlugin extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new PlayerCullingListener(this), this);
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            this.cullShip.addPlayer(new CullPlayer(this.getPlatform().providePlayer(onlinePlayer)));
+            this.cullShip.addPlayer(new CullPlayer(this.cullShip, this.getPlatform().providePlayer(onlinePlayer)));
         }
 
         // inject into netty pipeline
