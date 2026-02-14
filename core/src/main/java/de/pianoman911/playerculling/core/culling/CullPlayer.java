@@ -187,8 +187,7 @@ public final class CullPlayer {
 
             if (
                     worldPlayer.isGlowing() || // Glowing player
-                            !worldPlayer.isSneaking() && (nameTag && // Name tag visible and not sneaking
-                                    !this.ship.getConfig().getDelegate().culling.ignoreNametags) // Nametag culling disabled
+                            !worldPlayer.isSneaking() && nameTag // Name tag visible and not sneaking
             ) { // Always visible
                 this.unhide(worldPlayer, distSq <= trackingDistSq);
             } else if (

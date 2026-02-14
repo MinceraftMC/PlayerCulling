@@ -51,7 +51,6 @@ public final class PlayerCullingConfig {
     @ConfigSerializable
     public final static class Culling {
 
-        public boolean ignoreNametags = false;
         public double nametagVisibleDistance = 64; // blocks
         public Set<Key> blacklistedWorlds = Set.of();
 
