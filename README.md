@@ -160,6 +160,10 @@ following options:
       from other overloaded threads (default: `0.7`)
     - `max-merge-factor`: If the combined load percentage of two threads is below this factor, the two threads are
       allowed to merge together (default: `0.5`)
+- `culling`:
+    - `nametag-visibility-distance`: The distance in blocks PlayerCulling will check for nametag visibility. Set to `0` to
+      ignore nametags completely (default: `64`, vanilla)
+    - `blacklisted_worlds`: A list of worlds where PlayerCulling should be disabled (default: `[]`)
 - `updater`:
     - `enabled`: Enables/disables the update checker (default: `true`)
     - `notify-admins`: Whether to notify admins about new PlayerCulling releases (default: `true`)

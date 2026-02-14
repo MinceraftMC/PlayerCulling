@@ -31,6 +31,7 @@ public final class CullPlayer {
     private static final long BLINDNESS_FADE_OUT_TICKS = 25;
     private static final long DARKNESS_FADE_OUT_TICKS = 30;
 
+    private final CullShip ship;
     private final PlatformPlayer player;
     private final OcclusionCullingInstance cullingInstance;
     private final DataProvider provider = new ChunkOcclusionDataProvider(this);
@@ -49,7 +50,8 @@ public final class CullPlayer {
     private long lastDarkness = -1;
     private long lastRaySteps = 0L;
 
-    public CullPlayer(PlatformPlayer player) {
+    public CullPlayer(CullShip ship, PlatformPlayer player) {
+        this.ship = ship;
         this.player = player;
         this.cullingInstance = new OcclusionCullingInstance(this.provider);
         this.provider.world(player.getWorld());
@@ -126,17 +128,18 @@ public final class CullPlayer {
     }
 
     private void cull0() {
+        PlatformWorld world = this.player.getWorld();
         if (!this.cullingEnabled
                 || this.player.shouldPreventCulling()
                 || this.player.isSpectator()
                 || this.spectating
                 || this.player.hasPermission("playerculling.bypass", false)
+                || this.ship.getConfig().getDelegate().culling.blacklistedWorlds.contains(world.getKey())
         ) {
             this.hidden.clear();
             return;
         }
 
-        PlatformWorld world = this.player.getWorld();
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
@@ -172,19 +175,21 @@ public final class CullPlayer {
 
         double trackingDistSq = trackingDist * trackingDist;
 
+        double nametagVisibilityDistSq = this.ship.getConfig().getDelegate().culling.getNametagVisibilityDistanceSquared();
+
         for (PlatformPlayer worldPlayer : playersInWorld) {
             if (worldPlayer == this.player) {
                 continue;
             }
-            boolean nameTag = this.player.canSeeNameTag(worldPlayer);
 
             double distSq = eye.distanceSquared(worldPlayer.getPosition());
+            boolean nameTag = distSq <= nametagVisibilityDistSq && this.player.canSeeNameTag(worldPlayer);
 
             if (
                     worldPlayer.isGlowing() || // Glowing player
                             !worldPlayer.isSneaking() && nameTag // Name tag visible and not sneaking
             ) { // Always visible
-                this.unHideWithDirectPairing(worldPlayer);
+                this.unhide(worldPlayer, distSq <= trackingDistSq);
             } else if (
                     distSq < trackingDistSq && // In regular tracking distance
                             (!blindness || distSq < BLINDNESS_DISTANCE_SQUARED) && // In blindness distance
@@ -278,15 +283,15 @@ public final class CullPlayer {
             }
 
             if (canSee) {
-                this.unHideWithDirectPairing(target);
+                this.unhide(target, true);
             } else {
                 this.hidden.add(target.getUniqueId());
             }
         }
     }
 
-    private void unHideWithDirectPairing(PlatformPlayer target) {
-        if (this.hidden.remove(target.getUniqueId())) {
+    private void unhide(PlatformPlayer target, boolean directPairing) {
+        if (this.hidden.remove(target.getUniqueId()) && directPairing) {
             this.player.addDirectPairing(target);
         }
     }

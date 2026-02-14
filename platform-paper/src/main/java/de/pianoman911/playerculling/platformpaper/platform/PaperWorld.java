@@ -5,6 +5,7 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkA
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
@@ -39,6 +40,11 @@ public class PaperWorld extends PlatformWorld {
     @Override
     public String getName() {
         return this.world.getName();
+    }
+
+    @Override
+    public Key getKey() {
+        return this.world.getKey();
     }
 
     @Override

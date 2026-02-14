@@ -1,5 +1,8 @@
 package de.pianoman911.playerculling.platformcommon.config;
 
+import de.pianoman911.playerculling.platformcommon.config.serializer.KyoriKeySerializer;
+import io.leangen.geantyref.TypeToken;
+import net.kyori.adventure.key.Key;
 import org.jspecify.annotations.NullMarked;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.yaml.NodeStyle;
@@ -17,6 +20,8 @@ public class YamlConfigHolder<T> {
 
     private static final YamlConfigurationLoader.Builder CONFIG_BUILDER = YamlConfigurationLoader.builder()
             .nodeStyle(NodeStyle.BLOCK)
+            .defaultOptions(options -> options.serializers(collection ->
+                    collection.register(new TypeToken<Key>() {}, KyoriKeySerializer.INSTANCE)))
             .indent(2);
 
     private final Class<T> clazz;
