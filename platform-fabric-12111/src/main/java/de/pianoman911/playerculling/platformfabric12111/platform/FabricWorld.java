@@ -59,7 +59,7 @@ public class FabricWorld extends PlatformWorld {
 
     @Override
     public Key getKey() {
-        return this.world.dimension().key();
+        return this.world.dimension().identifier().key();
     }
 
     @Override

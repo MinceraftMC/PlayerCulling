@@ -47,7 +47,7 @@ public class PlayerCullingListener implements
     @Override
     public void onPlayReady(ServerGamePacketListenerImpl serverGamePacketListener, PacketSender packetSender, MinecraftServer minecraftServer) {
         PlatformPlayer platformPlayer = this.plugin.getPlatform().providePlayer(serverGamePacketListener.player);
-        this.plugin.getCullShip().addPlayer(new CullPlayer(platformPlayer));
+        this.plugin.getCullShip().addPlayer(new CullPlayer(this.plugin.getCullShip(), platformPlayer));
     }
 
     @Override
