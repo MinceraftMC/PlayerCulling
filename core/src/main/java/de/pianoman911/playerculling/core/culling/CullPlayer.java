@@ -175,7 +175,7 @@ public final class CullPlayer {
 
         double trackingDistSq = trackingDist * trackingDist;
 
-        double nametagVisibilityDistSq = this.ship.getConfig().getDelegate().culling.getNametagVisibleDistanceSquared();
+        double nametagVisibilityDistSq = this.ship.getConfig().getDelegate().culling.getNametagVisibilityDistanceSquared();
 
         for (PlatformPlayer worldPlayer : playersInWorld) {
             if (worldPlayer == this.player) {

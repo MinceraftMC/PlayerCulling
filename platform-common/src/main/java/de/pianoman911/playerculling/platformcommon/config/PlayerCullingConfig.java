@@ -51,11 +51,11 @@ public final class PlayerCullingConfig {
     @ConfigSerializable
     public final static class Culling {
 
-        public double nametagVisibleDistance = 64; // blocks
+        public double nametagVisibilityDistance = 64; // blocks
         public Set<Key> blacklistedWorlds = Set.of();
 
-        public double getNametagVisibleDistanceSquared() {
-            return this.nametagVisibleDistance * this.nametagVisibleDistance;
+        public double getNametagVisibilityDistanceSquared() {
+            return this.nametagVisibilityDistance * this.nametagVisibilityDistance;
         }
     }
 
