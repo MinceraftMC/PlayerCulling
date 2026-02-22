@@ -9,6 +9,7 @@ import de.pianoman911.playerculling.platformfabric1219.common.IServerLevel;
 import de.pianoman911.playerculling.platformfabric1219.platform.FabricCommandSourceStack;
 import de.pianoman911.playerculling.platformfabric1219.platform.FabricWorld;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -26,10 +27,12 @@ public class PlayerCullingListener implements
         ServerPlayConnectionEvents.Join,
         ServerPlayConnectionEvents.Disconnect,
         ServerPlayerEvents.AfterRespawn,
+        ServerEntityWorldChangeEvents.AfterPlayerChange,
         ServerTickEvents.EndWorldTick,
         ServerLifecycleEvents.ServerStopped,
         CommandRegistrationCallback {
 
+    private static final long WORLD_CHANGE_GRACE_TICKS = 40L;
     private final PlayerCullingMod plugin;
 
     public PlayerCullingListener(PlayerCullingMod plugin) {
@@ -39,6 +42,7 @@ public class PlayerCullingListener implements
     public void register() {
         ServerPlayConnectionEvents.JOIN.register(this);
         ServerPlayConnectionEvents.DISCONNECT.register(this);
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(this);
         ServerTickEvents.END_WORLD_TICK.register(this);
         ServerLifecycleEvents.SERVER_STOPPED.register(this);
         CommandRegistrationCallback.EVENT.register(this);
@@ -62,6 +66,23 @@ public class PlayerCullingListener implements
             return; // cull player is null, ignore
         }
         player.setSpectating(false);
+    }
+
+    @Override
+    public void afterChangeWorld(ServerPlayer player, ServerLevel origin, ServerLevel destination) {
+        CullPlayer cullPlayer = this.plugin.getCullShip().getPlayer(player.getUUID());
+        if (cullPlayer != null) {
+            cullPlayer.resetHidden();
+            cullPlayer.setSpectating(false);
+            cullPlayer.forceVisibleForTicks(WORLD_CHANGE_GRACE_TICKS);
+        }
+        var destinationKey = ((IServerLevel) destination).getCullWorldOrCreate().getKey();
+        for (CullPlayer other : this.plugin.getCullShip().getPlayers()) {
+            other.invalidateOther(player.getUUID());
+            if (other.getPlatformPlayer().getWorld().getKey().equals(destinationKey)) {
+                other.forceVisibleForTicks(WORLD_CHANGE_GRACE_TICKS);
+            }
+        }
     }
 
     @Override

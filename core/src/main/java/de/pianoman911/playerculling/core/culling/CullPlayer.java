@@ -30,6 +30,8 @@ public final class CullPlayer {
     private static final long DARKNESS_MIN_MS = 2000;
     private static final long BLINDNESS_FADE_OUT_TICKS = 25;
     private static final long DARKNESS_FADE_OUT_TICKS = 30;
+    private static final long TELEPORT_GRACE_TICKS = 40;
+    private static final double TELEPORT_DISTANCE_SQUARED = 16 * 16;
 
     private final CullShip ship;
     private final PlatformPlayer player;
@@ -47,6 +49,11 @@ public final class CullPlayer {
 
     private boolean cullingEnabled = true;
     private boolean spectating = false;
+    private long forceVisibleUntilTick = -1;
+    private boolean hasLastEyePosition = false;
+    private double lastEyeX;
+    private double lastEyeY;
+    private double lastEyeZ;
     private long lastDarkness = -1;
     private long lastRaySteps = 0L;
 
@@ -139,13 +146,24 @@ public final class CullPlayer {
             this.hidden.clear();
             return;
         }
-
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
         }
         this.provider.world(world);
         Vec3d eye = this.player.getEyePosition();
+        if (this.hasLastEyePosition
+                && eye.distanceSquared(this.lastEyeX, this.lastEyeY, this.lastEyeZ) > TELEPORT_DISTANCE_SQUARED) {
+            this.forceVisibleForTicks(TELEPORT_GRACE_TICKS);
+        }
+        this.lastEyeX = eye.getX();
+        this.lastEyeY = eye.getY();
+        this.lastEyeZ = eye.getZ();
+        this.hasLastEyePosition = true;
+        if (this.ship.getPlatform().getCurrentTick() <= this.forceVisibleUntilTick) {
+            this.hidden.clear();
+            return;
+        }
 
         boolean blindness;
         boolean darkness;
@@ -176,6 +194,7 @@ public final class CullPlayer {
         double trackingDistSq = trackingDist * trackingDist;
 
         double nametagVisibilityDistSq = this.ship.getConfig().getDelegate().culling.getNametagVisibilityDistanceSquared();
+        double alwaysVisibleDistSq = this.ship.getConfig().getDelegate().culling.getAlwaysVisibleDistanceSquared();
 
         for (PlatformPlayer worldPlayer : playersInWorld) {
             if (worldPlayer == this.player) {
@@ -183,6 +202,10 @@ public final class CullPlayer {
             }
 
             double distSq = eye.distanceSquared(worldPlayer.getPosition());
+            if (distSq <= alwaysVisibleDistSq) {
+                this.unhide(worldPlayer, distSq <= trackingDistSq);
+                continue;
+            }
             boolean nameTag = distSq <= nametagVisibilityDistSq && this.player.canSeeNameTag(worldPlayer);
 
             if (
@@ -361,5 +384,16 @@ public final class CullPlayer {
 
     public void setSpectating(boolean spectating) {
         this.spectating = spectating;
+    }
+
+    public void forceVisibleForTicks(long ticks) {
+        if (ticks <= 0) {
+            return;
+        }
+        long until = this.ship.getPlatform().getCurrentTick() + ticks;
+        if (until > this.forceVisibleUntilTick) {
+            this.forceVisibleUntilTick = until;
+        }
+        this.resetHidden();
     }
 }

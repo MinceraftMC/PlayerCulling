@@ -52,10 +52,15 @@ public final class PlayerCullingConfig {
     public final static class Culling {
 
         public double nametagVisibilityDistance = 64; // blocks
+        public double alwaysVisibleDistance = 1.75; // blocks
         public Set<Key> blacklistedWorlds = Set.of();
 
         public double getNametagVisibilityDistanceSquared() {
             return this.nametagVisibilityDistance * this.nametagVisibilityDistance;
+        }
+
+        public double getAlwaysVisibleDistanceSquared() {
+            return this.alwaysVisibleDistance * this.alwaysVisibleDistance;
         }
     }
 

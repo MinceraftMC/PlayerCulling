@@ -163,6 +163,8 @@ following options:
 - `culling`:
     - `nametag-visibility-distance`: The distance in blocks PlayerCulling will check for nametag visibility. Set to `0` to
       ignore nametags completely (default: `64`, vanilla)
+    - `always-visible-distance`: The distance in blocks where players are always visible without occlusion checks. Set to
+      `0` to disable this bypass (default: `1.75`)
     - `blacklisted_worlds`: A list of worlds where PlayerCulling should be disabled (default: `[]`)
 - `updater`:
     - `enabled`: Enables/disables the update checker (default: `true`)

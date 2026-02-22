@@ -30,7 +30,7 @@ public final class FacedOcclusionStepping {
      * @return positive ray steps if occluded, negative ray steps if not occluded
      */
     public static int scanOccluded(
-            DataProvider provider, Vec3d start, Vec3i startVoxel,
+            DataProvider provider, Vec3d start, Vec3i startVoxel, Vec3i targetVoxel,
             double maxDistanceSqrt, double dirX, double dirY, double dirZ
     ) {
         final int maxDistanceInt;
@@ -171,6 +171,15 @@ public final class FacedOcclusionStepping {
         int y0 = startVoxel.getY();
         int z0 = startVoxel.getZ();
 
+        // Constrain hit checks to the voxel bounds spanned by start and target.
+        // This avoids false positives from numerical stepping drift (e.g. bedrock roof below the ray).
+        final int minX = Math.min(x0, targetVoxel.getX());
+        final int minY = Math.min(y0, targetVoxel.getY());
+        final int minZ = Math.min(z0, targetVoxel.getZ());
+        final int maxX = Math.max(x0, targetVoxel.getX());
+        final int maxY = Math.max(y0, targetVoxel.getY());
+        final int maxZ = Math.max(z0, targetVoxel.getZ());
+
         // Check vector
         int xC;
         int yC;
@@ -214,6 +223,15 @@ public final class FacedOcclusionStepping {
                 x0 = xC;
                 y0 = yC;
                 z0 = zC;
+            }
+            // The ray reached the target voxel: don't continue behind the target and hit unrelated geometry.
+            if (x0 == targetVoxel.getX() && y0 == targetVoxel.getY() && z0 == targetVoxel.getZ()) {
+                return -currentDistance;
+            }
+            if (x0 < minX || x0 > maxX
+                    || y0 < minY || y0 > maxY
+                    || z0 < minZ || z0 > maxZ) {
+                continue; // out-of-bounds for this ray segment, skip occlusion test
             }
             if (provider.isOpaqueFullCube(x0, y0, z0)) { // If the voxel is opaque break
                 return currentDistance;

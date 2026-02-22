@@ -40,6 +40,7 @@ public final class OcclusionCullingInstance {
 
     // Reused allocated data structures
     private final Vec3i startVoxel = new Vec3i(0, 0, 0);
+    private final Vec3i targetVoxel = new Vec3i(0, 0, 0);
     private long raySteps;
 
     public OcclusionCullingInstance(DataProvider provider) {
@@ -268,15 +269,16 @@ public final class OcclusionCullingInstance {
     }
 
     private boolean scanVisible(Vec3d posStart, Vec3i startVoxel, double x, double y, double z) {
+        this.targetVoxel.set((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
         double dirX = x - posStart.x;
         double dirY = y - posStart.y;
         double dirZ = z - posStart.z;
         double dirLen = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         int steps = FacedOcclusionStepping.scanOccluded(
-                this.provider, posStart, startVoxel, posStart.distanceSquared(x, y, z),
+                this.provider, posStart, startVoxel, this.targetVoxel, posStart.distanceSquared(x, y, z),
                 dirX / dirLen, dirY / dirLen, dirZ / dirLen);
-        if (steps < 0) {
-            this.raySteps -= steps;
+        if (steps <= 0) {
+            this.raySteps += Math.max(0, -steps);
             return true;
         }
         this.raySteps += steps;
