@@ -41,7 +41,8 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     private final ServerWaypointManager original;
     private final CullShip ship;
 
-    public DelegatedWaypointManager(ServerWaypointManager original, CullShip ship) {
+    public DelegatedWaypointManager(ServerWaypointManager original, CullShip ship, ServerLevel level) {
+        super(level);
         this.original = original;
         this.ship = ship;
 
@@ -58,7 +59,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
     public static void inject(ServerLevel level, CullShip ship) {
         ServerWaypointManager original = level.getWaypointManager();
-        DelegatedWaypointManager delegated = new DelegatedWaypointManager(original, ship);
+        DelegatedWaypointManager delegated = new DelegatedWaypointManager(original, ship, level);
 
         try {
             SET_WAYPOINT_MANAGER.invoke(level, delegated);

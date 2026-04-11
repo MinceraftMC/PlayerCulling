@@ -6,7 +6,7 @@ plugins {
 runPaper.folia.registerTask()
 
 dependencies {
-    listOf("1.21.1", "1.21.4", "1.21.6", "1.21.11")
+    listOf("1.21.1", "1.21.4", "1.21.6", "1.21.11", "26.1")
         .map { "paper-nms-${it.replace(".", "")}" }
         .forEach { implementation(project(":platform-$it")) }
     listOf("1.21.4", "1.21.6")

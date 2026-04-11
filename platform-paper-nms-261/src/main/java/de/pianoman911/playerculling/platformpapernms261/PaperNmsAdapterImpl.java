@@ -55,7 +55,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
 
     private static final String HANDLER_NAME = "playerculling";
     private static final IntSet SUPPORTED_PROTOCOLS = IntSet.of(
-            774 // 1.21.11
+            775 // 26.1.x
     );
 
     private final List<LongSet> changedBlocks = new ArrayList<>();
