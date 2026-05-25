@@ -1,5 +1,7 @@
 // Created by booky10 in BetterView (6:21 PM 04.04.2026)
 
+import de.pianoman911.playerculling.gradle.PlayerCullingVersionExt
+
 plugins {
     id("playerculling.version-ext")
     net.fabricmc.`fabric-loom`
@@ -12,10 +14,17 @@ dependencies {
     playercullingExt.afterEvaluate.add {
         minecraft("com.mojang:minecraft:${playercullingExt.versionName.get()}")
 
-        // depend on moonrise for chunk loading stuff
+        // fabric api
         val depVersion = playercullingExt.dependencyVersion().get()
-        val moonriseVersion = libs.versions.hackGetVersion("moonrise.$depVersion")
-        api("maven.modrinth:moonrise-opt:$moonriseVersion")
+        val fabricApiVersion = libs.versions.hackGetVersion("fabricapi.$depVersion")
+        implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
+
+        // permissions api
+        val permissionsVersion = libs.versions.hackGetVersion("fabric.permissions.$depVersion")
+        "me.lucko:fabric-permissions-api:$permissionsVersion".apply {
+            implementation(this)
+            include(this)
+        }
 
         // adventure component library
         val adventureVersion = libs.versions.hackGetVersion("adventure.platform.fabric.$depVersion")

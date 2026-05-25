@@ -1,5 +1,7 @@
 // Created by booky10 in BetterView (6:21 PM 04.04.2026)
 
+import de.pianoman911.playerculling.gradle.PlayerCullingVersionExt
+
 plugins {
     `java-library`
 }

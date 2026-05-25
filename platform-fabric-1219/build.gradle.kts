@@ -1,45 +1,9 @@
-import net.fabricmc.loom.task.AbstractRemapJarTask
+import de.pianoman911.playerculling.gradle.PlayerCullingVersionExt
 
 plugins {
-    alias(libs.plugins.fabric.loom)
+    id("playerculling.fabric-intermediary")
 }
 
-dependencies {
-    minecraft(libs.minecraft.v1219)
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment(variantOf(libs.parchment.v1219) { artifactType("zip") })
-    })
-
-    modImplementation(libs.fabric.loader)
-    modImplementation(libs.fabricapi.v1219)
-
-    modImplementation(libs.adventure.platform.fabric.v1219)
-
-    include(libs.fabric.permissions.v1219)
-    modImplementation(libs.fabric.permissions.v1219)
-
-    api(projects.core)
-
-    implementation(libs.configurate.core)
-    implementation(libs.configurate.yaml)
-}
-
-tasks.named<ProcessResources>("processResources") {
-    inputs.property("version", project.version)
-    filesMatching("fabric.mod.json") {
-        expand("version" to project.version)
-    }
-}
-
-tasks.withType<AbstractRemapJarTask> {
-    archiveBaseName = "${rootProject.name}-${project.name}".lowercase()
-}
-
-loom {
-    serverOnlyMinecraftJar()
-
-    accessWidenerPath = sourceSets.main.get().resources
-        .find { it.name == "playerculling.accesswidener" }
-    mixin.defaultRefmapName = "${rootProject.name}-${project.name}-refmap.json".lowercase()
+configure<PlayerCullingVersionExt> {
+    versionName = "1.21.9"
 }

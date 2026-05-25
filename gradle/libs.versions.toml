@@ -29,42 +29,31 @@ netty = "4.1.121.Final"
 fabric-loader = "0.18.5"
 
 # fabric 1.21.4
-minecraft-v1214 = "1.21.4"
 fabricapi-v1214 = "0.119.3+1.21.4"
-parchment-v1214 = "2025.03.23"
 fabric-permissions-v1214 = "0.3.3"
 adventure-platform-fabric-v1214 = "6.3.0"
 
 # fabric 1.21.5
-minecraft-v1215 = "1.21.5"
 fabricapi-v1215 = "0.128.1+1.21.5"
-parchment-v1215 = "2025.06.01"
 adventure-platform-fabric-v1215 = "6.4.0"
 
 # fabric 1.21.6/1.21.7
 fabricapi-v1216 = "0.128.2+1.21.6"
-minecraft-v1217 = "1.21.7"
 fabricapi-v1217 = "0.129.0+1.21.7"
-parchment-v1217 = "2025.06.29"
 fabric-permissions-v1217 = "0.4.1"
 adventure-platform-fabric-v1217 = "6.6.0"
 
 # fabric 1.21.9
-minecraft-v1219 = "1.21.9"
 fabricapi-v1219 = "0.134.0+1.21.9"
-parchment-v1219 = "2025.10.05"
 fabric-permissions-v1219 = "0.5.0"
 adventure-platform-fabric-v1219 = "6.7.0"
 
 # fabric 1.21.11
-minecraft-v12111 = "1.21.11"
 fabricapi-v12111 = "0.141.2+1.21.11"
-parchment-v12111 = "2025.12.20"
 fabric-permissions-v12111 = "0.6.1"
 adventure-platform-fabric-v12111 = "6.8.0"
 
 # fabric 26.1.x
-minecraft-v261 = "26.1.1"
 fabricapi-v261 = "0.145.4+26.1.1"
 fabric-permissions-v261 = "0.7.0"
 adventure-platform-fabric-v261 = "6.9.0"
@@ -96,38 +85,3 @@ bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
 
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
-
-minecraft-v1214 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1214" }
-fabricapi-v1214 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1214" }
-parchment-v1214 = { module = "org.parchmentmc.data:parchment-1.21.4", version.ref = "parchment-v1214" }
-fabric-permissions-v1214 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v1214" }
-adventure-platform-fabric-v1214 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1214" }
-
-minecraft-v1215 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1215" }
-fabricapi-v1215 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1215" }
-parchment-v1215 = { module = "org.parchmentmc.data:parchment-1.21.5", version.ref = "parchment-v1215" }
-adventure-platform-fabric-v1215 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1215" }
-
-fabricapi-v1216 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1216" }
-minecraft-v1217 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1217" }
-fabricapi-v1217 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1217" }
-parchment-v1217 = { module = "org.parchmentmc.data:parchment-1.21.6", version.ref = "parchment-v1217" }
-fabric-permissions-v1217 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v1217" }
-adventure-platform-fabric-v1217 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1217" }
-
-minecraft-v1219 = { module = "com.mojang:minecraft", version.ref = "minecraft-v1219" }
-fabricapi-v1219 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v1219" }
-parchment-v1219 = { module = "org.parchmentmc.data:parchment-1.21.9", version.ref = "parchment-v1219" }
-fabric-permissions-v1219 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v1219" }
-adventure-platform-fabric-v1219 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v1219" }
-
-minecraft-v12111 = { module = "com.mojang:minecraft", version.ref = "minecraft-v12111" }
-fabricapi-v12111 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v12111" }
-parchment-v12111 = { module = "org.parchmentmc.data:parchment-1.21.11", version.ref = "parchment-v12111" }
-fabric-permissions-v12111 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v12111" }
-adventure-platform-fabric-v12111 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v12111" }
-
-minecraft-v261 = { module = "com.mojang:minecraft", version.ref = "minecraft-v261" }
-fabricapi-v261 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v261" }
-fabric-permissions-v261 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v261" }
-adventure-platform-fabric-v261 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v261" }

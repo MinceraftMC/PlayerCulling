@@ -9,9 +9,11 @@ plugins {
 
 dependencies {
     // common project setup
-    api(project(":common")) {
+    api(project(":core")) {
         exclude(group = "net.kyori")
     }
+    implementation(libs.configurate.core)
+    implementation(libs.configurate.yaml)
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -26,6 +28,7 @@ tasks.withType<AbstractRemapJarTask> {
 }
 
 configure<LoomGradleExtensionAPI> {
+    serverOnlyMinecraftJar()
     accessWidenerPath = file("src/main/resources/${rootProject.name.lowercase()}.accesswidener")
     mixin.defaultRefmapName = "${rootProject.name}-${project.name}-refmap.json".lowercase()
 }

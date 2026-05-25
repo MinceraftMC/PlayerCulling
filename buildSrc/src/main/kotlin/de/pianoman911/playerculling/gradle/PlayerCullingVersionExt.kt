@@ -8,7 +8,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.property
 import org.jetbrains.annotations.ApiStatus
 
-abstract class BetterViewVersionExt(
+abstract class PlayerCullingVersionExt(
     objects: ObjectFactory,
 ) {
 

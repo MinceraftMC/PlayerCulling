@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.runtask.paper)
-    alias(libs.plugins.gradle.shadow)
+    xyz.jpenilla.`run-paper`
+    com.gradleup.shadow
 }
 
 runPaper.folia.registerTask()
