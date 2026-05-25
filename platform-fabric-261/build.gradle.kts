@@ -1,23 +1,19 @@
 import net.fabricmc.loom.task.AbstractRemapJarTask
 
 plugins {
-    alias(libs.plugins.fabric.loom)
+    id("playerculling.fabric-official")
 }
 
 dependencies {
-    minecraft(libs.minecraft.v12111)
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment(variantOf(libs.parchment.v12111) { artifactType("zip") })
-    })
+    minecraft(libs.minecraft.v261)
 
     modImplementation(libs.fabric.loader)
-    modImplementation(libs.fabricapi.v12111)
+    modImplementation(libs.fabricapi.v261)
 
-    modImplementation(libs.adventure.platform.fabric.v12111)
+    modImplementation(libs.adventure.platform.fabric.v261)
 
-    include(libs.fabric.permissions.v12111)
-    modImplementation(libs.fabric.permissions.v12111)
+    include(libs.fabric.permissions.v261)
+    modImplementation(libs.fabric.permissions.v261)
 
     api(projects.core)
 

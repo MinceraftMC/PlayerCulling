@@ -4,12 +4,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
 import java.util.stream.Stream
 
-plugins {
-    alias(libs.plugins.paperweight.userdev) apply false
-    alias(libs.plugins.gradle.shadow) apply false
-    alias(libs.plugins.fabric.loom) apply false
-}
-
 ext["gitHash"] = git("rev-parse --short HEAD").get()
 ext["gitBranch"] = git("rev-parse --abbrev-ref HEAD").get()
 ext["gitTag"] = git("describe --tags --abbrev=0").get()

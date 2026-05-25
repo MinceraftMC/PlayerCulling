@@ -1,10 +1,10 @@
 [versions]
 
 gradle-shadow = "9.4.1"
-
 paperweight-userdev = "2.0.0-beta.21"
 pluginyml-bukkit = "0.6.0"
-fabric-loom = "1.15-SNAPSHOT"
+loom = "1.16-SNAPSHOT"
+runtask = "3.0.2"
 
 adventure-api = "4.20.0"
 
@@ -63,16 +63,19 @@ parchment-v12111 = "2025.12.20"
 fabric-permissions-v12111 = "0.6.1"
 adventure-platform-fabric-v12111 = "6.8.0"
 
-[plugins]
-gradle-shadow = { id = "com.gradleup.shadow", version.ref = "gradle-shadow" }
-
-paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight-userdev" }
-pluginyml-bukkit = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "pluginyml-bukkit" }
-fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
-
-runtask-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
+# fabric 26.1.x
+minecraft-v261 = "26.1.1"
+fabricapi-v261 = "0.145.4+26.1.1"
+fabric-permissions-v261 = "0.7.0"
+adventure-platform-fabric-v261 = "6.9.0"
 
 [libraries]
+plugin-paperweight = { module = "io.papermc.paperweight:paperweight-userdev", version.ref = "paperweight-userdev" }
+plugin-shadow = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "gradle-shadow" }
+plugin-loom = { module = "net.fabricmc:fabric-loom", version.ref = "loom" }
+plugin-pluginyml = { module = "net.minecrell:plugin-yml", version.ref = "pluginyml-bukkit" }
+plugin-runtask = { module = "xyz.jpenilla:run-task", version.ref = "runtask" }
+
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure-api" }
 
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
@@ -123,3 +126,8 @@ fabricapi-v12111 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref 
 parchment-v12111 = { module = "org.parchmentmc.data:parchment-1.21.11", version.ref = "parchment-v12111" }
 fabric-permissions-v12111 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v12111" }
 adventure-platform-fabric-v12111 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v12111" }
+
+minecraft-v261 = { module = "com.mojang:minecraft", version.ref = "minecraft-v261" }
+fabricapi-v261 = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricapi-v261" }
+fabric-permissions-v261 = { module = "me.lucko:fabric-permissions-api", version.ref = "fabric-permissions-v261" }
+adventure-platform-fabric-v261 = { module = "net.kyori:adventure-platform-fabric", version.ref = "adventure-platform-fabric-v261" }
