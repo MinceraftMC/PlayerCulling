@@ -14,6 +14,7 @@ plugins {
 }
 
 include("core")
+include("natives")
 include("api")
 include("platform-common")
 include("platform-paper")
