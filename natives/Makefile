@@ -1,4 +1,3 @@
-# Erkennung des Betriebssystems und Definition der Ziel-Datei
 ifeq ($(OS),Windows_NT)
     TARGET = build/resources/main/natives/windows_x64/occlusion_avx2.dll
     CC = g++

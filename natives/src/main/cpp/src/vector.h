@@ -5,11 +5,9 @@
 #ifndef NATIVES_VECTOR_H
 #define NATIVES_VECTOR_H
 
-#include <avx2intrin.h>
-#include <avxintrin.h>
 #include <cinttypes>
 #include <cmath>
-#include <emmintrin.h>
+#include <immintrin.h>
 
 class i3_vec32 {
 public:
@@ -53,7 +51,7 @@ public:
         return sqrtf64(distanceSquared(*this));
     }
 
-    double distanceSquared(const d3_vec &other) const {
+    [[nodiscard]] double distanceSquared(const d3_vec &other) const {
         const double dx = x - other.x;
         const double dy = y - other.y;
         const double dz = z - other.z;
@@ -61,7 +59,11 @@ public:
         return dx * dx + dy * dy + dz * dz;
     }
 
-    d3_vec(double x, double y, double z);
+    d3_vec(const double x, const double y, const double z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
 
     explicit d3_vec(__m256d vec);
 
@@ -187,6 +189,12 @@ public:
         simd_vector_8x3i result = *this;
         result += other;
         return result;
+    }
+
+    void blendv_inplace(const simd_vector_8x3i &other, const __m256i &mask) {
+        x_vec = _mm256_blendv_epi8(x_vec, other.x_vec, mask);
+        y_vec = _mm256_blendv_epi8(y_vec, other.y_vec, mask);
+        z_vec = _mm256_blendv_epi8(z_vec, other.z_vec, mask);
     }
 
     union {

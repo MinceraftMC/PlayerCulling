@@ -21,7 +21,7 @@
 
 class occlusion_instance {
 private:
-    uint8_t buffer_pos = 0;
+    mutable uint8_t buffer_pos = 0;
 
     CREATE_3AXIS_SIMD_QUEUE_BUFFER(pos)
     CREATE_SIMD_QUEUE_BUFFER(second_error)
@@ -35,7 +35,13 @@ private:
 
     i3_vec32 *start_voxel = new i3_vec32();
 
-    bool simd_raycast();
+    mutable __m256i finished_mask = _mm256_setzero_si256();
+
+    inline bool check_buffer_ready() const;
+
+    bool simd_raycast() const;
+
+    inline void prepare_data(const d3_vec *pos_start, const i3_vec32 *voxel_start, double x, double y, double z) const;
 
     void prepare_data(const d3_vec *pos_start, const i3_vec32 *voxel_start, const d3_vec *data) const;
 
