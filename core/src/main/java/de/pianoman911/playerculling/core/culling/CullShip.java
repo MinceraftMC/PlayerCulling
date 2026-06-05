@@ -3,9 +3,12 @@ package de.pianoman911.playerculling.core.culling;
 
 import de.pianoman911.playerculling.core.api.PlayerCullingApiImpl;
 import de.pianoman911.playerculling.core.updater.PlayerCullingUpdater;
+import de.pianoman911.playerculling.core.util.StaticProviders;
+import de.pianoman911.playerculling.natives.NativesAdapter;
 import de.pianoman911.playerculling.platformcommon.config.PlayerCullingConfig;
 import de.pianoman911.playerculling.platformcommon.config.YamlConfigHolder;
 import de.pianoman911.playerculling.platformcommon.platform.IPlatform;
+import de.pianoman911.playerculling.platformcommon.util.ServicesUtil;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,7 @@ public class CullShip {
     public CullShip(IPlatform platform) {
         this.platform = platform;
         this.config = platform.loadConfig();
+        this.loadNatives();
         this.updater = new PlayerCullingUpdater(this);
 
         this.containers = new ArrayList<>(this.config.getDelegate().scheduler.maxThreads);
@@ -63,6 +67,21 @@ public class CullShip {
             }
         });
         this.updater.enable();
+    }
+
+    private void loadNatives() {
+        if (!this.config.getDelegate().loadNatives) {
+            LOGGER.warn("Skip loading Natives!");
+            return;
+        }
+        NativesAdapter nativesAdapter = ServicesUtil.loadService(NativesAdapter.class);
+        if (nativesAdapter == null) {
+            LOGGER.warn("This platform does not support NativesAdapter");
+            return;
+        }
+        StaticProviders.replaceOcclusionInterfaceProvider(nativesAdapter.providerCullingInterface());
+
+        LOGGER.info("Natives loaded {}", nativesAdapter.getClass().getSimpleName());
     }
 
     private CullContainer createContainer() {

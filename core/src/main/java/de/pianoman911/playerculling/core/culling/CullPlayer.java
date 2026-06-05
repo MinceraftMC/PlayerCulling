@@ -2,6 +2,8 @@ package de.pianoman911.playerculling.core.culling;
 
 
 import de.pianoman911.playerculling.core.occlusion.OcclusionCullingInstance;
+import de.pianoman911.playerculling.core.util.StaticProviders;
+import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
 import de.pianoman911.playerculling.core.provider.ChunkOcclusionDataProvider;
 import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
@@ -33,7 +35,7 @@ public final class CullPlayer {
 
     private final CullShip ship;
     private final PlatformPlayer player;
-    private final OcclusionCullingInstance cullingInstance;
+    private final OcclusionCullingInterface cullingInstance;
     private final DataProvider provider = new ChunkOcclusionDataProvider(this);
 
     private final FastStack<PlatformPlayer> tracked;
@@ -53,8 +55,9 @@ public final class CullPlayer {
     public CullPlayer(CullShip ship, PlatformPlayer player) {
         this.ship = ship;
         this.player = player;
-        this.cullingInstance = new OcclusionCullingInstance(this.provider);
-        this.provider.world(player.getWorld());
+        this.cullingInstance = StaticProviders.provideOcclusionInterface(this.provider);
+        Vec3d pos = player.getPosition();
+        this.provider.updatePos(player.getWorld(), pos.getX(), pos.getY(), pos.getZ());
         this.tracked = new FastStack<>(player.getWorld().getPlayerCount());
     }
 
@@ -144,8 +147,8 @@ public final class CullPlayer {
         if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
         }
-        this.provider.world(world);
         Vec3d eye = this.player.getEyePosition();
+        this.provider.updatePos(world, eye.getX(), eye.getY(), eye.getZ());
 
         boolean blindness;
         boolean darkness;

@@ -1,9 +1,9 @@
 ifeq ($(OS),Windows_NT)
-    TARGET = build/resources/main/natives/windows_x64/occlusion_avx2.dll
+    TARGET = build/resources/main/natives/windows_x64/playerculling_avx2.dll
     CC = g++
     CFLAGS = -O3 -shared -mavx2 -mfma
 else
-    TARGET = build/resources/main/natives/linux_x64/occlusion_avx2.so
+    TARGET = build/resources/main/natives/linux_x64/playerculling_avx2.so
     CC = g++
     CFLAGS = -O3 -shared -fPIC -mavx2 -mfma
 endif
@@ -11,7 +11,8 @@ endif
 SRC_DIR = src/main/cpp/src
 
 SRC_FILES = simd_culling.cpp \
-			occlusion_instance.cpp
+			occlusion_instance.cpp \
+			java_interface.cpp
 
 SRC = $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 

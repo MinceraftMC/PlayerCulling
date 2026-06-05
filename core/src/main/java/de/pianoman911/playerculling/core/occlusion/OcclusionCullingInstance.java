@@ -1,6 +1,7 @@
 package de.pianoman911.playerculling.core.occlusion;
 
 import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
+import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
  changed from heap usage to stack usage (pianoman911, booky)
  */
 
-public final class OcclusionCullingInstance {
+public final class OcclusionCullingInstance implements OcclusionCullingInterface {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");
 
@@ -71,6 +72,7 @@ public final class OcclusionCullingInstance {
     }
 
     @SuppressWarnings({"DuplicatedCode", "SuspiciousNameCombination"})
+    @Override
     public boolean isAABBVisible(
             double minX, double minY, double minZ,
             double maxX, double maxY, double maxZ,
@@ -283,6 +285,7 @@ public final class OcclusionCullingInstance {
         return false;
     }
 
+    @Override
     public long getAndResetRaySteps() {
         long steps = this.raySteps;
         this.raySteps = 0;

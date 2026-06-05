@@ -24,7 +24,7 @@ public final class ChunkOcclusionDataProvider implements DataProvider {
     }
 
     @Override
-    public final void world(PlatformWorld world) {
+    public final void updatePos(PlatformWorld world, double  x, double y, double z) {
         if (!world.equals(this.world)) {
             this.world = world;
             this.cache = world.getOcclusionWorldCache();

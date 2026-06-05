@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 @SuppressWarnings("deprecation")
 public final class ReflectionUtil {
@@ -125,5 +126,13 @@ public final class ReflectionUtil {
         }
         throw new IllegalArgumentException("Can't find field " + type
                 + " with offset " + offset + " in " + clazz.getName());
+    }
+
+    public static Optional<Class<?>> loadClassSafe(String className) {
+        try {
+            return Optional.of(Class.forName(className));
+        } catch (Exception exception) {
+            return Optional.empty();
+        }
     }
 }

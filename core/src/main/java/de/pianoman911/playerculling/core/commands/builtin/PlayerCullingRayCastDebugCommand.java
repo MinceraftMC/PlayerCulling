@@ -83,7 +83,8 @@ public final class PlayerCullingRayCastDebugCommand {
             return 0;
         }
 
-        provider.world(executor.getWorld());
+        Vec3d pos = executor.getPosition();
+        provider.updatePos(executor.getWorld(), pos.x, pos.y, pos.z);
 
         AABB trackedBox = target.getBoundingBox();
         DebugUtil.drawBoundingBox(executor.getWorld(), trackedBox, Color.ORANGE);
@@ -160,8 +161,8 @@ public final class PlayerCullingRayCastDebugCommand {
         }
 
         @Override
-        public void world(PlatformWorld world) {
-            this.delegate.world(world);
+        public void updatePos(PlatformWorld world, double x, double y, double z) {
+            this.delegate.updatePos(world, x, y, z);
         }
 
         @Override

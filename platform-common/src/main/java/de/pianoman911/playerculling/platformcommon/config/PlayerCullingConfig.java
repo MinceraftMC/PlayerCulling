@@ -16,6 +16,7 @@ public final class PlayerCullingConfig {
     public Culling culling = new Culling();
     public Updater updater = new Updater();
     public WaypointMode waypointMode = WaypointMode.HIDDEN;
+    public boolean loadNatives = true;
 
     @ConfigSerializable
     public final static class Scheduler {

@@ -52,10 +52,6 @@ public final class OcclusionWorldCache {
         return bytes;
     }
 
-    public boolean isOccluding(int x, int y, int z) {
-        return chunk(x >> 4, z >> 4).isOccluded(x, y, z);
-    }
-
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasChunk(int chunkX, int chunkZ) {
         return this.chunks.get(((long) chunkX << 32 | (long) chunkZ & 0xFFFFFFFFL)) != null;

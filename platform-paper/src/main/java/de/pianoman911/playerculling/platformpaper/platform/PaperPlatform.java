@@ -10,7 +10,7 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
 import de.pianoman911.playerculling.platformpaper.PlayerCullingPlugin;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
-import de.pianoman911.playerculling.platformpaper.util.ServicesUtil;
+import de.pianoman911.playerculling.platformcommon.util.ServicesUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;

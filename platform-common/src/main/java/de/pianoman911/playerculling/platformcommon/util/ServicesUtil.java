@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformpaper.util;
+package de.pianoman911.playerculling.platformcommon.util;
 
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
