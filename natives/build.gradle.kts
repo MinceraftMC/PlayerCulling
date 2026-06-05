@@ -1,4 +1,3 @@
-import java.util.Locale
 import java.util.Locale.getDefault
 
 plugins {
@@ -23,7 +22,6 @@ val compileNativesWithMake by tasks.registering(Exec::class) {
     }
 }
 
-// Integriere das Kompilieren in den Standard-Build-Prozess des Moduls
 tasks.assemble {
     dependsOn(compileNativesWithMake)
 }

@@ -24,6 +24,8 @@ alignas(32) const auto V_TWO_OFFSET = d3_vec(TWO_SAFE_POINT_OFFSET, TWO_SAFE_POI
 alignas(32) const auto V_POINT_MIDDLE = d3_vec(POINT_MIDDLE, POINT_MIDDLE, POINT_MIDDLE);
 alignas(32) const __m256i V_ZERO = _mm256_setzero_si256();
 alignas(32) const __m256i V_ONE = {1, 1, 1, 1};
+alignas(32) const __m256i V_NEGATIVE_ONE = {-1, -1, -1, -1};
+alignas(32) const __m256i V_31 = _mm256_set1_epi32(31);
 alignas(32) const __m256i V_GRID_SIZE = {GRID_SIZE, GRID_SIZE, GRID_SIZE, GRID_SIZE};
 
 #define ON_MIN_X _BV(0)
@@ -38,9 +40,9 @@ alignas(32) const __m256i V_GRID_SIZE = {GRID_SIZE, GRID_SIZE, GRID_SIZE, GRID_S
 #define REL_NEGATIVE _BV(2)
 
 bool is_voxel_visible(const d3_vec *pos_start, const i3_vec32 *voxel_start,
-                      const double target_x, const double target_y, const double target_z,
-                      const uint8_t face_data, const uint8_t visible_on_face,
-                      const double max_x, const double max_y, const double max_z);
+                      double target_x, double target_y, double target_z,
+                      uint8_t face_data, uint8_t visible_on_face,
+                      double max_x, double max_y, double max_z);
 
 bool simd_raycast();
 
@@ -92,19 +94,18 @@ inline void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_v
 void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_vec32 *voxel_start,
                                       const d3_vec *data) const {
     d3_vec dir = *data - *pos_start;
-    double dir_len = dir.len();
+    const double dir_len = dir.len();
     dir /= dir_len;
-    double distance_squared = pos_start->distanceSquared(*data);
+    const double distance_squared = pos_start->distanceSquared(*data);
 
     double main_pos;
     double second_pos;
     double third_pos;
 
-    double main_direction;
     double second_direction;
     double third_direction;
 
-    main_direction = abs(dir.x);
+    double main_direction = abs(dir.x);
 
     if (abs(dir.y) > main_direction) {
         main_direction = abs(dir.y);
@@ -179,8 +180,9 @@ void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_vec32 *v
     buffer_second_error[buffer_pos] -= GRID_SIZE;
     buffer_third_error[buffer_pos] -= GRID_SIZE;
 
-    double dirLenSquared = main_direction * main_direction + second_direction * second_direction + third_direction *
-                           third_direction;
+    const double dirLenSquared = main_direction * main_direction + second_direction * second_direction + third_direction
+                                 *
+                                 third_direction;
 
     buffer_distance_int[buffer_pos] = SAFE_FLOOR((distance_squared / dirLenSquared) * main_direction);
 
@@ -192,9 +194,9 @@ bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y,
                                          const d3_vec *viewer_pos) const {
     setToVec3iFloored(viewer_pos, start_voxel);
 
-    uint8_t rel_x = relative(min_x, max_x, viewer_pos->x);
-    uint8_t rel_y = relative(min_y, max_y, viewer_pos->y);
-    uint8_t rel_z = relative(min_z, max_z, viewer_pos->z);
+    const uint8_t rel_x = relative(min_x, max_x, viewer_pos->x);
+    const uint8_t rel_y = relative(min_y, max_y, viewer_pos->y);
+    const uint8_t rel_z = relative(min_z, max_z, viewer_pos->z);
 
     if ((rel_x & rel_y & rel_z) == 0) {
         return true; // We are inside the aabb, don't cull
@@ -235,13 +237,16 @@ bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y,
             for (double z = min_z; z < max_z - TWO_SAFE_POINT_OFFSET; z++) {
                 // Final data holder
                 uint8_t face_edge_data = face_edge_data_y;
-                uint8_t visible_on_face = face_edge_data;
+                uint8_t visible_on_face = visible_on_face_y;
 
                 delta_min = delta_lower_than_diff(z, min_z);
                 delta_max = delta_lower_than_diff(z, max_z);
 
                 face_edge_data |= delta_min ? ON_MIN_Z : 0;
                 face_edge_data |= delta_max ? ON_MAX_Z : 0;
+
+                visible_on_face |= (delta_min && rel_z & REL_POSITIVE) ? ON_MIN_Z : 0;
+                visible_on_face |= (delta_max && rel_z & REL_NEGATIVE) ? ON_MAX_Z : 0;
 
                 if (visible_on_face) {
                     if (this->is_voxel_visible(viewer_pos, start_voxel, x, y, z, face_edge_data, visible_on_face,
@@ -288,10 +293,8 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
 
     // we assume the target is always at least SAFE_POINT_OFFSET away from max, otherwise there
     // is not enough space to perform a ray cast; this is guaranteed by our for-loop upper bound in #isAABBVisible
-    d3_vec target_begin = {target_x, target_y, target_z};
-    d3_vec target_end = safe_point_end_offset(target, max);
-
-    target_begin += POINT_START;
+    const d3_vec target_begin = d3_vec(target_x, target_y, target_z) + POINT_START;
+    const d3_vec target_end = safe_point_end_offset(target, max);
 
     if (dot_selectors & (1 << 0)) {
         prepare_data(pos_start, voxel_start, &target_begin);
@@ -424,25 +427,25 @@ inline bool occlusion_instance::check_buffer_ready() const {
 }
 
 bool occlusion_instance::simd_raycast() const {
-    simd_vector_8x3i pos = simd_vector_8x3i(buffer_pos_x, buffer_pos_y, buffer_pos_z);
+    auto pos = simd_vector_8x3i(buffer_pos_x, buffer_pos_y, buffer_pos_z);
 
     __m256i current_distance = _mm256_setzero_si256();
-    __m256i max_distance = LOAD_PTR_SIMD(buffer_distance_int);
+    const __m256i max_distance = LOAD_PTR_SIMD(buffer_distance_int);
 
     __m256i second_error = LOAD_PTR_SIMD(buffer_second_error);
-    __m256i second_error_step = LOAD_PTR_SIMD(buffer_second_error_step);
+    const __m256i second_error_step = LOAD_PTR_SIMD(buffer_second_error_step);
 
     __m256i third_error = LOAD_PTR_SIMD(buffer_third_error);
-    __m256i third_error_step = LOAD_PTR_SIMD(buffer_third_error_step);
+    const __m256i third_error_step = LOAD_PTR_SIMD(buffer_third_error_step);
 
-    simd_vector_8x3i main_step = simd_vector_8x3i(buffer_main_step_x, buffer_main_step_y, buffer_main_step_z);
-    simd_vector_8x3i main_second_step = simd_vector_8x3i(buffer_second_step_x, buffer_second_step_y,
-                                                         buffer_second_step_z);
+    const auto main_step = simd_vector_8x3i(buffer_main_step_x, buffer_main_step_y, buffer_main_step_z);
+    auto main_second_step = simd_vector_8x3i(buffer_second_step_x, buffer_second_step_y,
+                                             buffer_second_step_z);
     main_second_step += main_step;
 
-    simd_vector_8x3i main_third_step = simd_vector_8x3i(buffer_third_step_x, buffer_third_step_y, buffer_third_step_z);
+    auto main_third_step = simd_vector_8x3i(buffer_third_step_x, buffer_third_step_y, buffer_third_step_z);
     // Add main afterward, see below
-    simd_vector_8x3i main_second_third_step = main_second_step + main_third_step;
+    const simd_vector_8x3i main_second_third_step = main_second_step + main_third_step;
     main_third_step += main_second_step;
 
     __m256i final_results = _mm256_setzero_si256();
@@ -450,12 +453,10 @@ bool occlusion_instance::simd_raycast() const {
     while (true) {
         // TODO: failsafe
         __m256i dist_reached = _mm256_cmpgt_epi32(current_distance, max_distance);
-        __m256i just_reached = _mm256_andnot_si256(finished_mask, dist_reached);
 
-        if (_mm256_movemask_epi8(just_reached) != 0) {
-            __m256i neg_dist = _mm256_sub_epi32(V_ZERO, current_distance);
-            final_results = _mm256_blendv_epi8(final_results, neg_dist, just_reached);
-            finished_mask = _mm256_or_si256(finished_mask, dist_reached);
+        if (__m256i just_reached = _mm256_andnot_si256(finished_mask, dist_reached);
+            _mm256_movemask_epi8(just_reached) != 0) {
+            return true;
         }
 
         if (_mm256_movemask_epi8(final_results) == 0xFFFFFFFF) {
@@ -486,20 +487,73 @@ bool occlusion_instance::simd_raycast() const {
         second_error = _mm256_sub_epi32(second_error, sub_sec);
         third_error = _mm256_sub_epi32(third_error, sub_thi);
 
-        int32_t opaque_mask; // TODO: fetch from world
+        // Pos2Chunk_Shift (4+1); /16 block -> chunk; /2 (2x2x2)-voxels -> real coords
+        __m256i chunk_x = _mm256_srai_epi32(pos.x_vec, 5);
+        __m256i chunk_z = _mm256_srai_epi32(pos.z_vec, 5);
 
-        if (opaque_mask != 0) {
+        // Local coords (0 - 31)
+        __m256i local_x = _mm256_and_si256(pos.x_vec, V_31);
+        __m256i local_z = _mm256_and_si256(pos.z_vec, V_31);
+
+        __m256i grid_x = _mm256_sub_epi32(chunk_x, cached_world_data.ocx);
+        __m256i grid_z = _mm256_sub_epi32(chunk_z, cached_world_data.ocz);
+
+        // Radius-Check
+        __m256i gx_valid = _mm256_and_si256(_mm256_cmpgt_epi32(grid_x, V_NEGATIVE_ONE),
+                                            _mm256_cmpgt_epi32(cached_world_data.side_length, grid_x));
+        __m256i gz_valid = _mm256_and_si256(_mm256_cmpgt_epi32(grid_z, V_NEGATIVE_ONE),
+                                            _mm256_cmpgt_epi32(cached_world_data.side_length, grid_z));
+        __m256i grid_valid_mask = _mm256_cmpgt_epi32(gx_valid, gz_valid);
+
+        // Calculate area
+        __m256i grid_indicis = _mm256_add_epi32(_mm256_mullo_epi32(grid_z, cached_world_data.side_length), grid_x);
+        grid_indicis = _mm256_and_si256(grid_indicis, grid_valid_mask);
+
+        // Collect data scalar
+        alignas(32) uint32_t extracted_bits[SIMD_VECTOR_SIZE] = {0};
+
+        alignas(32) int32_t rx[SIMD_VECTOR_SIZE], ry[SIMD_VECTOR_SIZE], rz[SIMD_VECTOR_SIZE], r_gvalid[SIMD_VECTOR_SIZE]
+                , r_gidx[SIMD_VECTOR_SIZE];
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(rx), local_x);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(ry), pos.y_vec);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(rz), local_z);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(r_gvalid), grid_valid_mask);
+        _mm256_storeu_si256(reinterpret_cast<__m256i *>(r_gidx), grid_indicis);
+
+        for (uint8_t i = 0; i < SIMD_VECTOR_SIZE; i++) {
+            if (!((_mm256_movemask_epi8(finished_mask) >> (i * 4)) & 1)) {
+                if (r_gvalid[i]) {
+                    if (occlusion_chunk *ch = world->chunks[r_gidx[i]]; ch != nullptr) {
+                        if (ry[i] >= ch->minY && ry[i] <= ch->maxY) {
+                            int32_t local_y = ry[i] - ch->minY;
+                            int32_t array_index = (local_y * 32) + rz[i];
+
+                            uint32_t bit_row = ch->layers[array_index];
+                            extracted_bits[i] = (bit_row >> rx[i]) & 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        __m256i opaque_simd = _mm256_setzero_si256();
+        auto *opaque_ptr = reinterpret_cast<int32_t *>(&opaque_simd);
+        for (int i = 0; i < 8; ++i) {
+            if (extracted_bits[i]) opaque_ptr[i] = 0xFFFFFFFF;
+        }
+
+        if (int32_t opaque_mask = _mm256_movemask_epi8(opaque_simd); opaque_mask != 0) {
             for (uint8_t i = 0; i < SIMD_VECTOR_SIZE; i++) {
                 if ((opaque_mask & (1 << i)) && !((_mm256_movemask_epi8(finished_mask) >> (i * 4)) & 1)) {
                     alignas(32) int32_t dists[SIMD_VECTOR_SIZE];
                     _mm256_storeu_si256(reinterpret_cast<__m256i *>(dists), current_distance);
 
-                    int32_t *mask_ptr = reinterpret_cast<int32_t *>(&finished_mask);
+                    auto *mask_ptr = reinterpret_cast<int32_t *>(&finished_mask);
                     mask_ptr[i] = 0xFFFFFFFF;
                 }
             }
         }
     }
 
-    return true;
+    return false;
 }

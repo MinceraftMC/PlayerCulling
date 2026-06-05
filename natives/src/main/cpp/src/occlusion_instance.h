@@ -6,6 +6,7 @@
 #define NATIVES_OCCLUSION_INSTANCE_H
 
 #include "vector.h"
+#include "occlusion_cache.h"
 #ifndef __STDC_IEC_559__
 #error "Requires IEEE 754 floating point!"
 #endif
@@ -20,6 +21,19 @@
     CREATE_SIMD_QUEUE_BUFFER(name##_z)
 
 class occlusion_instance {
+    struct cached_world_data {
+        __m256i ocx = _mm256_setzero_si256();
+        __m256i ocz = _mm256_setzero_si256();
+
+        __m256i side_length = _mm256_setzero_si256();
+
+        void update(const dynamic_world &dynamic_world) {
+            ocx = _mm256_set1_epi32(dynamic_world.ocx);
+            ocz = _mm256_set1_epi32(dynamic_world.ocz);
+            side_length = _mm256_set1_epi32(dynamic_world.side_length);
+        }
+    };
+
 private:
     mutable uint8_t buffer_pos = 0;
 
@@ -34,6 +48,10 @@ private:
     CREATE_SIMD_QUEUE_BUFFER(distance_int)
 
     i3_vec32 *start_voxel = new i3_vec32();
+
+    cached_world_data cached_world_data;
+
+    dynamic_world *world = nullptr;
 
     mutable __m256i finished_mask = _mm256_setzero_si256();
 
