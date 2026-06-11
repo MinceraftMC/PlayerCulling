@@ -1,9 +1,9 @@
 ifeq ($(OS),Windows_NT)
-    TARGET = build/resources/main/natives/windows_x64/playerculling_avx2.dll
+    TARGET = build/libs/natives/windows_x64/playerculling_avx2.dll
     CC = g++
     CFLAGS = -O3 -shared -mavx2 -mfma
 else
-    TARGET = build/resources/main/natives/linux_x64/playerculling_avx2.so
+    TARGET = build/libs/natives/linux_x64/playerculling_avx2.so
     CC = g++
     CFLAGS = -O3 -shared -fPIC -mavx2 -mfma
 endif
@@ -25,4 +25,4 @@ $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
 
 clean:
-	rm -rf build/
+	rm -rf build/libs/natives/*

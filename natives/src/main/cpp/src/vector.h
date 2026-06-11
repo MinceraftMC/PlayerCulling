@@ -9,6 +9,12 @@
 #include <cmath>
 #include <immintrin.h>
 
+#if defined(__GNUC__) || defined(__clang__)
+#define FORCE_INLINE __attribute__((always_inline)) inline
+#else
+#define FORCE_INLINE inline
+#endif
+
 class i3_vec32 {
 public:
     i3_vec32(int32_t x, int32_t y, int32_t z);
@@ -48,7 +54,7 @@ public:
 class d3_vec {
 public:
     [[nodiscard]] double len() const {
-        return sqrtf64(distanceSquared(*this));
+        return sqrt(x * x + y * y + z * z);
     }
 
     [[nodiscard]] double distanceSquared(const d3_vec &other) const {
@@ -59,18 +65,16 @@ public:
         return dx * dx + dy * dy + dz * dz;
     }
 
-    d3_vec(const double x, const double y, const double z) {
-        this->x = x;
-        this->y = y;
-        this->z = z;
+    FORCE_INLINE d3_vec(const double x, const double y, const double z) {
+        this->vec = _mm256_setr_pd(x, y, z, 0.0);
     }
 
-    explicit d3_vec(__m256d vec);
+    FORCE_INLINE d3_vec(__m256d vec) {
+        this->vec = vec;
+    }
 
-    d3_vec() {
-        x = 0;
-        y = 0;
-        z = 0;
+    FORCE_INLINE d3_vec() {
+        this->vec = _mm256_setzero_pd();
     }
 
     d3_vec operator+(const d3_vec &other) const {
@@ -108,12 +112,12 @@ public:
         return result;
     }
 
-    d3_vec operator-=(const d3_vec &other) {
+    d3_vec &operator-=(const d3_vec &other) {
         this->vec = _mm256_sub_pd(this->vec, other.vec);
         return *this;
     }
 
-    d3_vec operator-=(const double scalar) {
+    d3_vec &operator-=(const double scalar) {
         __m256d scalar_vec = _mm256_set1_pd(scalar);
         this->vec = _mm256_sub_pd(this->vec, scalar_vec);
         return *this;
@@ -155,12 +159,12 @@ public:
 
     union {
         struct {
-            double x;
-            double y;
-            double z;
+            double x{0.0};
+            double y{0.0};
+            double z{0.0};
         };
 
-        __m256d vec{};
+        __m256d vec;
     };
 };
 

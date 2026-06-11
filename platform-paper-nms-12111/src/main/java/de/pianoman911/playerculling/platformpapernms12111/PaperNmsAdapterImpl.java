@@ -1,8 +1,11 @@
 package de.pianoman911.playerculling.platformpapernms12111;
 
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.platformcommon.internals.ChunkCacheInterface;
+import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
@@ -134,7 +137,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
     @Override
     public void tickChangedBlocks(PaperWorld world) {
         LongSet blocks = this.getLevelSet(((CraftWorld) world.getWorld()).getHandle());
-        OcclusionWorldCache worldCache = world.getOcclusionWorldCache();
+        WorldCacheInterface worldCache = world.getOcclusionWorldCache();
 
         for (long pos : blocks) {
             int posX = BlockPos.getX(pos);
@@ -146,8 +149,8 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
                 continue;
             }
 
-            OcclusionChunkCache chunk = worldCache.chunk(chunkX, chunkZ);
-            chunk.recalculateBlock(posX, BlockPos.getY(pos), posZ);
+            ChunkCacheInterface chunk = worldCache.chunk(chunkX, chunkZ);
+           // chunk.recalculateBlock(posX, BlockPos.getY(pos), posZ);
         }
         blocks.clear();
     }

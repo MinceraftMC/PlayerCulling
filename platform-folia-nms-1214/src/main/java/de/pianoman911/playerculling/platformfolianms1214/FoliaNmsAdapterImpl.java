@@ -1,8 +1,10 @@
 package de.pianoman911.playerculling.platformfolianms1214;
 
 import ca.spottedleaf.concurrentutil.util.Priority;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.platformcommon.internals.ChunkCacheInterface;
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
@@ -120,7 +122,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
     @Override
     public void tickChangedBlocks(PaperWorld world) {
         Set<Long> blocks = this.getLevelSet(((CraftWorld) world.getWorld()).getHandle());
-        OcclusionWorldCache worldCache = world.getOcclusionWorldCache();
+        WorldCacheInterface worldCache = world.getOcclusionWorldCache();
 
         Iterator<Long> it = blocks.iterator();
         while (it.hasNext()) {
@@ -136,7 +138,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
                 continue;
             }
 
-            OcclusionChunkCache chunk = worldCache.chunk(chunkX, chunkZ);
+            ChunkCacheInterface chunk = worldCache.chunk(chunkX, chunkZ);
             chunk.recalculateBlock(posX, BlockPos.getY(pos), posZ);
         }
     }

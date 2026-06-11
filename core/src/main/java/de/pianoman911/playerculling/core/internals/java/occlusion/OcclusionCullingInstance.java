@@ -1,7 +1,7 @@
-package de.pianoman911.playerculling.core.occlusion;
+package de.pianoman911.playerculling.core.internals.java.occlusion;
 
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
-import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
+import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
 import org.slf4j.Logger;
@@ -37,13 +37,13 @@ public final class OcclusionCullingInstance implements OcclusionCullingInterface
     private static final byte ON_MIN_Z = 1 << 4;
     private static final byte ON_MAX_Z = 1 << 5;
 
-    private final DataProvider provider;
+    private final DataProviderInterface provider;
 
     // Reused allocated data structures
     private final Vec3i startVoxel = new Vec3i(0, 0, 0);
     private long raySteps;
 
-    public OcclusionCullingInstance(DataProvider provider) {
+    public OcclusionCullingInstance(DataProviderInterface provider) {
         this.provider = provider;
     }
 

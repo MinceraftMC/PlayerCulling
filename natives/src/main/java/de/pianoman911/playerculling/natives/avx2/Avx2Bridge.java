@@ -2,8 +2,11 @@ package de.pianoman911.playerculling.natives.avx2;
 
 import de.pianoman911.playerculling.natives.NativeLibLoader;
 import de.pianoman911.playerculling.natives.NativesAdapter;
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
-import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
+import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
+import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
@@ -11,7 +14,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
-import java.util.function.Function;
 
 public final class Avx2Bridge implements NativesAdapter {
 
@@ -20,6 +22,7 @@ public final class Avx2Bridge implements NativesAdapter {
 
     private static final MethodHandle CREATE_CHUNK_CACHE;
     private static final MethodHandle CREATE_OCCLUSION_INSTANCE;
+    private static final MethodHandle CREATE_DYNAMIC_WORLD;
 
     static {
         NativeLibLoader.loadLib("playerculling_avx2");
@@ -27,12 +30,17 @@ public final class Avx2Bridge implements NativesAdapter {
         LOOKUP = SymbolLookup.loaderLookup();
 
         CREATE_CHUNK_CACHE = LINKER.downcallHandle(
-                LOOKUP.findOrThrow("create_chunk_cache"),
+                LOOKUP.findOrThrow("create_world_cache"),
                 FunctionDescriptor.of(ValueLayout.ADDRESS)
         );
 
         CREATE_OCCLUSION_INSTANCE = LINKER.downcallHandle(
                 LOOKUP.findOrThrow("create_occlusion_instance"),
+                FunctionDescriptor.of(ValueLayout.ADDRESS)
+        );
+
+        CREATE_DYNAMIC_WORLD = LINKER.downcallHandle(
+                LOOKUP.findOrThrow("create_dynamic_world"),
                 FunctionDescriptor.of(ValueLayout.ADDRESS)
         );
     }
@@ -46,10 +54,10 @@ public final class Avx2Bridge implements NativesAdapter {
         return LOOKUP;
     }
 
-    public static ChunkCache createChunkCache() {
+    public static WorldCache createChunkCache(PlatformWorld<?> world) {
         try {
             MemorySegment pointer = (MemorySegment) CREATE_CHUNK_CACHE.invokeExact();
-            return new ChunkCache(pointer);
+            return new WorldCache(pointer, world);
         } catch (Throwable exception) {
             throw new RuntimeException(exception);
         }
@@ -64,8 +72,27 @@ public final class Avx2Bridge implements NativesAdapter {
         }
     }
 
+    public static NativeDataProvider createDataProvider(PlatformPlayer player) {
+        try {
+            MemorySegment pointer = (MemorySegment) CREATE_DYNAMIC_WORLD.invokeExact();
+            return new NativeDataProvider(new DynamicWorld(pointer), player);
+        } catch (Throwable exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
     @Override
-    public Function<DataProvider, OcclusionCullingInterface> providerCullingInterface() {
-        return _ -> createOcclusionInstance();
+    public OcclusionCullingInterface providerCullingInterface() {
+        return createOcclusionInstance();
+    }
+
+    @Override
+    public WorldCacheInterface providerWorldCache(PlatformWorld<?> world) {
+        return createChunkCache(world);
+    }
+
+    @Override
+    public DataProviderInterface providerDataProvider(PlatformPlayer player) {
+        return createDataProvider(player);
     }
 }

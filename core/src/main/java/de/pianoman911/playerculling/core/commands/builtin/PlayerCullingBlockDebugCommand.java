@@ -5,7 +5,8 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.AABB;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.platformcommon.internals.ChunkCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.command.BlockPosResolver;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSender;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
@@ -60,7 +61,7 @@ public final class PlayerCullingBlockDebugCommand {
     }
 
     private static int execute(PlatformCommandSender sender, PlatformLivingEntity executor, boolean raw, Vec3i block) {
-        OcclusionChunkCache chunk = executor.getWorld().getOcclusionWorldCache().chunk(
+        ChunkCacheInterface chunk = executor.getWorld().getOcclusionWorldCache().chunk(
                 block.getX() >> 4,
                 block.getZ() >> 4
         );

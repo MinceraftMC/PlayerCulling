@@ -3,7 +3,7 @@ package de.pianoman911.playerculling.core.commands.builtin;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionChunkCache;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSender;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntity;
@@ -33,37 +33,37 @@ public final class PlayerCullingChunkCacheCommand {
                 ));
     }
 
-    private static int execute(PlatformCommandSender sender, PlatformEntity executor, CullShip ship) {
-        sender.sendMessage(text("Chunks stored: ", NamedTextColor.GREEN)
-                .append(text(executor.getWorld().getOcclusionWorldCache().getChunkCache().size(), NamedTextColor.WHITE)));
-        for (PlatformWorld world : ship.getPlatform().getWorlds()) {
-            ConcurrentLongCache<OcclusionChunkCache> cache = world.getOcclusionWorldCache().getChunkCache();
-            OcclusionChunkCache current = null;
-            if (executor.getWorld() == world) {
-                int x = executor.getPosition().getFloorX() >> 4;
-                int z = executor.getPosition().getFloorZ() >> 4;
-                for (OcclusionChunkCache chunk : cache) {
-                    if (chunk.getX() == x && chunk.getZ() == z) {
-                        current = chunk;
-                        break;
-                    }
-                }
-            }
-
-            sender.sendMessage(
-                    text("Chunks stored in world ", NamedTextColor.GREEN)
-                            .append(text(world.getName(), NamedTextColor.WHITE)).append(text(": ", NamedTextColor.GREEN))
-                            .append(text(cache.size(), NamedTextColor.WHITE)).append(text(", current chunk cached: ", NamedTextColor.GREEN))
-                            .append(text(current != null, NamedTextColor.WHITE)).append(current == null ? empty() : (
-                                    text(" (Height: ", NamedTextColor.GREEN))
-                                    .append(text(current.getHeight(), NamedTextColor.WHITE)).append(text(" ; From ", NamedTextColor.GREEN))
-                                    .append(text(current.getMinY(), NamedTextColor.WHITE)).append(text("Y to ", NamedTextColor.GREEN))
-                                    .append(text(current.getMaxY(), NamedTextColor.WHITE)).append(text("Y) Bytes: ", NamedTextColor.GREEN))
-                                    .append(text(StringUtil.toNumInUnits(current.byteSize()), NamedTextColor.WHITE))
-                            )
-
-            );
-        }
+    private static int execute(PlatformCommandSender sender, PlatformEntity executor, CullShip ship) { // TODO
+//        sender.sendMessage(text("Chunks stored: ", NamedTextColor.GREEN)
+//                .append(text(executor.getWorld().getOcclusionWorldCache().getChunkCache().size(), NamedTextColor.WHITE)));
+//        for (PlatformWorld world : ship.getPlatform().getWorlds()) {
+//            ConcurrentLongCache<OcclusionChunkCache> cache = world.getOcclusionWorldCache().getChunkCache();
+//            OcclusionChunkCache current = null;
+//            if (executor.getWorld() == world) {
+//                int x = executor.getPosition().getFloorX() >> 4;
+//                int z = executor.getPosition().getFloorZ() >> 4;
+//                for (OcclusionChunkCache chunk : cache) {
+//                    if (chunk.getX() == x && chunk.getZ() == z) {
+//                        current = chunk;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            sender.sendMessage(
+//                    text("Chunks stored in world ", NamedTextColor.GREEN)
+//                            .append(text(world.getName(), NamedTextColor.WHITE)).append(text(": ", NamedTextColor.GREEN))
+//                            .append(text(cache.size(), NamedTextColor.WHITE)).append(text(", current chunk cached: ", NamedTextColor.GREEN))
+//                            .append(text(current != null, NamedTextColor.WHITE)).append(current == null ? empty() : (
+//                                    text(" (Height: ", NamedTextColor.GREEN))
+//                                    .append(text(current.getHeight(), NamedTextColor.WHITE)).append(text(" ; From ", NamedTextColor.GREEN))
+//                                    .append(text(current.getMinY(), NamedTextColor.WHITE)).append(text("Y to ", NamedTextColor.GREEN))
+//                                    .append(text(current.getMaxY(), NamedTextColor.WHITE)).append(text("Y) Bytes: ", NamedTextColor.GREEN))
+//                                    .append(text(StringUtil.toNumInUnits(current.byteSize()), NamedTextColor.WHITE))
+//                            )
+//
+//            );
+//        }
         return Command.SINGLE_SUCCESS;
     }
 }

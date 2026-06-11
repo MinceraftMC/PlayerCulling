@@ -1,14 +1,11 @@
 package de.pianoman911.playerculling.core.culling;
 
 
-import de.pianoman911.playerculling.core.occlusion.OcclusionCullingInstance;
-import de.pianoman911.playerculling.core.util.StaticProviders;
-import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
-import de.pianoman911.playerculling.core.provider.ChunkOcclusionDataProvider;
 import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
 import de.pianoman911.playerculling.platformcommon.AABB;
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
+import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.FastStack;
@@ -36,7 +33,7 @@ public final class CullPlayer {
     private final CullShip ship;
     private final PlatformPlayer player;
     private final OcclusionCullingInterface cullingInstance;
-    private final DataProvider provider = new ChunkOcclusionDataProvider(this);
+    private final DataProviderInterface provider;
 
     private final FastStack<PlatformPlayer> tracked;
     private final Vec3d viewerPosition = new Vec3d(0, 0, 0);
@@ -55,7 +52,8 @@ public final class CullPlayer {
     public CullPlayer(CullShip ship, PlatformPlayer player) {
         this.ship = ship;
         this.player = player;
-        this.cullingInstance = StaticProviders.provideOcclusionInterface(this.provider);
+        this.provider = ship.getInternals().provideDataProvider(this);
+        this.cullingInstance = ship.getInternals().provideCullingInterface(this.provider);
         Vec3d pos = player.getPosition();
         this.provider.updatePos(player.getWorld(), pos.getX(), pos.getY(), pos.getZ());
         this.tracked = new FastStack<>(player.getWorld().getPlayerCount());
@@ -131,7 +129,7 @@ public final class CullPlayer {
     }
 
     private void cull0() {
-        PlatformWorld world = this.player.getWorld();
+        PlatformWorld<?> world = this.player.getWorld();
         if (!this.cullingEnabled
                 || this.player.shouldPreventCulling()
                 || this.player.isSpectator()
@@ -334,7 +332,7 @@ public final class CullPlayer {
         this.hidden.clear();
     }
 
-    public DataProvider getProvider() {
+    public DataProviderInterface getProvider() {
         return this.provider;
     }
 

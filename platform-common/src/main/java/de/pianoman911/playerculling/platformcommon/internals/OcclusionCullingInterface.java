@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformcommon.occlusion;
+package de.pianoman911.playerculling.platformcommon.internals;
 
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 

@@ -15,11 +15,11 @@ public interface PlatformEntity extends PlatformCommandSender {
 
     String getName();
 
-    PlatformWorld getWorld();
+    PlatformWorld<?> getWorld();
 
     Vec3d getPosition();
 
     AABB getBoundingBox();
 
-    void teleport(PlatformWorld world, double x, double y, double z);
+    void teleport(PlatformWorld<?> world, double x, double y, double z);
 }

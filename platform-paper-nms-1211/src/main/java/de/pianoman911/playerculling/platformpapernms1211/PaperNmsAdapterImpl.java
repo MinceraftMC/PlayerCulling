@@ -1,8 +1,8 @@
 package de.pianoman911.playerculling.platformpapernms1211;
 
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionWorldCache;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;

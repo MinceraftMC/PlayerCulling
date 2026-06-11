@@ -1,6 +1,6 @@
 package de.pianoman911.playerculling.platformcommon.platform.world;
 
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.IPlatform;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.util.TickRefreshSupplier;
@@ -12,18 +12,20 @@ import org.jspecify.annotations.Nullable;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.function.Function;
 
 @NullMarked
-public abstract class PlatformWorld {
+public abstract class PlatformWorld<T extends WorldCacheInterface> {
 
-    protected final OcclusionWorldCache cache = new OcclusionWorldCache(this);
+    protected final T cache;
     protected final TickRefreshSupplier<List<PlatformPlayer>> playersInWorld;
 
-    public PlatformWorld(IPlatform platform) {
+    public PlatformWorld(Function<PlatformWorld<T>, T> cache, IPlatform platform) {
+        this.cache = cache.apply(this);
         this.playersInWorld = new TickRefreshSupplier<>(platform, this::getPlayers0);
     }
 
-    public OcclusionWorldCache getOcclusionWorldCache() {
+    public T getOcclusionWorldCache() {
         return this.cache;
     }
 

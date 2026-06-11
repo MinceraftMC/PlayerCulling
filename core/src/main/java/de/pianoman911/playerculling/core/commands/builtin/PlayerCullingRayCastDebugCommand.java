@@ -5,11 +5,11 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.core.occlusion.OcclusionCullingInstance;
+import de.pianoman911.playerculling.core.internals.java.occlusion.OcclusionCullingInstance;
 import de.pianoman911.playerculling.core.util.CameraMode;
 import de.pianoman911.playerculling.core.util.ClientsideUtil;
 import de.pianoman911.playerculling.platformcommon.AABB;
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSender;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
 import de.pianoman911.playerculling.platformcommon.platform.command.SinglePlayerResolver;
@@ -75,7 +75,7 @@ public final class PlayerCullingRayCastDebugCommand {
     public static int execute(PlatformCommandSender sender, PlatformPlayer executor, CullShip ship, boolean showRay, boolean blocks, PlatformPlayer target) {
         CullPlayer cullPlayer = ship.getPlayer(executor.getUniqueId());
         PlatformPlayer platformPlayer = cullPlayer.getPlatformPlayer();
-        DataProvider provider = new DebuggingDataProviderChunk(cullPlayer, sender, showRay, blocks);
+        DataProviderInterface provider = new DebuggingDataProviderChunk(cullPlayer, sender, showRay, blocks);
         OcclusionCullingInstance instance = new OcclusionCullingInstance(provider);
 
         if (!target.getWorld().equals(executor.getWorld())) {
@@ -129,9 +129,9 @@ public final class PlayerCullingRayCastDebugCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    public static class DebuggingDataProviderChunk implements DataProvider {
+    public static class DebuggingDataProviderChunk implements DataProviderInterface {
 
-        private final DataProvider delegate;
+        private final DataProviderInterface delegate;
 
         private final CullPlayer player;
         private final PlatformCommandSender sender;
@@ -161,7 +161,7 @@ public final class PlayerCullingRayCastDebugCommand {
         }
 
         @Override
-        public void updatePos(PlatformWorld world, double x, double y, double z) {
+        public void updatePos(PlatformWorld<?> world, double x, double y, double z) {
             this.delegate.updatePos(world, x, y, z);
         }
 

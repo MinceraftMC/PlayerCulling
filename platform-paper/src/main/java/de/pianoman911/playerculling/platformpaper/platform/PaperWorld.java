@@ -1,5 +1,6 @@
 package de.pianoman911.playerculling.platformpaper.platform;
 
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
@@ -16,15 +17,16 @@ import org.jspecify.annotations.NullMarked;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @NullMarked
-public class PaperWorld extends PlatformWorld {
+public class PaperWorld<T extends WorldCacheInterface> extends PlatformWorld<T> {
 
     private final World world;
     private final PaperPlatform platform;
 
-    public PaperWorld(World world, PaperPlatform platform) {
-        super(platform);
+    public PaperWorld(World world, Function<PlatformWorld<T>, T> cache, PaperPlatform platform) {
+        super(cache, platform);
         this.world = world;
         this.platform = platform;
 

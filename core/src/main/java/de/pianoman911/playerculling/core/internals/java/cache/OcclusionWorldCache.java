@@ -1,5 +1,7 @@
-package de.pianoman911.playerculling.platformcommon.cache;
+package de.pianoman911.playerculling.core.internals.java.cache;
 
+import de.pianoman911.playerculling.platformcommon.internals.ChunkCacheInterface;
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.ConcurrentLongCache;
 import de.pianoman911.playerculling.platformcommon.util.StringUtil;
@@ -10,38 +12,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @NullMarked
-public final class OcclusionWorldCache {
+public final class OcclusionWorldCache implements WorldCacheInterface {
 
     public static final ThreadPoolExecutor CACHE_EXECUTOR = (ThreadPoolExecutor) Executors.newCachedThreadPool(
             r -> new Thread(r, "Occlusion Cache Thread"));
 
-    private final PlatformWorld world;
+    private final PlatformWorld<OcclusionWorldCache> world;
     private final ConcurrentLongCache<OcclusionChunkCache> chunks;
 
-    public OcclusionWorldCache(PlatformWorld world) {
+    public OcclusionWorldCache(PlatformWorld<OcclusionWorldCache> world) {
         this.world = world;
         this.chunks = new ConcurrentLongCache<>(key -> new OcclusionChunkCache(
                 this, (int) (key >>> 32), (int) key));
-    }
-
-    public static int chunksStored(Collection<PlatformWorld> worlds) {
-        int chunksStored = 0;
-        for (PlatformWorld world : worlds) {
-            chunksStored += world.getOcclusionWorldCache().chunks.size();
-        }
-        return chunksStored;
-    }
-
-    public static long byteSize(Collection<PlatformWorld> worlds) {
-        long bytes = 0;
-        for (PlatformWorld world : worlds) {
-            bytes += world.getOcclusionWorldCache().bytes();
-        }
-        return bytes;
-    }
-
-    public static String formattedByteSize(Collection<PlatformWorld> worlds) {
-        return StringUtil.toNumInUnits(byteSize(worlds));
     }
 
     public long bytes() {

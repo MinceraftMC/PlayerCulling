@@ -1,6 +1,6 @@
 package de.pianoman911.playerculling.platformfabric1219.platform;
 
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionChunkCache;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;

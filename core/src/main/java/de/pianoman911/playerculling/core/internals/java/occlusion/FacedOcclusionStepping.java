@@ -1,7 +1,7 @@
-package de.pianoman911.playerculling.core.occlusion;
+package de.pianoman911.playerculling.core.internals.java.occlusion;
 
 
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
 import de.pianoman911.playerculling.platformcommon.util.BlockFace;
 import de.pianoman911.playerculling.platformcommon.util.NumberUtil;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
@@ -30,7 +30,7 @@ public final class FacedOcclusionStepping {
      * @return positive ray steps if occluded, negative ray steps if not occluded
      */
     public static int scanOccluded(
-            DataProvider provider, Vec3d start, Vec3i startVoxel,
+            DataProviderInterface provider, Vec3d start, Vec3i startVoxel,
             double maxDistanceSqrt, double dirX, double dirY, double dirZ
     ) {
         final int maxDistanceInt;

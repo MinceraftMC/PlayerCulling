@@ -3,7 +3,7 @@ package de.pianoman911.playerculling.core.api;
 import de.pianoman911.playerculling.api.PlayerCullingApi;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionWorldCache;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
@@ -58,6 +58,6 @@ public class PlayerCullingApiImpl implements PlayerCullingApi {
 
     @Override
     public long calcOcclusionCacheBytes() {
-        return OcclusionWorldCache.byteSize(this.cullShip.getPlatform().getWorlds());
+        return 0L; // TODO
     }
 }

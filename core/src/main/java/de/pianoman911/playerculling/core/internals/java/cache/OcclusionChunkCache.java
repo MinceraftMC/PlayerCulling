@@ -1,6 +1,7 @@
-package de.pianoman911.playerculling.platformcommon.cache;
+package de.pianoman911.playerculling.core.internals.java.cache;
 
 
+import de.pianoman911.playerculling.platformcommon.internals.ChunkCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.ref.WeakReference;
 
 @NullMarked
-public final class OcclusionChunkCache {
+public final class OcclusionChunkCache implements ChunkCacheInterface {
 
     public static final int VOXEL_LENGTH = 2 * 2 * 2;
     private static final Logger LOGGER = LoggerFactory.getLogger("PlayerCulling");

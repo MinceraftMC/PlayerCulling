@@ -1,11 +1,16 @@
 package de.pianoman911.playerculling.natives;
 
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
-import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
-
-import java.util.function.Function;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
+import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
+import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 
 public interface NativesAdapter {
 
-    Function<DataProvider, OcclusionCullingInterface> providerCullingInterface();
+    OcclusionCullingInterface providerCullingInterface();
+
+    WorldCacheInterface providerWorldCache(PlatformWorld<?> worldy);
+
+    DataProviderInterface providerDataProvider(PlatformPlayer player);
 }

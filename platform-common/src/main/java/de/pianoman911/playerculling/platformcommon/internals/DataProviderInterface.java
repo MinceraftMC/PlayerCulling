@@ -1,0 +1,13 @@
+package de.pianoman911.playerculling.platformcommon.internals;
+
+
+import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
+
+public interface DataProviderInterface {
+
+    void updatePos(PlatformWorld<?> world, double x, double y, double z);
+
+    boolean isOpaqueFullCube(int x, int y, int z);
+
+    int getPlayerViewDistance();
+}

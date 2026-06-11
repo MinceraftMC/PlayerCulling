@@ -1,7 +1,7 @@
 package de.pianoman911.playerculling.natives.avx2;
 
 import de.pianoman911.playerculling.natives.NativePart;
-import de.pianoman911.playerculling.platformcommon.occlusion.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 
 import java.lang.foreign.FunctionDescriptor;
@@ -15,7 +15,7 @@ public final class OcclusionInstance extends NativePart implements OcclusionCull
 
     static {
         IS_AABB_VISIBLE = Avx2Bridge.linker().downcallHandle(
-                Avx2Bridge.lookup().findOrThrow("cpp_is_aabb_visible"),
+                Avx2Bridge.lookup().findOrThrow("cpp_occlusion_instance_is_aabb_visible"),
                 FunctionDescriptor.of(ValueLayout.JAVA_BOOLEAN,
                         ValueLayout.ADDRESS, // occlusion_instance*
                         ValueLayout.JAVA_DOUBLE, // min_x
@@ -37,7 +37,7 @@ public final class OcclusionInstance extends NativePart implements OcclusionCull
 
     private boolean isAabbVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, double viewerX, double viewerY, double viewerZ) {
         try {
-            return (boolean) IS_AABB_VISIBLE.invoke(this.getPointer(), minX, minY, minZ, maxX, maxY, maxZ, viewerX, viewerY, viewerZ);
+            return (boolean) IS_AABB_VISIBLE.invokeExact(this.getPointer(), minX, minY, minZ, maxX, maxY, maxZ, viewerX, viewerY, viewerZ);
         } catch (Throwable exception) {
             throw new RuntimeException(exception);
         }

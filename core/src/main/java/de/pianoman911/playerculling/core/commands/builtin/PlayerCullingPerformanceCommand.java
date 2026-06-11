@@ -4,7 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.core.internals.java.cache.OcclusionWorldCache;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import net.kyori.adventure.bossbar.BossBar;
@@ -32,7 +32,7 @@ public final class PlayerCullingPerformanceCommand {
                 .append(text(ship.debugContainersFormat(), NamedTextColor.WHITE));
     }
 
-    private static Component generateChunkCacheInfo(CullShip ship) {
+    private static Component generateChunkCacheInfo(CullShip ship) {  // TODO
         return text("Occlusion Cache: ", NamedTextColor.GREEN)
                 .append(text(OcclusionWorldCache.CACHE_EXECUTOR.getActiveCount(), NamedTextColor.WHITE))
                 .append(text('/', NamedTextColor.WHITE))
@@ -40,9 +40,9 @@ public final class PlayerCullingPerformanceCommand {
                 .append(text(" Threads - C/S: ", NamedTextColor.WHITE))
                 .append(text(OcclusionWorldCache.CACHE_EXECUTOR.getCompletedTaskCount(), NamedTextColor.WHITE))
                 .append(text('/', NamedTextColor.WHITE))
-                .append(text(OcclusionWorldCache.chunksStored(ship.getPlatform().getWorlds()), NamedTextColor.WHITE))
+        //        .append(text(OcclusionWorldCache.chunksStored(ship.getPlatform().getWorlds()), NamedTextColor.WHITE))
                 .append(text(" chunks (", NamedTextColor.WHITE))
-                .append(text(OcclusionWorldCache.formattedByteSize(ship.getPlatform().getWorlds()), NamedTextColor.WHITE))
+            //    .append(text(OcclusionWorldCache.formattedByteSize(ship.getPlatform().getWorlds()), NamedTextColor.WHITE))
                 .append(text(")", NamedTextColor.WHITE));
     }
 

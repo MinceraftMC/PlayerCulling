@@ -8,9 +8,9 @@ import de.pianoman911.playerculling.platformcommon.platform.command.PlatformArgu
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
+import de.pianoman911.playerculling.platformcommon.util.ServicesUtil;
 import de.pianoman911.playerculling.platformpaper.PlayerCullingPlugin;
 import de.pianoman911.playerculling.platformpaper.util.PaperNmsAdapter;
-import de.pianoman911.playerculling.platformcommon.util.ServicesUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -139,9 +139,10 @@ public class PaperPlatform implements IPlatform {
         return this.argumentsProvider;
     }
 
-    public PaperWorld provideWorld(World world) {
+    public PaperWorld<?> provideWorld(World world) {
         return this.worldMap.computeIfAbsent(world.getUID(), id -> {
-            PaperWorld paperWorld = new PaperWorld(world, this);
+            PaperWorld<?> paperWorld = new PaperWorld<>(world, w ->
+                    this.plugin.getCullShip().getInternals().provideWorldCache(w), this);
             this.nmsAdapter.lazyBuildOcclusionMappings(this.occlusionMappings, paperWorld);
             return paperWorld;
         });

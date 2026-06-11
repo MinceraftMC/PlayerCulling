@@ -1,21 +1,19 @@
-package de.pianoman911.playerculling.core.provider;
+package de.pianoman911.playerculling.core.internals.java.cache;
 
 
 import de.pianoman911.playerculling.core.culling.CullPlayer;
-import de.pianoman911.playerculling.platformcommon.cache.DataProvider;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
-import de.pianoman911.playerculling.platformcommon.cache.OcclusionWorldCache;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class ChunkOcclusionDataProvider implements DataProvider {
+public final class ChunkOcclusionDataProvider implements DataProviderInterface {
 
     private static final int POS2CHUNK_SHIFT = 4 + 1;
 
     private final CullPlayer player;
-    private @MonotonicNonNull PlatformWorld world;
+    private @MonotonicNonNull PlatformWorld<OcclusionWorldCache> world;
     private @MonotonicNonNull OcclusionWorldCache cache;
     private @MonotonicNonNull OcclusionChunkCache chunk;
 
@@ -24,10 +22,11 @@ public final class ChunkOcclusionDataProvider implements DataProvider {
     }
 
     @Override
-    public final void updatePos(PlatformWorld world, double  x, double y, double z) {
+    public final void updatePos(PlatformWorld<?> world, double  x, double y, double z) {
+        PlatformWorld<OcclusionWorldCache> casted = (PlatformWorld<OcclusionWorldCache>) world;
         if (!world.equals(this.world)) {
-            this.world = world;
-            this.cache = world.getOcclusionWorldCache();
+            this.world = casted;
+            this.cache = casted.getOcclusionWorldCache();
         }
     }
 

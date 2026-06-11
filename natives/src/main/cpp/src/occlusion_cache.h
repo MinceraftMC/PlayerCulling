@@ -12,6 +12,8 @@
 #include <mutex>
 #include <ranges>
 
+#include "util.h"
+
 constexpr int32_t Y_LAYER_SIZE_BYTES = 128; // 128 Bytes3 (32 * sizeof(uint32_t))
 
 struct occlusion_chunk {
@@ -21,17 +23,17 @@ struct occlusion_chunk {
     uint32_t *layers;
 };
 
-class ChunkCache {
+class WorldCache {
 private:
     std::shared_mutex mutex;
     std::unordered_map<uint64_t, occlusion_chunk *> cache;
 
     static uint64_t get_key(const int32_t cx, const int32_t cz) {
-        return (static_cast<uint64_t>(cx) << 16) | static_cast<uint64_t>(cz) & 0xFFFFFFFF;
+        return (static_cast<uint64_t>(cx) << 32) | (static_cast<uint32_t>(cz));
     }
 
 public:
-    ~ChunkCache() {
+    ~WorldCache() {
         for (const auto &chunk: cache | std::views::values) {
             if (chunk) {
                 std::free(chunk->layers);
@@ -40,7 +42,8 @@ public:
         }
     }
 
-    void insert_or_update(const int32_t cx, const int32_t cz, const int32_t minY, const int32_t maxY, const uint32_t *source_data) {
+    void insert_or_update(const int32_t cx, const int32_t cz, const int32_t minY, const int32_t maxY,
+                          const uint32_t *source_data) {
         std::unique_lock lock(mutex);
 
         const uint64_t key = get_key(cx, cz);
@@ -58,8 +61,14 @@ public:
         }
 
         chunk->minY = minY;
+        chunk->maxY = maxY;
 
         chunk->layers = static_cast<uint32_t *>(std::aligned_alloc(32, total_bytes));
+
+        if (source_data != nullptr && chunk->layers != nullptr) {
+            std::memcpy(chunk->layers, source_data, total_bytes);
+            PRINT("Inserted/Updated chunk at (%d, %d) with minY: %d, maxY: %d", cx, cz, minY, maxY);
+        }
     }
 
     occlusion_chunk *get_chunk(const int32_t cx, const int32_t cz) {
@@ -73,14 +82,23 @@ public:
 
     void remove_chunk(const int32_t cx, const int32_t cz) {
         std::unique_lock lock(mutex);
+
         const uint64_t key = get_key(cx, cz);
-        const auto it = cache.find(key);
-        if (it != cache.end()) {
+        if (const auto it = cache.find(key); it != cache.end()) {
             std::free(it->second->layers);
 
             delete it->second;
+            cache.erase(it);
         }
-        cache.erase(it);
+    }
+
+    bool has_chunk(const int32_t cx, const int32_t cz) {
+        std::shared_lock lock(mutex);
+        const uint64_t key = get_key(cx, cz);
+        if (const auto it = cache.find(key); it != cache.end()) {
+            return true;
+        }
+        return false;
     }
 };
 
@@ -93,7 +111,7 @@ struct dynamic_world {
     int32_t ocx;
     int32_t ocz;
 
-    void init(const int32_t radius) {
+    void resize(const int32_t radius) {
         chunk_radius = radius;
         side_length = chunk_radius * 2 + 1;
         chunks = new occlusion_chunk *[side_length * side_length];
@@ -102,7 +120,7 @@ struct dynamic_world {
         memset(chunks, 0, sizeof(chunks[0]) * side_length * side_length);
     }
 
-    void update_grid(const int32_t ccx, const int32_t ccz, ChunkCache &world) {
+    void update_grid(const int32_t ccx, const int32_t ccz, WorldCache &world) {
         // upper left corner of the grid
         ocx = ccx - chunk_radius;
         ocz = ccz - chunk_radius;

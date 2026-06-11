@@ -40,7 +40,7 @@ public class PlayerCullingListener implements Listener {
     public void onTickEnd(ServerTickEndEvent event) {
         this.plugin.getPlatform().tick();
         for (PaperWorld world : this.plugin.getPlatform().getPaperWorlds()) {
-            this.plugin.getPlatform().getNmsAdapter().tickChangedBlocks(world);
+        //    this.plugin.getPlatform().getNmsAdapter().tickChangedBlocks(world);
         }
     }
 

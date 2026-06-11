@@ -40,7 +40,7 @@ public class PaperEntity<T extends Entity> extends PaperCommandSender<T> impleme
     }
 
     @Override
-    public PlatformWorld getWorld() {
+    public PlatformWorld<?> getWorld() {
         return this.platform.provideWorld(this.getDelegate().getWorld());
     }
 
@@ -55,7 +55,7 @@ public class PaperEntity<T extends Entity> extends PaperCommandSender<T> impleme
     }
 
     @Override
-    public void teleport(PlatformWorld world, double x, double y, double z) {
-        this.getDelegate().teleportAsync(new Location(((PaperWorld) world).getWorld(), x, y, z));
+    public void teleport(PlatformWorld<?> world, double x, double y, double z) {
+        this.getDelegate().teleportAsync(new Location(((PaperWorld<?>) world).getWorld(), x, y, z));
     }
 }
