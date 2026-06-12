@@ -78,7 +78,7 @@ public:
     }
 
     d3_vec operator+(const d3_vec &other) const {
-        d3_vec result = *this;
+        d3_vec result = *this; // Copy
         result += other;
         return result;
     }
@@ -112,14 +112,14 @@ public:
         return result;
     }
 
-    d3_vec &operator-=(const d3_vec &other) {
-        this->vec = _mm256_sub_pd(this->vec, other.vec);
-        return *this;
-    }
-
     d3_vec &operator-=(const double scalar) {
         __m256d scalar_vec = _mm256_set1_pd(scalar);
         this->vec = _mm256_sub_pd(this->vec, scalar_vec);
+        return *this;
+    }
+
+    d3_vec &operator-=(const d3_vec &other) {
+        this->vec = _mm256_sub_pd(this->vec, other.vec);
         return *this;
     }
 
@@ -140,11 +140,6 @@ public:
         return result;
     }
 
-    d3_vec operator/=(const d3_vec &other) {
-        this->vec = _mm256_div_pd(this->vec, other.vec);
-        return *this;
-    }
-
     d3_vec operator/(const double scalar) const {
         d3_vec result = *this;
         result /= scalar;
@@ -154,6 +149,11 @@ public:
     d3_vec operator/=(const double scalar) {
         __m256d scalar_vec = _mm256_set1_pd(scalar);
         this->vec = _mm256_div_pd(this->vec, scalar_vec);
+        return *this;
+    }
+
+    d3_vec operator/=(const d3_vec &other) {
+        this->vec = _mm256_div_pd(this->vec, other.vec);
         return *this;
     }
 

@@ -111,7 +111,6 @@ void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_vec32 *v
         main_direction = abs(dir.y);
         if (abs(dir.z) > main_direction) {
             main_direction = abs(dir.z);
-
             buffer_main_step_z[buffer_pos] = dir.z > 0 ? 1 : -1;
             main_pos = get_pos(dir.z, pos_start->z, voxel_start->z);
 
@@ -137,7 +136,6 @@ void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_vec32 *v
     } else {
         if (abs(dir.z) > main_direction) {
             main_direction = abs(dir.z);
-
             buffer_main_step_z[buffer_pos] = dir.z > 0 ? 1 : -1;
             main_pos = get_pos(dir.z, pos_start->z, voxel_start->z);
 
@@ -195,8 +193,8 @@ void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_vec32 *v
     buffer_pos++;
 }
 
-bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y, const double min_z, const double max_x,
-                                         const double max_y, const double max_z,
+bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y, const double min_z,
+                                         const double max_x, const double max_y, const double max_z,
                                          const d3_vec *viewer_pos) const {
     setToVec3iFloored(viewer_pos, start_voxel);
 
@@ -207,11 +205,12 @@ bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y,
     if ((rel_x == REL_INSIDE) && (rel_y == REL_INSIDE) && (rel_z == REL_INSIDE)) {
         return true; // We are inside the aabb, don't cull
     }
+    // We are outside the AABB -> Go for culling
 
     // Loop for voxel positions -> only check the faces that have faces to the outside
     for (double x = min_x; x < max_x - TWO_SAFE_POINT_OFFSET; x++) {
-        uint8_t face_edge_data_x = 0;
-        uint8_t visible_on_face_x = 0;
+        uint8_t face_edge_data_x = 0; // visible faces on the x-axis
+        uint8_t visible_on_face_x = 0; // visible corners on the x-axis
 
         bool delta_min = delta_lower_than_diff(x, min_x);
         bool delta_max = delta_lower_than_diff(x, max_x);
@@ -225,7 +224,6 @@ bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y,
         visible_on_face_x |= (delta_max && rel_x == REL_NEGATIVE) ? ON_MAX_X : 0;
 
         // Same for Y and Z
-
         for (double y = min_y; y < max_y - TWO_SAFE_POINT_OFFSET; y++) {
             // Cascade data
             uint8_t face_edge_data_y = face_edge_data_x;
@@ -304,6 +302,7 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
     const d3_vec target_end = safe_point_end_offset(target, max);
 
     if (dot_selectors & (1 << 0)) {
+        // minX, minY, minZ
         prepare_data(pos_start, voxel_start, &target_begin);
     }
 
@@ -527,7 +526,8 @@ bool occlusion_instance::simd_raycast() const {
         int32_t fin_mask = _mm256_movemask_ps(_mm256_castsi256_ps(finished_mask));
 
         for (uint8_t i = 0; i < SIMD_VECTOR_SIZE; i++) {
-            if (!((fin_mask >> i) & 1)) { // If not finished
+            if (!((fin_mask >> i) & 1)) {
+                // If not finished
                 if (r_gvalid[i]) {
                     if (occlusion_chunk *ch = world->chunks[r_gidx[i]]; ch != nullptr) {
                         if (ry[i] >= ch->minY && ry[i] <= ch->maxY) {
