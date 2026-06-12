@@ -195,7 +195,7 @@ public:
         return result;
     }
 
-    void blendv_inplace(const simd_vector_8x3i &other, const __m256i &mask) {
+    FORCE_INLINE void blendv_inplace(const simd_vector_8x3i &other, const __m256i &mask) {
         x_vec = _mm256_blendv_epi8(x_vec, other.x_vec, mask);
         y_vec = _mm256_blendv_epi8(y_vec, other.y_vec, mask);
         z_vec = _mm256_blendv_epi8(z_vec, other.z_vec, mask);

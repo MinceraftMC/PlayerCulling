@@ -468,6 +468,8 @@ bool occlusion_instance::simd_raycast() const {
             break;
         }
 
+        // ADVANCE RAYCAST
+
         current_distance = _mm256_add_epi32(current_distance, V_ONE);
         second_error = _mm256_add_epi32(second_error, second_error_step);
         third_error = _mm256_add_epi32(third_error, third_error_step);
@@ -492,14 +494,18 @@ bool occlusion_instance::simd_raycast() const {
         second_error = _mm256_sub_epi32(second_error, sub_sec);
         third_error = _mm256_sub_epi32(third_error, sub_thi);
 
-        // Pos2Chunk_Shift (4+1); /16 block -> chunk; /2 (2x2x2)-voxels -> real coords
-        __m256i chunk_x = _mm256_srai_epi32(pos.x_vec, 5);
-        __m256i chunk_z = _mm256_srai_epi32(pos.z_vec, 5);
+        // CHECK COLLISION WITH VOXEL GRID
 
-        // Local coords (0 - 31)
+        // lookup world chunk position; first convert to block coords
+        // using >>1 (as we use 2x block resolution), then convert to chunk using >>4
+        __m256i chunk_x = _mm256_srai_epi32(pos.x_vec, 1 + 4);
+        __m256i chunk_z = _mm256_srai_epi32(pos.z_vec, 1 + 4);
+
+        // Local coords (0 - 31) in chunk
         __m256i local_x = _mm256_and_si256(pos.x_vec, V_31);
         __m256i local_z = _mm256_and_si256(pos.z_vec, V_31);
 
+        // lookup relative chunk position in dynamic world storage
         __m256i grid_x = _mm256_sub_epi32(chunk_x, cached_world_data.ocx);
         __m256i grid_z = _mm256_sub_epi32(chunk_z, cached_world_data.ocz);
 
