@@ -93,7 +93,7 @@ public final class OcclusionCullingInstance implements OcclusionCullingInterface
             // Loop for voxel positions -> only check the faces that have faces to the outside
             for (double x = minX; x < maxX - TWO_SAFE_POINT_OFFSET; x++) {
                 byte visibleOnFaceX = 0; // visible faces on the x-axis
-                byte faceEdgeDataX = 0; // visible corners on the  x-axis
+                byte faceEdgeDataX = 0; // visible corners on the x-axis
 
                 // Only check the faces that are outside the AABB
                 faceEdgeDataX |= (deltaLowerThanX(x, minX)) ? ON_MIN_X : 0;

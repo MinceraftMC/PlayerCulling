@@ -446,14 +446,12 @@ bool occlusion_instance::simd_raycast() const {
     const __m256i third_error_step = LOAD_PTR_SIMD(buffer_third_error_step);
 
     const auto main_step = simd_vector_8x3i(buffer_main_step_x, buffer_main_step_y, buffer_main_step_z);
-    auto main_second_step = simd_vector_8x3i(buffer_second_step_x, buffer_second_step_y,
-                                             buffer_second_step_z);
+    auto main_second_step = simd_vector_8x3i(buffer_second_step_x, buffer_second_step_y, buffer_second_step_z);
     main_second_step += main_step;
 
     auto main_third_step = simd_vector_8x3i(buffer_third_step_x, buffer_third_step_y, buffer_third_step_z);
-    // Add main afterward, see below
     const simd_vector_8x3i main_second_third_step = main_second_step + main_third_step;
-    main_third_step += main_second_step;
+    main_third_step += main_step; // add after line above
 
     while (true) {
         // TODO: failsafe
