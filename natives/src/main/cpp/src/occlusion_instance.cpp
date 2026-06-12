@@ -518,7 +518,6 @@ bool occlusion_instance::simd_raycast() const {
 
         // Calculate area
         __m256i grid_indicis = _mm256_add_epi32(_mm256_mullo_epi32(grid_z, cached_world_data.side_length), grid_x);
-        grid_indicis = _mm256_and_si256(grid_indicis, grid_valid_mask);
 
         // Collect data scalar
         alignas(32) uint32_t extracted_bits[SIMD_VECTOR_SIZE] = {};
