@@ -515,6 +515,8 @@ bool occlusion_instance::simd_raycast() const {
         __m256i gz_valid = _mm256_and_si256(_mm256_cmpgt_epi32(grid_z, V_NEGATIVE_ONE),
                                             _mm256_cmpgt_epi32(cached_world_data.side_length, grid_z));
         __m256i grid_valid_mask = _mm256_and_si256(gx_valid, gz_valid);
+        // mark finished rays as invalid
+        grid_valid_mask = _mm256_and_si256(grid_valid_mask, finished_mask);
 
         // Calculate area
         __m256i grid_indicis = _mm256_add_epi32(_mm256_mullo_epi32(grid_z, cached_world_data.side_length), grid_x);
@@ -528,24 +530,19 @@ bool occlusion_instance::simd_raycast() const {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(r_gvalid), grid_valid_mask);
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(r_gidx), grid_indicis);
 
-        int32_t fin_mask = _mm256_movemask_ps(_mm256_castsi256_ps(finished_mask));
-
         for (uint8_t i = 0; i < SIMD_VECTOR_SIZE; i++) {
-            if (!((fin_mask >> i) & 1)) {
-                // If not finished
-                if (r_gvalid[i]) {
-                    if (occlusion_chunk *ch = world->chunks[r_gidx[i]]; ch != nullptr) {
-                        if (ry[i] >= ch->minY && ry[i] <= ch->maxY) {
-                            uint32_t local_y = ry[i] - ch->minY;
-                            uint32_t array_index = (local_y << (1 + 4)) | rz[i];
+            if (r_gvalid[i]) { // only check valid + non-finished rays
+                if (occlusion_chunk *ch = world->chunks[r_gidx[i]]; ch != nullptr) {
+                    if (ry[i] >= ch->minY && ry[i] <= ch->maxY) {
+                        uint32_t local_y = ry[i] - ch->minY;
+                        uint32_t array_index = (local_y << (1 + 4)) | rz[i];
 
-                            // check if collision
-                            if (uint32_t bit_row = ch->layers[array_index];
-                                (bit_row >> rx[i]) & 1) {
-                                // mark as finished
-                                auto *mask_ptr = reinterpret_cast<uint32_t *>(&finished_mask);
-                                mask_ptr[i] = 0xFFFFFFFF;
-                            }
+                        // check if collision
+                        if (uint32_t bit_row = ch->layers[array_index];
+                            (bit_row >> rx[i]) & 1) {
+                            // mark as finished
+                            auto *mask_ptr = reinterpret_cast<uint32_t *>(&finished_mask);
+                            mask_ptr[i] = 0xFFFFFFFF;
                         }
                     }
                 }
