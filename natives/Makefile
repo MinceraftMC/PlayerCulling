@@ -10,8 +10,7 @@ endif
 
 SRC_DIR = src/main/cpp/src
 
-SRC_FILES = simd_culling.cpp \
-			occlusion_instance.cpp \
+SRC_FILES = occlusion_instance.cpp \
 			java_interface.cpp
 
 SRC = $(addprefix $(SRC_DIR)/, $(SRC_FILES))
