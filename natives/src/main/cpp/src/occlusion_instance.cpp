@@ -187,7 +187,7 @@ void occlusion_instance::prepare_data(const d3_vec *pos_start, const i3_vec32 *v
     buffer_pos_y[buffer_pos] = voxel_start->y;
     buffer_pos_z[buffer_pos] = voxel_start->z;
 
-    auto *mask_ptr = reinterpret_cast<int32_t *>(&finished_mask); // Mark as not finished
+    auto *mask_ptr = reinterpret_cast<uint32_t *>(&finished_mask); // Mark as not finished
     mask_ptr[buffer_pos] = 0;
 
     buffer_pos++;
@@ -410,18 +410,22 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
         // No run check needed, last one
     }
 
-    // Run ray cast for buffer_pos's left points
-    // Fill up finished mask to prevent calculation of unused buffer place
-    for (uint8_t i = buffer_pos; i < SIMD_VECTOR_SIZE; i++) {
-        buffer_distance_int[i] = 0; // Kann nicht weit fliegen
+    // only run if there is actually something to do
+    if (buffer_pos) {
+        // Run ray cast for buffer_pos's left points
+        // Fill up finished mask to prevent calculation of unused buffer place
+        for (uint8_t i = buffer_pos; i < SIMD_VECTOR_SIZE; i++) {
+            buffer_distance_int[i] = 0; // can't fly that far
 
-        // Im finished_mask eintragen, dass diese Lane ignoriert werden soll
-        auto *mask_ptr = reinterpret_cast<int32_t *>(&finished_mask);
-        mask_ptr[i] = 0xFFFFFFFF;
+            // mark lane as finished
+            auto *mask_ptr = reinterpret_cast<uint32_t *>(&finished_mask);
+            mask_ptr[i] = 0xFFFFFFFF;
+        }
+        buffer_pos = 0;
+
+        return simd_raycast();
     }
-    buffer_pos = 0;
-
-    return simd_raycast();
+    return false;
 }
 
 inline bool occlusion_instance::check_buffer_ready() const {
