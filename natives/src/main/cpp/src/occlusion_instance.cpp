@@ -487,8 +487,8 @@ bool occlusion_instance::simd_raycast() const {
 
         pos += step;
 
-        __m256i sub_sec = _mm256_and_si256(_mm256_or_si256(cond_both, cond_second), V_GRID_SIZE);
-        __m256i sub_thi = _mm256_and_si256(_mm256_or_si256(cond_both, cond_third), V_GRID_SIZE);
+        __m256i sub_sec = _mm256_and_si256(sec_gt_0, V_GRID_SIZE);
+        __m256i sub_thi = _mm256_and_si256(thi_gt_0, V_GRID_SIZE);
         second_error = _mm256_sub_epi32(second_error, sub_sec);
         third_error = _mm256_sub_epi32(third_error, sub_thi);
 
