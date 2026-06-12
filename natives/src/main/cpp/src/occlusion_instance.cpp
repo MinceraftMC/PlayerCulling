@@ -25,8 +25,8 @@ alignas(32) const auto V_POINT_MIDDLE = d3_vec(POINT_MIDDLE, POINT_MIDDLE, POINT
 alignas(32) const __m256i V_ZERO = _mm256_setzero_si256();
 alignas(32) const __m256i V_ONE = {1, 1, 1, 1};
 alignas(32) const __m256i V_NEGATIVE_ONE = {-1, -1, -1, -1};
-alignas(32) const __m256i V_31 = _mm256_set1_epi32(31);
-alignas(32) const __m256i V_GRID_SIZE = {GRID_SIZE, GRID_SIZE, GRID_SIZE, GRID_SIZE};
+alignas(32) const __m256i V_31 = _mm256_set1_epi32((1 << (4 + 1)) - 1);
+alignas(32) const __m256i V_GRID_SIZE = _mm256_set1_epi32(GRID_SIZE);
 
 #define ON_MIN_X _BV(0)
 #define ON_MAX_X _BV(1)
