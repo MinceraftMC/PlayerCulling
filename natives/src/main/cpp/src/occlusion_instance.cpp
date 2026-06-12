@@ -508,7 +508,7 @@ bool occlusion_instance::simd_raycast() const {
                                             _mm256_cmpgt_epi32(cached_world_data.side_length, grid_x));
         __m256i gz_valid = _mm256_and_si256(_mm256_cmpgt_epi32(grid_z, V_NEGATIVE_ONE),
                                             _mm256_cmpgt_epi32(cached_world_data.side_length, grid_z));
-        __m256i grid_valid_mask = _mm256_cmpgt_epi32(gx_valid, gz_valid);
+        __m256i grid_valid_mask = _mm256_and_si256(gx_valid, gz_valid);
 
         // Calculate area
         __m256i grid_indicis = _mm256_add_epi32(_mm256_mullo_epi32(grid_z, cached_world_data.side_length), grid_x);
