@@ -273,6 +273,7 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
                                           const uint8_t face_data, const uint8_t visible_on_face,
                                           const double max_x, const double max_y, const double max_z) const {
     uint16_t dot_selectors = 0; // 8 corners + 6 middle faces -> Cuboid, 14 bools
+    // TODO allocate in is_aabb_visibile
     const auto target = d3_vec(target_x, target_y, target_z);
     const auto max = d3_vec(max_x, max_y, max_z);
 
@@ -295,6 +296,24 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
             dot_selectors |= (1 << 1) | (1 << 4) | (1 << 5);
         }
     }
+    if (visible_on_face & ON_MAX_Y) {
+        dot_selectors |= (1 << 1) | (1 << 12);
+        if (face_data & ~ON_MAX_Y) {
+            dot_selectors |= (1 << 2) | (1 << 5) | (1 << 6);
+        }
+    }
+    if (visible_on_face & ON_MAX_Z) {
+        dot_selectors |= (1 << 2) | (1 << 13);
+        if (face_data & ~ON_MAX_Z) {
+            dot_selectors |= (1 << 3) | (1 << 6) | (1 << 7);
+        }
+    }
+    if (visible_on_face & ON_MAX_X) {
+        dot_selectors |= (1 << 4) | (1 << 11);
+        if (face_data & ~ON_MAX_X) {
+            dot_selectors |= (1 << 5) | (1 << 6) | (1 << 7);
+        }
+    }
 
     // we assume the target is always at least SAFE_POINT_OFFSET away from max, otherwise there
     // is not enough space to perform a ray cast; this is guaranteed by our for-loop upper bound in #isAABBVisible
@@ -305,23 +324,9 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
         // minX, minY, minZ
         prepare_data(pos_start, voxel_start, &target_begin);
     }
-
-    if (visible_on_face & ON_MAX_Y) {
-        dot_selectors |= (1 << 1) | (1 << 12);
-        if (face_data & ~ON_MAX_Y) {
-            dot_selectors |= (1 << 2) | (1 << 5) | (1 << 6);
-        }
-    }
     if (dot_selectors & (1 << 1)) {
         // minX, maxY, minZ
         prepare_data(pos_start, voxel_start, target_begin.x, target_end.y, target_begin.z);
-    }
-
-    if (visible_on_face & ON_MAX_Z) {
-        dot_selectors |= (1 << 2) | (1 << 13);
-        if (face_data & ~ON_MAX_Z) {
-            dot_selectors |= (1 << 3) | (1 << 6) | (1 << 7);
-        }
     }
     if (dot_selectors & (1 << 2)) {
         // minX, maxY, maxZ
@@ -330,13 +335,6 @@ bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec3
     if (dot_selectors & (1 << 3)) {
         // minX, minY, maxZ
         prepare_data(pos_start, voxel_start, target_begin.x, target_begin.y, target_end.z);
-    }
-
-    if (visible_on_face & ON_MAX_X) {
-        dot_selectors |= (1 << 4) | (1 << 11);
-        if (face_data & ~ON_MAX_X) {
-            dot_selectors |= (1 << 5) | (1 << 6) | (1 << 7);
-        }
     }
     if (dot_selectors & (1 << 4)) {
         // maxX, minY, minZ
