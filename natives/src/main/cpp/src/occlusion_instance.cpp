@@ -520,8 +520,6 @@ bool occlusion_instance::simd_raycast() const {
         __m256i grid_indicis = _mm256_add_epi32(_mm256_mullo_epi32(grid_z, cached_world_data.side_length), grid_x);
 
         // Collect data scalar
-        alignas(32) uint32_t extracted_bits[SIMD_VECTOR_SIZE] = {};
-
         alignas(32) int32_t rx[SIMD_VECTOR_SIZE], ry[SIMD_VECTOR_SIZE], rz[SIMD_VECTOR_SIZE], r_gvalid[SIMD_VECTOR_SIZE]
                 , r_gidx[SIMD_VECTOR_SIZE];
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(rx), local_x);
@@ -538,28 +536,18 @@ bool occlusion_instance::simd_raycast() const {
                 if (r_gvalid[i]) {
                     if (occlusion_chunk *ch = world->chunks[r_gidx[i]]; ch != nullptr) {
                         if (ry[i] >= ch->minY && ry[i] <= ch->maxY) {
-                            int32_t local_y = ry[i] - ch->minY;
-                            int32_t array_index = (local_y << 5) + rz[i];
+                            uint32_t local_y = ry[i] - ch->minY;
+                            uint32_t array_index = (local_y << (1 + 4)) | rz[i];
 
-                            uint32_t bit_row = ch->layers[array_index];
-                            extracted_bits[i] = (bit_row >> rx[i]) & 1;
+                            // check if collision
+                            if (uint32_t bit_row = ch->layers[array_index];
+                                (bit_row >> rx[i]) & 1) {
+                                // mark as finished
+                                auto *mask_ptr = reinterpret_cast<uint32_t *>(&finished_mask);
+                                mask_ptr[i] = 0xFFFFFFFF;
+                            }
                         }
                     }
-                }
-            }
-        }
-
-        __m256i opaque_simd = _mm256_setzero_si256();
-        auto *opaque_ptr = reinterpret_cast<int32_t *>(&opaque_simd);
-        for (int i = 0; i < 8; ++i) {
-            if (extracted_bits[i]) opaque_ptr[i] = 0xFFFFFFFF;
-        }
-
-        if (int32_t opaque_mask = _mm256_movemask_ps(_mm256_castsi256_ps(opaque_simd)); opaque_mask != 0) {
-            auto *mask_ptr = reinterpret_cast<int32_t *>(&finished_mask);
-            for (uint8_t i = 0; i < SIMD_VECTOR_SIZE; i++) {
-                if ((opaque_mask & (1 << i)) && !((fin_mask >> i) & 1)) {
-                    mask_ptr[i] = 0xFFFFFFFF;
                 }
             }
         }
