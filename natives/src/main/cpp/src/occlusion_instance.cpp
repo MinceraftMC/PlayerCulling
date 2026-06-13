@@ -23,8 +23,8 @@ alignas(32) const auto V_SAFE_OFFSET = d3_vec(SAFE_POINT_OFFSET, SAFE_POINT_OFFS
 alignas(32) const auto V_TWO_OFFSET = d3_vec(TWO_SAFE_POINT_OFFSET, TWO_SAFE_POINT_OFFSET, TWO_SAFE_POINT_OFFSET);
 alignas(32) const auto V_POINT_MIDDLE = d3_vec(POINT_MIDDLE, POINT_MIDDLE, POINT_MIDDLE);
 alignas(32) const __m256i V_ZERO = _mm256_setzero_si256();
-alignas(32) const __m256i V_ONE = {1, 1, 1, 1};
-alignas(32) const __m256i V_NEGATIVE_ONE = {-1, -1, -1, -1};
+alignas(32) const __m256i V_ONE = _mm256_set1_epi32(1);
+alignas(32) const __m256i V_NEGATIVE_ONE = _mm256_set1_epi32(-1);
 alignas(32) const __m256i V_31 = _mm256_set1_epi32((1 << (4 + 1)) - 1);
 alignas(32) const __m256i V_GRID_SIZE = _mm256_set1_epi32(GRID_SIZE);
 
