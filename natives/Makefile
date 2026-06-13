@@ -1,11 +1,11 @@
 ifeq ($(OS),Windows_NT)
     TARGET = build/libs/natives/windows_x64/playerculling_avx2.dll
     CC = g++
-    CFLAGS = -O3 -shared -mavx2 -mfma
+    CFLAGS = -O3 -shared -mavx2 -mfma -std=c++20
 else
     TARGET = build/libs/natives/linux_x64/playerculling_avx2.so
     CC = g++
-    CFLAGS = -O3 -shared -fPIC -mavx2 -mfma
+    CFLAGS = -O3 -shared -fPIC -mavx2 -mfma -std=c++20
 endif
 
 SRC_DIR = src/main/cpp/src
