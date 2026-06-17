@@ -5,7 +5,6 @@ import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.core.internals.java.cache.ChunkOcclusionDataProvider;
 import de.pianoman911.playerculling.core.internals.java.cache.OcclusionWorldCache;
 import de.pianoman911.playerculling.core.internals.java.occlusion.OcclusionCullingInstance;
-import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
 import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
 import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
@@ -18,11 +17,11 @@ public class InternalsProvider {
         this.ship = ship;
     }
 
-    public OcclusionCullingInterface provideCullingInterface(DataProviderInterface dataProvider) {
+    public OcclusionCullingInterface provideCullingInterface(CullPlayer player) {
         if (this.ship.getNativesAdapter() != null) {
-            return this.ship.getNativesAdapter().providerCullingInterface();
+            return this.ship.getNativesAdapter().providerCullingInterface(player.getPlatformPlayer());
         }
-        return new OcclusionCullingInstance(dataProvider);
+        return new OcclusionCullingInstance(new ChunkOcclusionDataProvider(player));
     }
 
     @SuppressWarnings("unchecked")
@@ -31,12 +30,5 @@ public class InternalsProvider {
             return this.ship.getNativesAdapter().providerWorldCache(world);
         }
         return new OcclusionWorldCache((PlatformWorld<OcclusionWorldCache>) world);
-    }
-
-    public DataProviderInterface provideDataProvider(CullPlayer player) {
-        if (this.ship.getNativesAdapter() != null) {
-            return this.ship.getNativesAdapter().providerDataProvider(player.getPlatformPlayer());
-        }
-        return new ChunkOcclusionDataProvider(player);
     }
 }

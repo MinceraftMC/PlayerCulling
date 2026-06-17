@@ -7,16 +7,16 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public class NativeDataProvider implements DataProviderInterface {
 
-    private final DynamicWorld dynamicWorld;
+    private final OcclusionInstance occlusionInstance;
     private final PlatformPlayer player;
     private @MonotonicNonNull PlatformWorld<WorldCache> world;
     private int ccx;
     private int ccz;
     private int chunkRadius;
 
-    public NativeDataProvider(DynamicWorld dynamicWorld, PlatformPlayer player) {
-        this.dynamicWorld = dynamicWorld;
+    public NativeDataProvider(PlatformPlayer player, OcclusionInstance occlusionInstance) {
         this.player = player;
+        this.occlusionInstance = occlusionInstance;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class NativeDataProvider implements DataProviderInterface {
             }
         }
 
-        this.dynamicWorld.updateGrid(this.ccx, this.ccz, this.world.getOcclusionWorldCache());
+        this.occlusionInstance.getWorld().updateGrid(this.ccx, this.ccz, this.world.getOcclusionWorldCache());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class NativeDataProvider implements DataProviderInterface {
             int trackingDistanceChunks = trackingDistanceBlocks >> 4;
             if (trackingDistanceChunks != this.chunkRadius){
                 this.chunkRadius = trackingDistanceChunks;
-                this.dynamicWorld.resize(this.chunkRadius);
+                this.occlusionInstance.getWorld().resize(this.chunkRadius);
             }
             return trackingDistanceBlocks;
         }

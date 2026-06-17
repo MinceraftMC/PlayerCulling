@@ -10,8 +10,8 @@ WorldCache *create_world_cache() {
     return new WorldCache();
 }
 
-occlusion_instance *create_occlusion_instance() {
-    return new occlusion_instance();
+occlusion_instance *create_occlusion_instance(const dynamic_world *dynamic_world) {
+    return new occlusion_instance(dynamic_world);
 }
 
 dynamic_world *create_dynamic_world() {

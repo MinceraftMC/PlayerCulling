@@ -52,8 +52,8 @@ public final class CullPlayer {
     public CullPlayer(CullShip ship, PlatformPlayer player) {
         this.ship = ship;
         this.player = player;
-        this.provider = ship.getInternals().provideDataProvider(this);
-        this.cullingInstance = ship.getInternals().provideCullingInterface(this.provider);
+        this.cullingInstance = ship.getInternals().provideCullingInterface(this);
+        this.provider = this.cullingInstance.getDataProvider();
         Vec3d pos = player.getPosition();
         this.provider.updatePos(player.getWorld(), pos.getX(), pos.getY(), pos.getZ());
         this.tracked = new FastStack<>(player.getWorld().getPlayerCount());

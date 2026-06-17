@@ -1,5 +1,6 @@
 package de.pianoman911.playerculling.platformcommon.internals;
 
+import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 
 public interface OcclusionCullingInterface {
@@ -11,4 +12,6 @@ public interface OcclusionCullingInterface {
             double maxX, double maxY, double maxZ,
             Vec3d viewerPosition
     );
+
+    DataProviderInterface getDataProvider();
 }

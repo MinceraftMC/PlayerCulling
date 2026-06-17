@@ -51,7 +51,7 @@ private:
 
     cached_world_data cached_world_data;
 
-    dynamic_world *world = nullptr;
+   const dynamic_world *world;
 
     mutable __m256i finished_mask = _mm256_setzero_si256();
 
@@ -69,6 +69,10 @@ private:
                           double max_x, double max_y, double max_z) const;
 
 public:
+    explicit occlusion_instance(const dynamic_world* world) {
+        this->world = world;
+    }
+
     bool is_aabb_visible(double min_x, double min_y, double min_z, double max_x, double max_y, double max_z,
                          const d3_vec *viewer_pos) const;
 };

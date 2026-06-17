@@ -116,7 +116,7 @@ struct dynamic_world {
         chunks = new occlusion_chunk *[side_length * side_length];
 
         // fill chunks with null pointers
-        memset(chunks, 0, sizeof(occlusion_chunk) * side_length * side_length);
+        memset(chunks, 0, sizeof(occlusion_chunk*) * side_length * side_length);
     }
 
     void update_grid(const int32_t ccx, const int32_t ccz, WorldCache &world) {

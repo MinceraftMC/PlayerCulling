@@ -2,7 +2,6 @@ package de.pianoman911.playerculling.natives.avx2;
 
 import de.pianoman911.playerculling.natives.NativeLibLoader;
 import de.pianoman911.playerculling.natives.NativesAdapter;
-import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
 import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
 import de.pianoman911.playerculling.platformcommon.internals.WorldCacheInterface;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
@@ -36,7 +35,9 @@ public final class Avx2Bridge implements NativesAdapter {
 
         CREATE_OCCLUSION_INSTANCE = LINKER.downcallHandle(
                 LOOKUP.findOrThrow("create_occlusion_instance"),
-                FunctionDescriptor.of(ValueLayout.ADDRESS)
+                FunctionDescriptor.of(ValueLayout.ADDRESS,
+                        ValueLayout.ADDRESS // dynamic_world* dynamic_world
+                )
         );
 
         CREATE_DYNAMIC_WORLD = LINKER.downcallHandle(
@@ -63,36 +64,32 @@ public final class Avx2Bridge implements NativesAdapter {
         }
     }
 
-    public static OcclusionInstance createOcclusionInstance() {
+    public static OcclusionInstance createOcclusionInstance(PlatformPlayer player) {
         try {
-            MemorySegment pointer = (MemorySegment) CREATE_OCCLUSION_INSTANCE.invokeExact();
-            return new OcclusionInstance(pointer);
+            DynamicWorld dynamicWorld = createDynamicWorld();
+            MemorySegment pointer = (MemorySegment) CREATE_OCCLUSION_INSTANCE.invokeExact(dynamicWorld.getPointer());
+            return new OcclusionInstance(pointer, dynamicWorld, player);
         } catch (Throwable exception) {
             throw new RuntimeException(exception);
         }
     }
 
-    public static NativeDataProvider createDataProvider(PlatformPlayer player) {
+    public static DynamicWorld createDynamicWorld() {
         try {
             MemorySegment pointer = (MemorySegment) CREATE_DYNAMIC_WORLD.invokeExact();
-            return new NativeDataProvider(new DynamicWorld(pointer), player);
+            return new DynamicWorld(pointer);
         } catch (Throwable exception) {
             throw new RuntimeException(exception);
         }
     }
 
     @Override
-    public OcclusionCullingInterface providerCullingInterface() {
-        return createOcclusionInstance();
+    public OcclusionCullingInterface providerCullingInterface(PlatformPlayer player) {
+        return createOcclusionInstance(player);
     }
 
     @Override
     public WorldCacheInterface providerWorldCache(PlatformWorld<?> world) {
         return createChunkCache(world);
-    }
-
-    @Override
-    public DataProviderInterface providerDataProvider(PlatformPlayer player) {
-        return createDataProvider(player);
     }
 }

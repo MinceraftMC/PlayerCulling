@@ -1,7 +1,9 @@
 package de.pianoman911.playerculling.natives.avx2;
 
 import de.pianoman911.playerculling.natives.NativePart;
+import de.pianoman911.playerculling.platformcommon.internals.DataProviderInterface;
 import de.pianoman911.playerculling.platformcommon.internals.OcclusionCullingInterface;
+import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 
 import java.lang.foreign.FunctionDescriptor;
@@ -31,8 +33,13 @@ public final class OcclusionInstance extends NativePart implements OcclusionCull
         );
     }
 
-    public OcclusionInstance(MemorySegment pointer) {
+    private final DynamicWorld world;
+    private final NativeDataProvider provider;
+
+    public OcclusionInstance(MemorySegment pointer, DynamicWorld world,  PlatformPlayer player) {
         super(pointer);
+        this.world = world;
+        this.provider = new NativeDataProvider(player, this);
     }
 
     private boolean isAabbVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, double viewerX, double viewerY, double viewerZ) {
@@ -51,5 +58,14 @@ public final class OcclusionInstance extends NativePart implements OcclusionCull
     @Override
     public boolean isAABBVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, Vec3d viewerPosition) {
         return this.isAabbVisible(minX, minY, minZ, maxX, maxY, maxZ, viewerPosition.x, viewerPosition.y, viewerPosition.z);
+    }
+
+    @Override
+    public DataProviderInterface getDataProvider() {
+        return this.provider;
+    }
+
+    public DynamicWorld getWorld() {
+        return this.world;
     }
 }

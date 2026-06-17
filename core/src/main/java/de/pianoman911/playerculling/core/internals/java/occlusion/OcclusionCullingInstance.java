@@ -141,6 +141,11 @@ public final class OcclusionCullingInstance implements OcclusionCullingInterface
         return true;
     }
 
+    @Override
+    public DataProviderInterface getDataProvider() {
+        return this.provider;
+    }
+
     /**
      * Checks if a voxel is visible from a given position and face data.
      * It selects the visible points on the voxel and checks if they are visible.
