@@ -202,14 +202,17 @@ public:
     }
 
     union {
-        struct {
-            int32_t x[8] = {};
-            int32_t y[8] = {};
-            int32_t z[8] = {};
-        };
-
+        int32_t x[8];
         __m256i x_vec;
+    };
+
+    union {
+        int32_t y[8];
         __m256i y_vec;
+    };
+
+    union {
+        int32_t z[8];
         __m256i z_vec;
     };
 };
