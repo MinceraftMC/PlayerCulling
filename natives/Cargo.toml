@@ -10,3 +10,8 @@ name = "playerculling"
 path = "src/main/rust/lib.rs"
 
 [dependencies]
+microbench = "0.5.0"
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
