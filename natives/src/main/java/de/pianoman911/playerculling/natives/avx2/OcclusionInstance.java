@@ -14,6 +14,7 @@ import java.lang.invoke.MethodHandle;
 public final class OcclusionInstance extends NativePart implements OcclusionCullingInterface {
 
     private static final MethodHandle IS_AABB_VISIBLE;
+    private static final MethodHandle UPDATE_WORLD;
 
     static {
         IS_AABB_VISIBLE = Avx2Bridge.linker().downcallHandle(
@@ -31,6 +32,15 @@ public final class OcclusionInstance extends NativePart implements OcclusionCull
                         ValueLayout.JAVA_DOUBLE // viewer-pos_z
                 )
         );
+        UPDATE_WORLD = Avx2Bridge.linker().downcallHandle(
+                Avx2Bridge.lookup().findOrThrow("cpp_occlusion_instance_update_world"),
+                FunctionDescriptor.ofVoid(
+                        ValueLayout.ADDRESS, // occlusion_instance*
+                        ValueLayout.JAVA_INT, // int32_t ccx
+                        ValueLayout.JAVA_INT, // int32_t ccz
+                        ValueLayout.ADDRESS // WorldCache *world
+                )
+        );
     }
 
     private final DynamicWorld world;
@@ -45,6 +55,14 @@ public final class OcclusionInstance extends NativePart implements OcclusionCull
     private boolean isAabbVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, double viewerX, double viewerY, double viewerZ) {
         try {
             return (boolean) IS_AABB_VISIBLE.invokeExact(this.getPointer(), minX, minY, minZ, maxX, maxY, maxZ, viewerX, viewerY, viewerZ);
+        } catch (Throwable exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    public void updateWorld(int ccx, int ccz, WorldCache worldCache) {
+        try {
+            UPDATE_WORLD.invokeExact(this.getPointer(), ccx, ccz, worldCache.getPointer());
         } catch (Throwable exception) {
             throw new RuntimeException(exception);
         }

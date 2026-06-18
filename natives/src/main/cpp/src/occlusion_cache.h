@@ -116,10 +116,10 @@ struct dynamic_world {
         chunks = new occlusion_chunk *[side_length * side_length];
 
         // fill chunks with null pointers
-        memset(chunks, 0, sizeof(occlusion_chunk*) * side_length * side_length);
+        memset(chunks, 0, sizeof(occlusion_chunk *) * side_length * side_length);
     }
 
-    void update_grid(const int32_t ccx, const int32_t ccz, WorldCache &world) {
+    void update_grid(const int32_t ccx, const int32_t ccz, WorldCache *world) {
         // upper left corner of the grid
         ocx = ccx - chunk_radius;
         ocz = ccz - chunk_radius;
@@ -132,7 +132,7 @@ struct dynamic_world {
 
                 const int32_t grid_index = (lz * side_length) + lx;
 
-                chunks[grid_index] = world.get_chunk(acx, acz);
+                chunks[grid_index] = world->get_chunk(acx, acz);
             }
         }
     }

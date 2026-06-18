@@ -27,7 +27,7 @@ class occlusion_instance {
 
         __m256i side_length = _mm256_setzero_si256();
 
-        void update(const dynamic_world &dynamic_world) {
+        void update_world(const dynamic_world &dynamic_world) {
             ocx = _mm256_set1_epi32(dynamic_world.ocx);
             ocz = _mm256_set1_epi32(dynamic_world.ocz);
             side_length = _mm256_set1_epi32(dynamic_world.side_length);
@@ -51,7 +51,7 @@ private:
 
     cached_world_data cached_world_data;
 
-   const dynamic_world *world;
+    dynamic_world *world;
 
     mutable __m256i finished_mask = _mm256_setzero_si256();
 
@@ -69,12 +69,14 @@ private:
                           double max_x, double max_y, double max_z) const;
 
 public:
-    explicit occlusion_instance(const dynamic_world* world) {
+    explicit occlusion_instance(dynamic_world *world) {
         this->world = world;
     }
 
     bool is_aabb_visible(double min_x, double min_y, double min_z, double max_x, double max_y, double max_z,
                          const d3_vec *viewer_pos) const;
+
+    void update_world(int32_t ccx, int32_t ccz, WorldCache *_world);
 };
 
 

@@ -268,6 +268,11 @@ bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y,
     return false;
 }
 
+void occlusion_instance::update_world(const int32_t ccx, const int32_t ccz, WorldCache *_world) {
+    this->world->update_grid(ccx, ccz, _world);
+    this->cached_world_data.update_world(*this->world);
+}
+
 bool occlusion_instance::is_voxel_visible(const d3_vec *pos_start, const i3_vec32 *voxel_start,
                                           const double target_x, const double target_y, const double target_z,
                                           const uint8_t face_data, const uint8_t visible_on_face,

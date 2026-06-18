@@ -38,7 +38,7 @@ public class NativeDataProvider implements DataProviderInterface {
             }
         }
 
-        this.occlusionInstance.getWorld().updateGrid(this.ccx, this.ccz, this.world.getOcclusionWorldCache());
+        this.occlusionInstance.updateWorld(this.ccx, this.ccz, this.world.getOcclusionWorldCache());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class NativeDataProvider implements DataProviderInterface {
         if (this.world != null) {
             int trackingDistanceBlocks = this.world.getTrackingDistance(this.player);
             int trackingDistanceChunks = trackingDistanceBlocks >> 4;
-            if (trackingDistanceChunks != this.chunkRadius){
+            if (trackingDistanceChunks != this.chunkRadius) {
                 this.chunkRadius = trackingDistanceChunks;
                 this.occlusionInstance.getWorld().resize(this.chunkRadius);
             }
