@@ -1,0 +1,12 @@
+[package]
+name = "playerculling"
+version = "1.0.0"
+edition = "2024"
+license = "AGPL-3"
+repository = "https://github.com/MinceraftMC/PlayerCulling"
+
+[lib]
+name = "playerculling"
+path = "src/main/rust/lib.rs"
+
+[dependencies]
