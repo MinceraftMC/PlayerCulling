@@ -5,7 +5,7 @@ edition = "2024"
 license = "AGPL-3"
 repository = "https://github.com/MinceraftMC/PlayerCulling"
 
-[lib]
+[[bin]]
 name = "playerculling"
 path = "src/main/rust/lib.rs"
 
