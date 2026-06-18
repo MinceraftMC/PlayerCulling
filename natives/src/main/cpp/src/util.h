@@ -6,6 +6,9 @@
 #define NATIVES_UTIL_H
 
 #include <cmath>
+#include <chrono>
+#include <thread>
+
 #include "vector.h"
 
 #define _BV(bit) (1 << (bit))

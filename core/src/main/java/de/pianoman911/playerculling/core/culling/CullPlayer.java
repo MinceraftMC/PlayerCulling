@@ -141,6 +141,12 @@ public final class CullPlayer {
             return;
         }
 
+        int trackingDist = this.provider.getPlayerViewDistance();
+        if (trackingDist <= 0) { // No view distance set
+            this.hidden.clear();
+            return;
+        }
+
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
             return; // No need to cull if no other players are in the world
@@ -167,11 +173,6 @@ public final class CullPlayer {
             darkness = false;
         }
 
-        int trackingDist = this.provider.getPlayerViewDistance();
-        if (trackingDist <= 0) { // No view distance set
-            this.hidden.clear();
-            return;
-        }
         this.tracked.grow(playersInWorld.size()); // Ensure tracked stack capacity
 
         double trackingDistSq = trackingDist * trackingDist;

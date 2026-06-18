@@ -16,7 +16,7 @@
 #define POINT_END (1.0 - SAFE_POINT_OFFSET)
 #define POINT_MIDDLE (1.0 / 2.0)
 #define DELTA 1.0
-#define GRID_SIZE _BV(21) // Support for 1024 blocks
+#define GRID_SIZE _BV(24) // Support for 1024 blocks
 
 alignas(32) const auto V_POINT_END = d3_vec(POINT_END, POINT_END, POINT_END);
 alignas(32) const auto V_SAFE_OFFSET = d3_vec(SAFE_POINT_OFFSET, SAFE_POINT_OFFSET, SAFE_POINT_OFFSET);
@@ -256,15 +256,11 @@ bool occlusion_instance::is_aabb_visible(const double min_x, const double min_y,
                     if (this->is_voxel_visible(viewer_pos, start_voxel, x, y, z, face_edge_data, visible_on_face,
                                                max_x, max_y, max_z)) {
                         return true;
-                    } else {
-                        PRINT("Occluded at %lf, %lf, %lf", x, y, z);
                     }
                 }
             }
         }
     }
-
-    PRINT("Not visible");
     return false;
 }
 
@@ -465,7 +461,6 @@ bool occlusion_instance::simd_raycast() const {
 
         if (__m256i just_reached = _mm256_andnot_si256(finished_mask, dist_reached);
             _mm256_movemask_epi8(just_reached) != 0) {
-            PRINT("Distance reached for some rays, stopping ray cast!");
             return true;
         }
 
@@ -527,19 +522,20 @@ bool occlusion_instance::simd_raycast() const {
         __m256i grid_indicis = _mm256_add_epi32(_mm256_mullo_epi32(grid_z, cached_world_data.side_length), grid_x);
 
         // Collect data scalar
-        alignas(32) int32_t rx[SIMD_VECTOR_SIZE], ry[SIMD_VECTOR_SIZE], rz[SIMD_VECTOR_SIZE], r_gvalid[SIMD_VECTOR_SIZE]
+        alignas(32) int32_t rx[SIMD_VECTOR_SIZE], rz[SIMD_VECTOR_SIZE], r_gvalid[SIMD_VECTOR_SIZE]
                 , r_gidx[SIMD_VECTOR_SIZE];
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(rx), local_x);
-        _mm256_storeu_si256(reinterpret_cast<__m256i *>(ry), pos.y_vec);
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(rz), local_z);
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(r_gvalid), grid_valid_mask);
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(r_gidx), grid_indicis);
 
         for (uint8_t i = 0; i < SIMD_VECTOR_SIZE; i++) {
-            if (r_gvalid[i]) { // only check valid + non-finished rays
-                if (occlusion_chunk *ch = world->chunks[r_gidx[i]]; ch != nullptr) {
-                    if (ry[i] >= ch->minY && ry[i] <= ch->maxY) {
-                        uint32_t local_y = ry[i] - ch->minY;
+            if (r_gvalid[i]) {
+                // only check valid + non-finished rays
+                if (occlusion_chunk *ch = world->chunks[r_gidx[i]].load(std::memory_order_acquire); ch != nullptr) {
+
+                    if (pos.y[i] >= ch->minY * 2 && pos.y[i] <= ch->maxY * 2) {
+                        uint32_t local_y = pos.y[i] - ch->minY * 2;
                         uint32_t array_index = (local_y << (1 + 4)) | rz[i];
 
                         // check if collision

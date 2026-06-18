@@ -69,8 +69,9 @@ public:
 
         if (source_data != nullptr) {
             std::memcpy(chunk->layers, source_data, total_bytes);
-            PRINT("Inserted/Updated chunk at (%d, %d) with minY: %d, maxY: %d", cx, cz, minY, maxY);
         }
+
+        PRINT("INSERT OR UPDATE CHUNK X: %d Z: %d MINY: %d MAXY: %d", cx, cz, minY, maxY)
     }
 
     occlusion_chunk *get_chunk(const int32_t cx, const int32_t cz) {
@@ -92,6 +93,7 @@ public:
             delete it->second;
             cache.erase(it);
         }
+        PRINT("REMOVE CHUNK X: %d Z: %d", cx, cz)
     }
 
     bool has_chunk(const int32_t cx, const int32_t cz) {
@@ -105,7 +107,7 @@ struct dynamic_world {
     int32_t chunk_radius;
     int32_t side_length; // chunk_radius * 2 + 1
 
-    occlusion_chunk **chunks; // Flat array
+    std::atomic<occlusion_chunk *> *chunks = nullptr; // Flat array
 
     int32_t ocx;
     int32_t ocz;
@@ -113,10 +115,14 @@ struct dynamic_world {
     void resize(const int32_t radius) {
         chunk_radius = radius;
         side_length = chunk_radius * 2 + 1;
-        chunks = new occlusion_chunk *[side_length * side_length];
+        chunks = new std::atomic<occlusion_chunk *>[side_length * side_length];
 
         // fill chunks with null pointers
-        memset(chunks, 0, sizeof(occlusion_chunk *) * side_length * side_length);
+        for (int32_t i = 0; i < side_length * side_length; i++) {
+            chunks[i].store(nullptr, std::memory_order_relaxed);
+        }
+
+        PRINT("RESIZE")
     }
 
     void update_grid(const int32_t ccx, const int32_t ccz, WorldCache *world) {
@@ -132,9 +138,11 @@ struct dynamic_world {
 
                 const int32_t grid_index = (lz * side_length) + lx;
 
-                chunks[grid_index] = world->get_chunk(acx, acz);
+                chunks[grid_index].store(world->get_chunk(acx, acz), std::memory_order_release);
             }
         }
+
+        PRINT("UPDATE GRID")
     }
 
     void free_grid() const {

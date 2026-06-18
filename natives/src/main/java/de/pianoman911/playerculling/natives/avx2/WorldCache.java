@@ -69,14 +69,20 @@ public class WorldCache extends NativePart implements WorldCacheInterface {
     }
 
     public void ensureChunkComputed(int cx, int cz) {
+        long key = chunkKey(cx, cz);
         synchronized (this.computedChunks) {
-            if (this.computedChunks.contains(chunkKey(cx, cz))) {
+            if (this.computedChunks.contains(key)) {
                 return; // Already computed by another thread
             }
-            this.computedChunks.add(chunkKey(cx, cz));
+            this.computedChunks.add(key);
         }
-        System.out.println("Computing chunk cache for chunk (" + cx + ", " + cz + ") in world " + this.world.getKey().asMinimalString());
         PlatformChunkAccess chunkAccess = this.world.getChunkAccess(cx, cz);
+        if (chunkAccess == null) {
+            synchronized (this.computedChunks) {
+                this.computedChunks.remove(key);
+            }
+            return;
+        }
         computeChunk(chunkAccess, cx, cz, world.getMinY(), world.getMaxY(), 0);
     }
 

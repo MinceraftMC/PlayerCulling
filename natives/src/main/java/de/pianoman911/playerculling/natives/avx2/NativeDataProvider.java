@@ -12,7 +12,7 @@ public class NativeDataProvider implements DataProviderInterface {
     private @MonotonicNonNull PlatformWorld<WorldCache> world;
     private int ccx;
     private int ccz;
-    private int chunkRadius;
+    private int chunkRadius = Integer.MIN_VALUE;
 
     public NativeDataProvider(PlatformPlayer player, OcclusionInstance occlusionInstance) {
         this.player = player;
@@ -22,6 +22,9 @@ public class NativeDataProvider implements DataProviderInterface {
     @Override
     public final void updatePos(PlatformWorld<?> world, double x, double y, double z) {
         this.world = (PlatformWorld<WorldCache>) world;
+        if (chunkRadius ==  Integer.MIN_VALUE) {
+            this.getPlayerViewDistance(); // Initialize chunk radius and cache size
+        }
         int ccx = (int) x >> 4;
         int ccz = (int) z >> 4;
         if (this.ccx == ccx && this.ccz == ccz) {
