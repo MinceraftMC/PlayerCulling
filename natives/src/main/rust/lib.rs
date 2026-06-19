@@ -1,7 +1,6 @@
-use crate::vector::f64vec3::Vec3f64;
 use crate::vector::i32vec3::Vec3i32;
+use crate::vector::i32vec3x8::{Vec3i32x8, Vec3i32x8Component};
 use microbench::Options;
-use std::ops::AddAssign;
 
 mod vector;
 
@@ -11,9 +10,8 @@ fn main() {
     // println!("{} {} {}", vec, vec.len(), vec.distance_squared(vec));
 
     let opts = Options::default();
-    microbench::bench(&opts, "add_assign", || {
-        let mut v = Vec3i32::zero();
-        v += vec;
-        return v;
-    });
+    // microbench::bench(&opts, "zero_avx", || Vec3i32x8::zero_avx());
+    microbench::bench(&opts, "zero", || Vec3i32x8::zero());
+    // microbench::bench(&opts, "component_zero_avx", || Vec3i32x8Component::zero_avx());
+    microbench::bench(&opts, "component_zero", || Vec3i32x8Component::zero());
 }
