@@ -478,8 +478,8 @@ bool occlusion_instance::simd_raycast() const {
         __m256i thi_gt_0 = _mm256_cmpgt_epi32(third_error, V_ZERO);
 
         __m256i cond_both = _mm256_and_si256(sec_gt_0, thi_gt_0);
-        __m256i cond_second = _mm256_andnot_si256(cond_both, second_error);
-        __m256i cond_third = _mm256_andnot_si256(cond_both, third_error);
+        __m256i cond_second = _mm256_andnot_si256(cond_both, sec_gt_0);
+        __m256i cond_third = _mm256_andnot_si256(cond_both, thi_gt_0);
 
         simd_vector_8x3i step = main_step;
 
