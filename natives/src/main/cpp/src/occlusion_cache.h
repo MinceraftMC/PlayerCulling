@@ -26,10 +26,10 @@ struct occlusion_chunk {
 class WorldCache {
 private:
     std::shared_mutex mutex;
-    std::unordered_map<uint32_t, occlusion_chunk *> cache;
+    std::unordered_map<uint64_t, occlusion_chunk*> cache;
 
-    static uint32_t get_key(const int32_t cx, const int32_t cz) {
-        return (static_cast<uint32_t>(cx) << 16) | (static_cast<uint32_t>(cz));
+    static uint64_t get_key(const int32_t cx, const int32_t cz) {
+        return ((static_cast<uint64_t>(cx) & 0xFFFFFFFFL) << 32) | (static_cast<uint64_t>(cz) & 0xFFFFFFFFL);
     }
 
 public:
