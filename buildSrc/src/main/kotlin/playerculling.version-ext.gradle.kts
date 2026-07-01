@@ -17,5 +17,6 @@ project.afterEvaluate {
 configure<JavaPluginExtension> {
     toolchain {
         languageVersion = playercullingExt.languageVersion
+        vendor = JvmVendorSpec.ADOPTIUM
     }
 }
