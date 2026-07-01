@@ -21,7 +21,7 @@ listOf("1.21.4", "1.21.6")
     .map { it.replace(".", "") }
     .forEach { include("platform-folia-nms-$it") }
 
-listOf("1.21.4", "1.21.7", "1.21.9", "1.21.11", "26.1")
+listOf("1.21.4", "1.21.7", "1.21.9", "1.21.11", "26.1.2")
     .map { it.replace(".", "") }
     .forEach { include("platform-fabric-$it") }
 

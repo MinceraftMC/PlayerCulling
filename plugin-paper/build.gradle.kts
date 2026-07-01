@@ -17,7 +17,11 @@ dependencies {
 tasks {
     runServer {
         runDirectory = project.layout.projectDirectory.dir("run")
-        minecraftVersion("26.1.2")
+        minecraftVersion("26.2")
+        javaLauncher = project.javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(25)
+            vendor = JvmVendorSpec.ADOPTIUM
+        }
     }
 
     shadowJar {

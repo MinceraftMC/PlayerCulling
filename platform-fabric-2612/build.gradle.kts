@@ -5,6 +5,6 @@ plugins {
 }
 
 configure<PlayerCullingVersionExt> {
-    versionName = "26.1"
+    versionName = "26.1.2"
     languageVersion = JavaLanguageVersion.of(25)
 }

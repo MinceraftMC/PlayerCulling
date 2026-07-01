@@ -53,10 +53,10 @@ fabricapi-v12111 = "0.141.2+1.21.11"
 fabric-permissions-v12111 = "0.6.1"
 adventure-platform-fabric-v12111 = "6.8.0"
 
-# fabric 26.1.x
-fabricapi-v261 = "0.145.4+26.1.1"
-fabric-permissions-v261 = "0.7.0"
-adventure-platform-fabric-v261 = "6.9.0"
+# fabric 26.1.2
+fabricapi-v2612 = "0.145.4+26.1.1"
+fabric-permissions-v2612 = "0.7.0"
+adventure-platform-fabric-v2612 = "6.9.0"
 
 [libraries]
 plugin-paperweight = { module = "io.papermc.paperweight:paperweight-userdev", version.ref = "paperweight-userdev" }

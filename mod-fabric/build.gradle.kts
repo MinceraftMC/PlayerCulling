@@ -5,7 +5,7 @@ plugins {
     net.fabricmc.`fabric-loom`
 }
 
-val testTaskVersion = "1.21.11"
+val testTaskVersion = "26.1.2"
 val testTaskVersionFiltered = testTaskVersion.replace(".", "")
 
 loom.noIntermediateMappings()
@@ -85,6 +85,6 @@ tasks.register<CustomServerProductionRunTask>("prodServer") {
     minecraftVersion = testTaskVersion
     loaderVersion = libs.versions.fabric.loader.get()
     javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }

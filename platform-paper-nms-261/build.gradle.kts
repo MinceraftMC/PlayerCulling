@@ -7,6 +7,13 @@ dependencies {
     paperweight.paperDevBundle("26.1.2.build.+")
 }
 
+configure<JavaPluginExtension> {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
