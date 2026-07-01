@@ -11,10 +11,10 @@ import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlaye
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
 import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
-import de.pianoman911.playerculling.platformfabric12111.common.IServerLevel;
-import de.pianoman911.playerculling.platformfabric12111.common.IServerPlayer;
-import de.pianoman911.playerculling.platformfabric12111.util.SimpleScheduler;
-import de.pianoman911.playerculling.platformfabric12111.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric261.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric261.common.IServerLevel;
+import de.pianoman911.playerculling.platformfabric261.common.IServerPlayer;
+import de.pianoman911.playerculling.platformfabric261.util.SimpleScheduler;
 import net.fabricmc.loader.api.FabricLoader;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.modcommon.MinecraftServerAudiences;

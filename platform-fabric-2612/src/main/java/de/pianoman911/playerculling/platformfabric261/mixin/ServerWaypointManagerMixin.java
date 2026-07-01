@@ -6,7 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformfabric12111.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric261.PlayerCullingMod;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.waypoints.Waypoint;

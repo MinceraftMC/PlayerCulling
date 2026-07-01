@@ -1,10 +1,11 @@
 package de.pianoman911.playerculling.platformfabric261.mixin;
 
-import de.pianoman911.playerculling.platformfabric12111.PlayerCullingMod;
-import de.pianoman911.playerculling.platformfabric12111.common.IServerLevel;
-import de.pianoman911.playerculling.platformfabric12111.platform.FabricPlatform;
-import de.pianoman911.playerculling.platformfabric12111.platform.FabricWorld;
-import de.pianoman911.playerculling.platformfabric12111.util.BlockStateUtil;
+
+import de.pianoman911.playerculling.platformfabric261.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric261.common.IServerLevel;
+import de.pianoman911.playerculling.platformfabric261.platform.FabricPlatform;
+import de.pianoman911.playerculling.platformfabric261.platform.FabricWorld;
+import de.pianoman911.playerculling.platformfabric261.util.BlockStateUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +35,7 @@ public abstract class ServerLevelMixin implements IServerLevel {
     public void onUnload(LevelChunk chunk, CallbackInfo ci) {
         if (this.world != null) {
             ChunkPos chunkPos = chunk.getPos();
-            this.world.getOcclusionWorldCache().removeChunk(chunkPos.x, chunkPos.z);
+            this.world.getOcclusionWorldCache().removeChunk(chunkPos.x(), chunkPos.z());
         }
     }
 

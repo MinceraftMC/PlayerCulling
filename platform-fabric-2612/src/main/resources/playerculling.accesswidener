@@ -5,7 +5,6 @@ accessible method net/minecraft/server/level/ChunkMap getVisibleChunkIfPresent (
 accessible method net/minecraft/server/level/ChunkMap getPlayerViewDistance (Lnet/minecraft/server/level/ServerPlayer;)I
 
 # fields
-accessible field net/minecraft/world/level/block/state/StateHolder PROPERTY_ENTRY_TO_STRING_FUNCTION Ljava/util/function/Function;
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity entity Lnet/minecraft/world/entity/Entity;
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity serverEntity Lnet/minecraft/server/level/ServerEntity;
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity seenBy Ljava/util/Set;

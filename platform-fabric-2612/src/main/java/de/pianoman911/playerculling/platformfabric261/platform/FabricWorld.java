@@ -6,7 +6,7 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkA
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
-import de.pianoman911.playerculling.platformfabric12111.common.ILevel;
+import de.pianoman911.playerculling.platformfabric261.common.ILevel;
 import net.kyori.adventure.key.Key;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -18,6 +18,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,6 +32,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @NullMarked
 public class FabricWorld extends PlatformWorld {
@@ -46,7 +48,7 @@ public class FabricWorld extends PlatformWorld {
 
     @Override
     public @Nullable PlatformChunkAccess getChunkAccess(int x, int z) {
-        long chunkKey = ChunkPos.asLong(x, z);
+        long chunkKey = ChunkPos.pack(x, z);
         ChunkHolder chunkHolder = this.world.getChunkSource().chunkMap.getVisibleChunkIfPresent(chunkKey);
         ChunkAccess chunk = chunkHolder != null ? chunkHolder.getChunkIfPresent(ChunkStatus.FEATURES) : null;
         return chunk != null ? new FabricChunkAccess(this.platform, chunk) : null;
@@ -122,15 +124,7 @@ public class FabricWorld extends PlatformWorld {
     @Override
     public String getBlockStateStringOfBlock(Vec3i blockPos) {
         BlockState state = this.world.getBlockState(new BlockPos(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
-        StringBuilder bob = new StringBuilder(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
-        if (!state.getValues().isEmpty()) {
-            bob.append('[');
-            bob.append(state.getValues().entrySet().stream()
-                    .map(StateHolder.PROPERTY_ENTRY_TO_STRING_FUNCTION)
-                    .collect(Collectors.joining(",")));
-            bob.append(']');
-        }
-        return bob.toString();
+        return state.toString();
     }
 
     public void tick() {

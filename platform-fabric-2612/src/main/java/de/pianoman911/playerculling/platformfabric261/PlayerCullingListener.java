@@ -26,7 +26,7 @@ public class PlayerCullingListener implements
         ServerPlayConnectionEvents.Join,
         ServerPlayConnectionEvents.Disconnect,
         ServerPlayerEvents.AfterRespawn,
-        ServerTickEvents.EndWorldTick,
+        ServerTickEvents.EndLevelTick,
         ServerLifecycleEvents.ServerStopped,
         CommandRegistrationCallback {
 
@@ -39,7 +39,7 @@ public class PlayerCullingListener implements
     public void register() {
         ServerPlayConnectionEvents.JOIN.register(this);
         ServerPlayConnectionEvents.DISCONNECT.register(this);
-        ServerTickEvents.END_WORLD_TICK.register(this);
+        ServerTickEvents.END_LEVEL_TICK.register(this);
         ServerLifecycleEvents.SERVER_STOPPED.register(this);
         CommandRegistrationCallback.EVENT.register(this);
     }
