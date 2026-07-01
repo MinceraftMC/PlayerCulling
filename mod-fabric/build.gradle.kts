@@ -61,6 +61,8 @@ tasks.named<Jar>("jar") {
     }
     includeAll.resolvedConfiguration.firstLevelModuleDependencies.forEach { doInclude(it) }
     // final fabric jar, place it in root build dir
+    archiveBaseName = rootProject.name
+    archiveClassifier = "fabric"
     destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
 }
 
