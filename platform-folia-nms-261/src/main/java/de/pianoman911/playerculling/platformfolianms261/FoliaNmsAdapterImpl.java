@@ -57,9 +57,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
 
     public FoliaNmsAdapterImpl() {
         if (!PaperNmsAdapter.isFolia() ||
-                (SharedConstants.getProtocolVersion() != 771 && // 1.21.6
-                        SharedConstants.getProtocolVersion() != 772 && // 1.21.8
-                        SharedConstants.getProtocolVersion() != 774) // 1.21.11
+                (SharedConstants.getProtocolVersion() != 775) // 1.21.6
 
         ) {
             throw new UnsupportedOperationException();
@@ -165,7 +163,7 @@ public class FoliaNmsAdapterImpl implements PaperNmsAdapter {
         ServerLevel world = handle.level();
 
         ChunkPos chunkPos = handle.chunkPosition();
-        world.moonrise$getChunkTaskScheduler().scheduleChunkTask(chunkPos.x, chunkPos.z, () -> {
+        world.moonrise$getChunkTaskScheduler().scheduleChunkTask(chunkPos.x(), chunkPos.z(), () -> {
             for (PlatformPlayer target : targets) {
                 ChunkMap.TrackedEntity tracked = ((CraftPlayer) ((PaperPlayer) target).getDelegate()).getHandle().moonrise$getTrackedEntity();
                 if (tracked == null) {

@@ -1,3 +1,5 @@
+import xyz.jpenilla.runpaper.task.RunServer
+
 plugins {
     xyz.jpenilla.`run-paper`
     com.gradleup.shadow
@@ -9,15 +11,15 @@ dependencies {
     listOf("1.21.1", "1.21.4", "1.21.6", "1.21.11", "26.1")
         .map { "paper-nms-${it.replace(".", "")}" }
         .forEach { implementation(project(":platform-$it")) }
-    listOf("1.21.4", "1.21.6")
+    listOf("1.21.4", "1.21.6", "26.1")
         .map { "folia-nms-${it.replace(".", "")}" }
         .forEach { implementation(project(":platform-$it")) }
 }
 
 tasks {
-    runServer {
+    withType<RunServer> {
         runDirectory = project.layout.projectDirectory.dir("run")
-        minecraftVersion("26.2")
+        minecraftVersion("26.1.2")
         javaLauncher = project.javaToolchains.launcherFor {
             languageVersion = JavaLanguageVersion.of(25)
             vendor = JvmVendorSpec.ADOPTIUM
