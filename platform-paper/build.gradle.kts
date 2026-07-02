@@ -1,8 +1,8 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
-    alias(libs.plugins.pluginyml.bukkit)
-    alias(libs.plugins.gradle.shadow)
+    net.minecrell.`plugin-yml`.bukkit
+    com.gradleup.shadow
 }
 
 dependencies {

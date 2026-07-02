@@ -1,12 +1,11 @@
 import net.fabricmc.loom.task.AbstractRemapJarTask
-import net.fabricmc.loom.task.RemapJarTask
 import net.fabricmc.loom.task.prod.ServerProductionRunTask
 
 plugins {
-    alias(libs.plugins.fabric.loom)
+    net.fabricmc.`fabric-loom`
 }
 
-val testTaskVersion = "1.21.9"
+val testTaskVersion = "26.2"
 val testTaskVersionFiltered = testTaskVersion.replace(".", "")
 
 loom.noIntermediateMappings()
@@ -14,12 +13,8 @@ loom.noIntermediateMappings()
 val includeAll: Configuration by configurations.creating
 
 dependencies {
-    // dummy fabric env setup
-    minecraft("com.mojang:minecraft:$testTaskVersion")
-    mappings(loom.officialMojangMappings())
-    // required for production run tasks, otherwise we
-    // will just get cryptic error messages
-    modImplementation(libs.fabric.loader)
+    // dummy fabric env setup (use non-obfuscated version for less prep time)
+    minecraft("com.mojang:minecraft:26.1.2")
 
     // include common project once
     include(projects.core)
@@ -40,9 +35,13 @@ dependencies {
         .filter { it.name.matches("^platform-fabric-\\d+$".toRegex()) }
         .forEach { include(it) }
 
-    // version-specific runtime mods
-    productionRuntimeMods(libs.fabricapi.create("fabricapi.v$testTaskVersionFiltered"))
-    productionRuntimeMods(libs.adventure.platform.fabric.create("adventure.platform.fabric.v$testTaskVersionFiltered"))
+    // fabric api
+    val fabricApiVersion = libs.versions.hackGetVersion("fabricapi.v$testTaskVersionFiltered")
+    productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
+
+    // adventure component library
+    val adventureVersion = libs.versions.hackGetVersion("adventure.platform.fabric.v$testTaskVersionFiltered")
+    productionRuntimeMods("net.kyori:adventure-platform-fabric:$adventureVersion")
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -52,7 +51,7 @@ tasks.named<ProcessResources>("processResources") {
     }
 }
 
-tasks.named<RemapJarTask>("remapJar") {
+tasks.named<Jar>("jar") {
     // include common dependencies transitively
     fun doInclude(dep: ResolvedDependency) {
         configurations.named("include").get().withDependencies {
@@ -62,6 +61,8 @@ tasks.named<RemapJarTask>("remapJar") {
     }
     includeAll.resolvedConfiguration.firstLevelModuleDependencies.forEach { doInclude(it) }
     // final fabric jar, place it in root build dir
+    archiveBaseName = rootProject.name
+    archiveClassifier = "fabric"
     destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
 }
 
@@ -83,7 +84,9 @@ abstract class CustomServerProductionRunTask : ServerProductionRunTask {
 }
 
 tasks.register<CustomServerProductionRunTask>("prodServer") {
+    minecraftVersion = testTaskVersion
+    loaderVersion = libs.versions.fabric.loader.get()
     javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
