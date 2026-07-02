@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.platform;
+package de.pianoman911.playerculling.platformfabric2612.platform;
 
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import net.minecraft.world.level.block.Block;

@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.platform;
+package de.pianoman911.playerculling.platformfabric2612.platform;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;

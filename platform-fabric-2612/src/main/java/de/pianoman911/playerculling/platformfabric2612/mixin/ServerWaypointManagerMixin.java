@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.mixin;
+package de.pianoman911.playerculling.platformfabric2612.mixin;
 // Created by booky10 in PlayerCulling (21:57 14.07.2025)
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -6,7 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformfabric261.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric2612.PlayerCullingMod;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.waypoints.Waypoint;

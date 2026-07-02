@@ -1,12 +1,12 @@
-package de.pianoman911.playerculling.platformfabric261.mixin;
+package de.pianoman911.playerculling.platformfabric2612.mixin;
 
 import com.mojang.authlib.GameProfile;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformfabric261.PlayerCullingMod;
-import de.pianoman911.playerculling.platformfabric261.common.IServerPlayer;
-import de.pianoman911.playerculling.platformfabric261.platform.FabricPlatform;
-import de.pianoman911.playerculling.platformfabric261.platform.FabricPlayer;
+import de.pianoman911.playerculling.platformfabric2612.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric2612.common.IServerPlayer;
+import de.pianoman911.playerculling.platformfabric2612.platform.FabricPlatform;
+import de.pianoman911.playerculling.platformfabric2612.platform.FabricPlayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;

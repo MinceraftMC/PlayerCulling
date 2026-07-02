@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.util;
+package de.pianoman911.playerculling.platformfabric2612.util;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

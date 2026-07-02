@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.platform;
+package de.pianoman911.playerculling.platformfabric2612.platform;
 
 import de.pianoman911.playerculling.platformcommon.cache.OcclusionChunkCache;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
@@ -6,19 +6,16 @@ import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkA
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3i;
-import de.pianoman911.playerculling.platformfabric261.common.ILevel;
+import de.pianoman911.playerculling.platformfabric2612.common.ILevel;
 import net.kyori.adventure.key.Key;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateHolder;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,8 +28,6 @@ import org.jspecify.annotations.NullMarked;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @NullMarked
 public class FabricWorld extends PlatformWorld {

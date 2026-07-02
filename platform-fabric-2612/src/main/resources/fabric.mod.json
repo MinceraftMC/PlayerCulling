@@ -22,7 +22,7 @@
   "accessWidener": "playerculling.accesswidener",
   "entrypoints": {
     "main": [
-      "de.pianoman911.playerculling.platformfabric12111.PlayerCullingMod"
+      "de.pianoman911.playerculling.platformfabric2612.PlayerCullingMod"
     ]
   },
 
@@ -34,7 +34,8 @@
     "fabricloader": ">=0.17.3",
     "minecraft": [
       "26.1.1",
-      "26.1.2"
+      "26.1.2",
+      "26.2"
     ],
     "java": ">=25",
     "fabric-api": "*",

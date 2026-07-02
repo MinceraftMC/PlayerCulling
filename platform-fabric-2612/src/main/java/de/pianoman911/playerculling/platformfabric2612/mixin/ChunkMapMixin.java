@@ -1,7 +1,7 @@
-package de.pianoman911.playerculling.platformfabric261.mixin;
+package de.pianoman911.playerculling.platformfabric2612.mixin;
 
 import de.pianoman911.playerculling.core.culling.CullPlayer;
-import de.pianoman911.playerculling.platformfabric261.PlayerCullingMod;
+import de.pianoman911.playerculling.platformfabric2612.PlayerCullingMod;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;

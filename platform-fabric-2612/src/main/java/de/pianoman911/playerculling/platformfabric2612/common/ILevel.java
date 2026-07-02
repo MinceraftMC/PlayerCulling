@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.common;
+package de.pianoman911.playerculling.platformfabric2612.common;
 
 import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.NullMarked;

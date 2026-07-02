@@ -5,7 +5,7 @@ plugins {
     net.fabricmc.`fabric-loom`
 }
 
-val testTaskVersion = "26.1.2"
+val testTaskVersion = "26.2"
 val testTaskVersionFiltered = testTaskVersion.replace(".", "")
 
 loom.noIntermediateMappings()

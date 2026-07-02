@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformfabric261.platform;
+package de.pianoman911.playerculling.platformfabric2612.platform;
 
 import de.pianoman911.playerculling.platformcommon.AABB;
 import de.pianoman911.playerculling.platformcommon.platform.IPlatform;
@@ -6,7 +6,7 @@ import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformEntit
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.TickRefreshSupplier;
 import de.pianoman911.playerculling.platformcommon.vector.Vec3d;
-import de.pianoman911.playerculling.platformfabric261.common.IServerLevel;
+import de.pianoman911.playerculling.platformfabric2612.common.IServerLevel;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;

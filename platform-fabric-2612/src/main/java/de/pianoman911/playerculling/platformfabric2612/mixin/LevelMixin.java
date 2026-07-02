@@ -1,6 +1,6 @@
-package de.pianoman911.playerculling.platformfabric261.mixin;
+package de.pianoman911.playerculling.platformfabric2612.mixin;
 
-import de.pianoman911.playerculling.platformfabric261.common.ILevel;
+import de.pianoman911.playerculling.platformfabric2612.common.ILevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;

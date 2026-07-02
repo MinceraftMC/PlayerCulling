@@ -1,7 +1,7 @@
-package de.pianoman911.playerculling.platformfabric261;
+package de.pianoman911.playerculling.platformfabric2612;
 
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformfabric261.platform.FabricPlatform;
+import de.pianoman911.playerculling.platformfabric2612.platform.FabricPlatform;
 import net.fabricmc.api.ModInitializer;
 
 public class PlayerCullingMod implements ModInitializer {

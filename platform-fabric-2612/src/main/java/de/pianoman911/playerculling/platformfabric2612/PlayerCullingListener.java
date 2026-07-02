@@ -1,13 +1,13 @@
-package de.pianoman911.playerculling.platformfabric261;
+package de.pianoman911.playerculling.platformfabric2612;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import de.pianoman911.playerculling.core.commands.PlayerCullingCommand;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
-import de.pianoman911.playerculling.platformfabric261.common.IServerLevel;
-import de.pianoman911.playerculling.platformfabric261.platform.FabricCommandSourceStack;
-import de.pianoman911.playerculling.platformfabric261.platform.FabricWorld;
+import de.pianoman911.playerculling.platformfabric2612.common.IServerLevel;
+import de.pianoman911.playerculling.platformfabric2612.platform.FabricCommandSourceStack;
+import de.pianoman911.playerculling.platformfabric2612.platform.FabricWorld;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
