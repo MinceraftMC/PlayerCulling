@@ -120,6 +120,8 @@ environment with an AMD Ryzen 5 3600X CPU.
 
 | Server Version | Paper | Folia | Fabric |
 |:--------------:|:-----:|:-----:|:------:|
+|     26.2.x     |   ✅   |   ✅   |   ✅    |  
+|     26.1.x     |   ✅   |   ✅   |   ✅    |  
 |    1.21.11     |   ✅   |   ✅   |   ✅    |  
 |    1.21.10     |   ✅   |   ✅   |   ✅    |  
 |     1.21.9     |   ✅   |   ✅   |   ✅    |  
@@ -161,7 +163,8 @@ following options:
     - `max-merge-factor`: If the combined load percentage of two threads is below this factor, the two threads are
       allowed to merge together (default: `0.5`)
 - `culling`:
-    - `nametag-visibility-distance`: The distance in blocks PlayerCulling will check for nametag visibility. Set to `0` to
+    - `nametag-visibility-distance`: The distance in blocks PlayerCulling will check for nametag visibility. Set to `0`
+      to
       ignore nametags completely (default: `64`, vanilla)
     - `blacklisted_worlds`: A list of worlds where PlayerCulling should be disabled (default: `[]`)
 - `updater`:
@@ -250,7 +253,7 @@ of the executed command. For example:
     <dependency>
         <groupId>de.pianoman911</groupId>
         <artifactId>playerculling-api</artifactId>
-        <version>2.1.4-SNAPSHOT</version>
+        <version>2.1.5</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
@@ -270,7 +273,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'de.pianoman911:playerculling-api:2.1.4-SNAPSHOT'
+    compileOnly 'de.pianoman911:playerculling-api:2.1.5'
 }
 ```
 
@@ -287,7 +290,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("de.pianoman911:playerculling-api:2.1.4-SNAPSHOT")
+    compileOnly("de.pianoman911:playerculling-api:2.1.5")
 }
 ```
 
