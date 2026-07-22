@@ -28,6 +28,7 @@ public final class ChunkOcclusionDataProvider implements DataProvider {
         if (!world.equals(this.world)) {
             this.world = world;
             this.cache = world.getOcclusionWorldCache();
+            this.chunk = null;
         }
     }
 

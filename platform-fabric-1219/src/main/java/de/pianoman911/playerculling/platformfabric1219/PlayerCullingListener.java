@@ -57,11 +57,7 @@ public class PlayerCullingListener implements
 
     @Override
     public void afterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
-        CullPlayer player = this.plugin.getCullShip().getPlayer(newPlayer.getUUID());
-        if (player == null) {
-            return; // cull player is null, ignore
-        }
-        player.setSpectating(false);
+        this.plugin.getCullShip().onPlayerRespawn(newPlayer.getUUID());
     }
 
     @Override

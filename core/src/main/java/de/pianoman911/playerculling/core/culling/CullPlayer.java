@@ -47,6 +47,7 @@ public final class CullPlayer {
 
     private boolean cullingEnabled = true;
     private boolean spectating = false;
+    private PlatformWorld world;
     private long lastDarkness = -1;
     private long lastRaySteps = 0L;
 
@@ -54,8 +55,9 @@ public final class CullPlayer {
         this.ship = ship;
         this.player = player;
         this.cullingInstance = new OcclusionCullingInstance(this.provider);
-        this.provider.world(player.getWorld());
-        this.tracked = new FastStack<>(player.getWorld().getPlayerCount());
+        this.world = player.getWorld();
+        this.provider.world(this.world);
+        this.tracked = new FastStack<>(this.world.getPlayerCount());
     }
 
     /**
@@ -129,6 +131,11 @@ public final class CullPlayer {
 
     private void cull0() {
         PlatformWorld world = this.player.getWorld();
+        if (!world.equals(this.world)) {
+            this.world = world;
+            this.provider.world(world);
+            this.hidden.clear();
+        }
         if (!this.cullingEnabled
                 || this.player.shouldPreventCulling()
                 || this.player.isSpectator()
@@ -142,9 +149,9 @@ public final class CullPlayer {
 
         List<PlatformPlayer> playersInWorld = world.getPlayers();
         if (playersInWorld.size() <= 1) {
+            this.hidden.clear();
             return; // No need to cull if no other players are in the world
         }
-        this.provider.world(world);
         Vec3d eye = this.player.getEyePosition();
 
         boolean blindness;
@@ -186,7 +193,8 @@ public final class CullPlayer {
             boolean nameTag = distSq <= nametagVisibilityDistSq && this.player.canSeeNameTag(worldPlayer);
 
             if (
-                    worldPlayer.isGlowing() || // Glowing player
+                    worldPlayer.shouldPreventCulling() || // Dead or otherwise lifecycle-sensitive player
+                            worldPlayer.isGlowing() || // Glowing player
                             !worldPlayer.isSneaking() && nameTag // Name tag visible and not sneaking
             ) { // Always visible
                 this.unhide(worldPlayer, distSq <= trackingDistSq);
@@ -328,7 +336,9 @@ public final class CullPlayer {
     }
 
     public void resetHidden() {
-        this.hidden.clear();
+        synchronized (this) {
+            this.hidden.clear();
+        }
     }
 
     public DataProvider getProvider() {

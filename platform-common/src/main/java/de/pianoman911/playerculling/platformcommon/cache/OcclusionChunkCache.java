@@ -3,7 +3,6 @@ package de.pianoman911.playerculling.platformcommon.cache;
 
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformChunkAccess;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -20,14 +19,12 @@ public final class OcclusionChunkCache {
     public final int x;
     public final int z;
     private final OcclusionWorldCache world;
-    private volatile long @MonotonicNonNull [] occlusionData = null;
-    private volatile int minY;
-    private volatile int minYX2;
-    private volatile int maxY;
-    private volatile int height;
-    private volatile int heightX2;
-    private volatile boolean fullyComputed = false;
+    private final int worldMinY;
+    private final int worldMaxY;
+    private final int worldHeight;
+    private volatile CacheState state;
     private volatile boolean computing = false;
+    private long modificationVersion = 0L;
 
     private @Nullable WeakReference<PlatformChunkAccess> chunk;
 
@@ -41,11 +38,11 @@ public final class OcclusionChunkCache {
         this.x = x;
         this.z = z;
 
-        this.minY = world.getWorld().getMinY();
-        this.minYX2 = this.minY * 2;
-        this.maxY = world.getWorld().getMaxY();
-        this.height = this.maxY - this.minY;
-        this.heightX2 = this.height * 2;
+        this.worldMinY = world.getWorld().getMinY();
+        this.worldMaxY = world.getWorld().getMaxY();
+        this.worldHeight = this.worldMaxY - this.worldMinY;
+
+        this.state = this.uncomputedState();
 
         this.resolveChunkAccess(); // Trigger cache building
     }
@@ -85,23 +82,29 @@ public final class OcclusionChunkCache {
         return index(ix, iy, iz);
     }
 
-    public final boolean isOccluded(int index) {
-        return (this.occlusionData[index >>> 6] &  // index / 64 for long array index
+    private static boolean isOccluded(long[] data, int index) {
+        return (data[index >>> 6] &  // index / 64 for long array index
                 (1L << (index & 63))) != 0; // index % 64 for bit index inside long
     }
 
+    public final boolean isOccluded(int index) {
+        long[] data = this.state.data;
+        return data != null && isOccluded(data, index);
+    }
+
     public final boolean isOccluded(double x, double y, double z) {
-        y -= this.minY;
-        if (y < 0 || y >= this.height) {
+        CacheState state = this.state;
+        y -= state.minY;
+        if (y < 0 || y >= state.height) {
             return false;
         }
 
         int relX = Math.floorMod((int) (x * 2d), 16 * 2);
         int relZ = Math.floorMod((int) (z * 2d), 16 * 2);
 
-        if (this.fullyComputed) { // Fully computed -> use cache
+        if (state.data != null) { // Fully computed -> use cache
             int index = index(relX, (int) (y * 2d), relZ);
-            return this.isOccluded(index);
+            return isOccluded(state.data, index);
         }
 
         PlatformChunkAccess chunk = this.resolveChunkAccess();
@@ -110,7 +113,7 @@ public final class OcclusionChunkCache {
         }
 
         for (int i = 0; i < VOXEL_LENGTH; i++) {
-            if (chunk.isOpaque(relX >> 1, (int) y + this.minY, relZ >> 1, i)) {
+            if (chunk.isOpaque(relX >> 1, (int) y + state.minY, relZ >> 1, i)) {
                 return true;
             }
         }
@@ -118,19 +121,21 @@ public final class OcclusionChunkCache {
     }
 
     public final boolean isVoxelOccluded(int x, int y, int z) {
-        y -= this.minYX2;
-        if (y < 0 || y >= this.heightX2) {
+        CacheState state = this.state;
+        int minYX2 = state.minY * 2;
+        y -= minYX2;
+        if (y < 0 || y >= state.height * 2) {
             return false;
         }
-        if (this.fullyComputed) {
-            return this.isOccluded(index(x & 31, y, z & 31));
+        if (state.data != null) {
+            return isOccluded(state.data, index(x & 31, y, z & 31));
         }
-        return this.isOccluded(x / 2d, (y + this.minYX2) / 2d, z / 2d); // Only called if no cache is available
+        return this.isOccluded(x / 2d, (y + minYX2) / 2d, z / 2d); // Only called if no cache is available
     }
 
     void computeFully(@Nullable PlatformChunkAccess access) {
         synchronized (this) {
-            if (access == null || this.fullyComputed || this.computing) {
+            if (access == null || this.state.data != null || this.computing) {
                 return;
             }
             this.computing = true;
@@ -142,16 +147,23 @@ public final class OcclusionChunkCache {
         if (depth > MAX_CHUNK_COMPUTE_DEPTH) {
             LOGGER.warn("Failed to compute occlusion data for chunk at {}, {} after "
                     + MAX_CHUNK_COMPUTE_DEPTH + " retries", this.x, this.z);
-            this.computing = false;
+            synchronized (this) {
+                this.computing = false;
+            }
             return;
         }
         try {
-            int bottomY = this.height;
-            int topY = 0;
-            long[] data = new long[this.height * 4 * 8];
+            long startVersion;
+            synchronized (this) {
+                startVersion = this.modificationVersion;
+            }
 
-            for (int cy = 0; cy < this.height; cy++) {
-                int y = cy + this.minY;
+            int bottomY = this.worldMaxY;
+            int topY = this.worldMinY - 1;
+            long[] data = new long[this.worldHeight * 4 * 8];
+
+            for (int cy = 0; cy < this.worldHeight; cy++) {
+                int y = cy + this.worldMinY;
                 for (int cx = 0; cx < 16; cx++) {
                     for (int cz = 0; cz < 16; cz++) {
                         for (int i = 0; i < VOXEL_LENGTH; i++) {
@@ -170,23 +182,31 @@ public final class OcclusionChunkCache {
                 }
             }
 
-            int height = topY - bottomY + 1;
-            if (height != this.height) {
+            int height = Math.max(0, topY - bottomY + 1);
+            long[] computedData;
+            if (height == 0) {
+                computedData = new long[0];
+                bottomY = this.worldMinY;
+                topY = this.worldMinY - 1;
+            } else if (height != this.worldHeight) {
                 long[] minifiedData = new long[height * 4 * 8]; // resize data array to save memory
-                System.arraycopy(data, (bottomY - this.minY) * 4 * 8, minifiedData, 0, height * 4 * 8);
-                this.occlusionData = minifiedData;
+                System.arraycopy(data, (bottomY - this.worldMinY) * 4 * 8, minifiedData, 0, height * 4 * 8);
+                computedData = minifiedData;
             } else {
-                this.occlusionData = data;
+                computedData = data;
             }
 
-            this.minY = bottomY;
-            this.minYX2 = bottomY * 2;
-            this.maxY = topY;
-            this.height = height;
-            this.heightX2 = height * 2;
-
-            this.fullyComputed = true;
-            this.computing = false;
+            boolean retry;
+            synchronized (this) {
+                retry = startVersion != this.modificationVersion;
+                if (!retry) {
+                    this.state = new CacheState(computedData, bottomY, topY, height);
+                    this.computing = false;
+                }
+            }
+            if (retry) {
+                this.computeFully0(access, depth + 1);
+            }
         } catch (Throwable throwable) {
             LOGGER.error("Failed to compute occlusion data for chunk at {} {}", this.x, this.z, throwable);
             this.computeFully0(access, depth + 1); // retry
@@ -194,39 +214,47 @@ public final class OcclusionChunkCache {
     }
 
     public void recalculateBlock(int x, int y, int z) {
-        if (!this.fullyComputed) {
-            return;
-        }
-
-        x = x & 15;
-        z = z & 15;
-        y -= this.minY;
-        if (y < 0 || y >= this.height) { // out of range -> recalculate
-            int prevMin = this.minY;
-            int prevMax = this.maxY;
-            this.minY = Math.min(prevMin, y + prevMin);
-            this.maxY = Math.max(prevMax, y + prevMin);
-            int height = this.maxY - this.minY + 1;
-
-            long[] data = new long[height * 4 * 8];
-            System.arraycopy(this.occlusionData, (prevMin - this.minY) * 4 * 8, data, (prevMin - this.minY) * 4 * 8, (prevMax - prevMin + 1) * 4 * 8);
-            this.occlusionData = data;
-            this.height = height;
-            this.heightX2 = height * 2;
-            this.minYX2 = this.minY * 2;
-        }
         PlatformChunkAccess chunk = this.resolveChunkAccess();
         if (chunk == null) {
             return; // chunk is unloaded
         }
 
-        for (int i = 0; i < 8; i++) {
-            boolean opaque = chunk.isOpaque(x, y + this.minY, z, i);
-            double ix = x + (i & 1) * 0.5;
-            double iy = y + ((i >> 1) & 1) * 0.5;
-            double iz = z + ((i >> 2) & 1) * 0.5;
-            set(this.occlusionData, doubleDoubleIndex(ix, iy, iz), opaque);
+        boolean recompute = false;
+        synchronized (this) {
+            this.modificationVersion++;
+            CacheState state = this.state;
+            if (state.data == null) {
+                return;
+            }
+
+            x &= 15;
+            z &= 15;
+            y -= state.minY;
+            if (y < 0 || y >= state.height) {
+                // The minified cache cannot be resized safely while culling threads are reading it.
+                // Fall back to live chunk data until a new complete snapshot has been published.
+                this.state = this.uncomputedState();
+                recompute = true;
+            } else {
+                for (int i = 0; i < VOXEL_LENGTH; i++) {
+                    boolean opaque = chunk.isOpaque(x, y + state.minY, z, i);
+                    double ix = x + (i & 1) * 0.5;
+                    double iy = y + ((i >> 1) & 1) * 0.5;
+                    double iz = z + ((i >> 2) & 1) * 0.5;
+                    set(state.data, doubleDoubleIndex(ix, iy, iz), opaque);
+                }
+                // Publish the writes to the array through the volatile snapshot field.
+                this.state = new CacheState(state.data, state.minY, state.maxY, state.height);
+            }
         }
+
+        if (recompute) {
+            this.computeFully(chunk);
+        }
+    }
+
+    private CacheState uncomputedState() {
+        return new CacheState(null, this.worldMinY, this.worldMaxY - 1, this.worldHeight);
     }
 
     public OcclusionWorldCache getWorld() {
@@ -234,7 +262,7 @@ public final class OcclusionChunkCache {
     }
 
     final long[] getOcclusionData() {
-        return this.occlusionData;
+        return this.state.data;
     }
 
     public final int getX() {
@@ -246,19 +274,19 @@ public final class OcclusionChunkCache {
     }
 
     public final int getHeight() {
-        return this.height;
+        return this.state.height;
     }
 
     public final int getMinY() {
-        return this.minY;
+        return this.state.minY;
     }
 
     public final int getMaxY() {
-        return this.maxY;
+        return this.state.maxY;
     }
 
     public boolean isFullyComputed() {
-        return this.fullyComputed;
+        return this.state.data != null;
     }
 
     public final boolean[] isOpaqueFullBlock(int x, int y, int z) {
@@ -276,9 +304,13 @@ public final class OcclusionChunkCache {
 
     public final int byteSize() {
         int size = 21; // 21 bytes for the chunk cache object itself
-        if (this.occlusionData != null) {
-            size += this.occlusionData.length * Long.BYTES;
+        long[] data = this.state.data;
+        if (data != null) {
+            size += data.length * Long.BYTES;
         }
         return size;
+    }
+
+    private record CacheState(long @Nullable [] data, int minY, int maxY, int height) {
     }
 }

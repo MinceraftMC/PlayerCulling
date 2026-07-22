@@ -29,9 +29,9 @@ public class FabricEntity<T extends Entity> implements PlatformEntity {
         this.platform = platform;
         this.entity = sender;
         this.position = new TickRefreshSupplier<>(platform, () ->
-                new Vec3d(sender.getX(), sender.getY(), sender.getZ()));
+                new Vec3d(this.entity.getX(), this.entity.getY(), this.entity.getZ()));
         this.aabb = new TickRefreshSupplier<>(platform, () -> {
-            net.minecraft.world.phys.AABB boundingBox = sender.getBoundingBox();
+            net.minecraft.world.phys.AABB boundingBox = this.entity.getBoundingBox();
             return new AABB(boundingBox.minX, boundingBox.minY, boundingBox.minZ, boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ);
         });
     }

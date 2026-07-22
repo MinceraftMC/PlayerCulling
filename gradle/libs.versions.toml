@@ -11,6 +11,8 @@ adventure-api = "4.20.0"
 slf4j = "2.0.17"
 jspecify = "1.0.0"
 checkerframework = "3.49.2"
+junit = "5.13.4"
+junit-platform = "1.13.4"
 
 configurate = "4.2.0"
 fastutil = "8.5.18"
@@ -74,6 +76,8 @@ adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure-a
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 checkerframework = { module = "org.checkerframework:checker-qual", version.ref = "checkerframework" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 
 configurate-core = { module = "org.spongepowered:configurate-core", version.ref = "configurate" }
 configurate-yaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurate" }

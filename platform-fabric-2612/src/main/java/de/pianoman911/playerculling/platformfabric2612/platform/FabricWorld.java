@@ -85,7 +85,7 @@ public class FabricWorld extends PlatformWorld {
         for (FabricPlayer platformPlayer : this.platform.getPlayers()) {
             ServerPlayer fabricPlayer = platformPlayer.getDelegate();
             if (fabricPlayer.connection.isAcceptingMessages() && fabricPlayer.level() == this.world
-                    && !fabricPlayer.isSpectator() && !platformPlayer.shouldPreventCulling()) {
+                    && !fabricPlayer.isSpectator()) {
                 players.add(platformPlayer);
             }
         }

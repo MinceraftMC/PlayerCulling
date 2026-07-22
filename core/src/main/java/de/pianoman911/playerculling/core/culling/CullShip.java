@@ -144,6 +144,33 @@ public class CullShip {
         }
     }
 
+    /**
+     * Resets culling state which may refer to the old player entity after a respawn.
+     */
+    public void onPlayerRespawn(UUID uniqueId) {
+        CullPlayer respawnedPlayer;
+        Set<CullPlayer> currentPlayers;
+        synchronized (this.players) {
+            respawnedPlayer = this.players.get(uniqueId);
+            currentPlayers = Set.copyOf(this.players.values());
+        }
+        if (respawnedPlayer == null) {
+            return;
+        }
+
+        respawnedPlayer.setSpectating(false);
+        respawnedPlayer.resetHidden();
+
+        // A respawn replaces or resets the tracked Minecraft entity. Hidden entries for the old
+        // entity must not suppress pairing packets for the new one. Queue the removals so they
+        // cannot race with an in-progress asynchronous culling pass.
+        for (CullPlayer currentPlayer : currentPlayers) {
+            if (currentPlayer != respawnedPlayer) {
+                currentPlayer.invalidateOther(uniqueId);
+            }
+        }
+    }
+
     public long getLongestCullTime() {
         synchronized (this.containers) {
             long longest = 0;

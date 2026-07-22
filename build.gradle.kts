@@ -43,6 +43,10 @@ subprojects {
         options.encoding = Charsets.UTF_8.name()
     }
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
     tasks.withType<Jar> {
         archiveBaseName = "${rootProject.name.lowercase()}-${project.name}"
 
