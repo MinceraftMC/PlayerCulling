@@ -46,11 +46,7 @@ public class PlayerCullingListener implements Listener {
 
     @EventHandler
     public void onRespawn(PlayerPostRespawnEvent event) {
-        CullPlayer player = this.plugin.getCullShip().getPlayer(event.getPlayer().getUniqueId());
-        if (player == null) {
-            return; // cull player is null, ignore
-        }
-        player.setSpectating(false);
+        this.plugin.getCullShip().onPlayerRespawn(event.getPlayer().getUniqueId());
     }
 
     @EventHandler

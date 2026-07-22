@@ -73,7 +73,7 @@ public class PaperWorld extends PlatformWorld {
         for (PaperPlayer platformPlayer : this.platform.getPlayers()) {
             Player paperPlayer = platformPlayer.getDelegate();
             if (paperPlayer.isConnected() && paperPlayer.getWorld() == this.world
-                    && !platformPlayer.isSpectator() && !platformPlayer.shouldPreventCulling()) {
+                    && !platformPlayer.isSpectator()) {
                 players.add(platformPlayer);
             }
         }
