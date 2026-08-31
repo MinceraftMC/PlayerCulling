@@ -19,6 +19,7 @@ import net.minecraft.world.waypoints.WaypointTransmitter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class DelegatedWaypointManager extends ServerWaypointManager {
@@ -38,27 +39,24 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     private static final MethodHandle UPDATE_CONNECTION = ReflectionUtil.getMethod(ServerWaypointManager.class,
             MethodType.methodType(void.class, ServerPlayer.class, WaypointTransmitter.class, WaypointTransmitter.Connection.class), 0);
 
-    private final ServerWaypointManager original;
-    private final CullShip ship;
+    private static final MethodHandle GET_SERVER_LEVEL = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getGetter(ServerWaypointManager.class, ServerLevel.class, 0));
+    private static final MethodHandle SET_SERVER_LEVEL = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getSetter(ServerWaypointManager.class, ServerLevel.class, 0));
+    private static final MethodHandle GET_LOCATOR_BAR_ENABLED = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getGetter(ServerWaypointManager.class, boolean.class, 0));
+    private static final MethodHandle SET_LOCATOR_BAR_ENABLED = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getSetter(ServerWaypointManager.class, boolean.class, 0));
 
-    public DelegatedWaypointManager(ServerWaypointManager original, CullShip ship) {
-        this.original = original;
-        this.ship = ship;
+    private ServerWaypointManager original;
+    private CullShip ship;
+    private boolean locatorBarEnabled$ServerWaypointManager;
 
-        // Copy the original state
-        copyState(original, this);
-
-        ship.getConfig().addReloadHookAndRun(__ -> {
-            this.breakAllConnections();
-            for (WaypointTransmitter waypoint : this.this$waypoints()) {
-                this.remakeConnections(waypoint);
-            }
-        });
+    public static DelegatedWaypointManager construct(ServerWaypointManager original, ServerLevel level, CullShip ship) {
+        DelegatedWaypointManager target = ReflectionUtil.newInstance(DelegatedWaypointManager.class);
+        target.init(original, level, ship);
+        return target;
     }
 
     public static void inject(ServerLevel level, CullShip ship) {
         ServerWaypointManager original = level.getWaypointManager();
-        DelegatedWaypointManager delegated = new DelegatedWaypointManager(original, ship);
+        DelegatedWaypointManager delegated = construct(original, level, ship);
 
         try {
             SET_WAYPOINT_MANAGER.invoke(level, delegated);
@@ -84,13 +82,33 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
             SET_WAYPOINTS.invoke(delegated, GET_WAYPOINTS.invoke(original));
             SET_PLAYERS.invoke(delegated, GET_PLAYERS.invoke(original));
             SET_CONNECTIONS.invoke(delegated, GET_CONNECTIONS.invoke(original));
+            if (GET_SERVER_LEVEL != null && SET_SERVER_LEVEL != null && SET_LOCATOR_BAR_ENABLED != null && GET_LOCATOR_BAR_ENABLED != null) {
+                try {
+                    SET_SERVER_LEVEL.invoke(delegated, GET_SERVER_LEVEL.invoke(original));
+                    SET_LOCATOR_BAR_ENABLED.invoke(delegated, GET_LOCATOR_BAR_ENABLED.invoke(original));
+                } catch (Throwable throwable) {
+                    throw new RuntimeException("Failed to set server level on DelegatedWaypointManager", throwable);
+                }
+            }
         } catch (Throwable throwable) {
             SneakyThrow.sneaky(throwable);
         }
     }
 
-    private static boolean isLocatorBarEnabledFor(ServerPlayer player) {
-        return player.level().getGameRules().get(GameRules.LOCATOR_BAR);
+    protected void init(ServerWaypointManager original, ServerLevel level, CullShip ship) {
+        this.original = original;
+        this.ship = ship;
+        this.locatorBarEnabled$ServerWaypointManager = level.getGameRules().get(GameRules.LOCATOR_BAR);
+
+        // Copy the original state
+        copyState(original, this);
+
+        ship.getConfig().addReloadHookAndRun(__ -> {
+            this.breakAllConnections();
+            for (WaypointTransmitter waypoint : this.this$waypoints()) {
+                this.remakeConnections(waypoint);
+            }
+        });
     }
 
     public ServerWaypointManager getOriginalModified() {
@@ -235,13 +253,13 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     }
 
     protected void override$createConnection(ServerPlayer player, ServerPlayer waypoint) {
-        if (player != waypoint && isLocatorBarEnabledFor(player)) {
+        if (player != waypoint && this.locatorBarEnabled$ServerWaypointManager) {
             this.handleUpdateWaypointConnection(player, waypoint);
         }
     }
 
     protected void override$updateConnection(ServerPlayer player, ServerPlayer waypoint, WaypointTransmitter.Connection connection) {
-        if (player == waypoint || !isLocatorBarEnabledFor(player)) {
+        if (player == waypoint || !this.locatorBarEnabled$ServerWaypointManager) {
             return;
         }
         if (this.ship.getConfig().getDelegate().waypointMode == WaypointMode.CULLED_AZIMUTH) {

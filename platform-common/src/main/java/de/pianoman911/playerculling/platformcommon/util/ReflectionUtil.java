@@ -1,6 +1,7 @@
 package de.pianoman911.playerculling.platformcommon.util;
 // Created by booky10 in SimplePacketApi (22:27 15.05.23)
 
+import org.jspecify.annotations.Nullable;
 import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandle;
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 @SuppressWarnings("deprecation")
 public final class ReflectionUtil {
@@ -46,6 +48,16 @@ public final class ReflectionUtil {
             throw new RuntimeException(exception);
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(Class<T> clazz) {
+        try {
+            return (T) THE_UNSAFE.allocateInstance(clazz);
+        } catch (InstantiationException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
 
     public static MethodHandles.Lookup getTrustedLookup() {
         return TRUSTED_LOOKUP;
@@ -125,5 +137,14 @@ public final class ReflectionUtil {
         }
         throw new IllegalArgumentException("Can't find field " + type
                 + " with offset " + offset + " in " + clazz.getName());
+    }
+
+    @Nullable
+    public static <T> T onExceptionNull(Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }
