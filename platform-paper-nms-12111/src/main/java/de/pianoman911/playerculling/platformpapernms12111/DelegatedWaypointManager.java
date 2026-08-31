@@ -71,6 +71,8 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         if (!(delegated instanceof DelegatedWaypointManager manager)) {
             return;
         }
+        // Reset config state before copy
+        manager.locatorBarEnabled$ServerWaypointManager = level.getGameRules().get(GameRules.LOCATOR_BAR);
         try {
             SET_WAYPOINT_MANAGER.invoke(level, manager.getOriginalModified());
         } catch (Throwable throwable) {
@@ -100,8 +102,13 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         // Copy the original state
         copyState(original, this);
 
-        ship.getConfig().addReloadHookAndRun(__ -> {
+        ship.getConfig().addReloadHookAndRun(config -> {
             this.breakAllConnections();
+            if (config.waypointMode == WaypointMode.HIDDEN) {
+                this.locatorBarEnabled$ServerWaypointManager = false;
+            } else {
+                this.locatorBarEnabled$ServerWaypointManager = level.getGameRules().get(GameRules.LOCATOR_BAR);
+            }
             for (WaypointTransmitter waypoint : this.this$waypoints()) {
                 this.remakeConnections(waypoint);
             }
@@ -269,7 +276,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
                 return;
             }
         }
-        if (WaypointTransmitter.doesSourceIgnoreReceiver(waypoint, player)) { // Reduced "broken" check
+        if (connection.isBroken()) {
             this.handleUpdateWaypointConnection(player, waypoint); // Recreate the connection if it's "broken" - Is "broken" a goofy name mojang, isn't it? Why not just call it "invalid"?
         } else {
             connection.update();

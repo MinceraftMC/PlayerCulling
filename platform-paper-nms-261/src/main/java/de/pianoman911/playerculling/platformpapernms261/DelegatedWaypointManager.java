@@ -49,8 +49,14 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         // Copy the original state
         copyState(original, this);
 
-        ship.getConfig().addReloadHookAndRun(__ -> {
+        ship.getConfig().addReloadHookAndRun(config -> {
             this.breakAllConnections();
+            if (config.waypointMode == WaypointMode.HIDDEN) {
+                this.locatorBarEnabled = false;
+            } else {
+                this.locatorBarEnabled = level.getGameRules().get(GameRules.LOCATOR_BAR);
+            }
+
             for (WaypointTransmitter waypoint : this.this$waypoints()) {
                 this.remakeConnections(waypoint);
             }
@@ -73,6 +79,8 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         if (!(delegated instanceof DelegatedWaypointManager manager)) {
             return;
         }
+        // Reset config state before copy
+        manager.locatorBarEnabled = level.getGameRules().get(GameRules.LOCATOR_BAR);
         try {
             SET_WAYPOINT_MANAGER.invoke(level, manager.getOriginalModified());
         } catch (Throwable throwable) {
@@ -88,10 +96,6 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
         } catch (Throwable throwable) {
             SneakyThrow.sneaky(throwable);
         }
-    }
-
-    private static boolean isLocatorBarEnabledFor(ServerPlayer player) {
-        return player.level().getGameRules().get(GameRules.LOCATOR_BAR);
     }
 
     public ServerWaypointManager getOriginalModified() {
@@ -113,6 +117,8 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
             super.trackWaypoint(waypoint);
             return; // Only override player waypoints
         }
+        if (!this.locatorBarEnabled) return;
+
         this.this$waypoints().add(waypoint);
         for (ServerPlayer receiver : this.this$players()) {
             this.override$createConnection(receiver, (ServerPlayer) waypoint);
@@ -121,6 +127,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
     @Override
     public void updateWaypoint(WaypointTransmitter waypoint) {
+        if (!this.locatorBarEnabled) return;
         if (!this.this$waypoints().contains(waypoint)) {
             return;
         }
@@ -144,11 +151,13 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     public void addPlayer(ServerPlayer player) {
         this.this$players().add(player);
 
-        for (WaypointTransmitter waypoint : this.this$waypoints()) {
-            if ((waypoint instanceof ServerPlayer)) {
-                this.override$createConnection(player, (ServerPlayer) waypoint);
-            } else {
-                this.super$createConnection(player, waypoint);
+        if (this.locatorBarEnabled) {
+            for (WaypointTransmitter waypoint : this.this$waypoints()) {
+                if ((waypoint instanceof ServerPlayer)) {
+                    this.override$createConnection(player, (ServerPlayer) waypoint);
+                } else {
+                    this.super$createConnection(player, waypoint);
+                }
             }
         }
         if (player.isTransmittingWaypoint()) {
@@ -158,6 +167,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
     @Override
     public void updatePlayer(ServerPlayer player) {
+        if (!this.locatorBarEnabled) return;
         Map<WaypointTransmitter, WaypointTransmitter.Connection> receiverConnections = this.this$connections().row(player);
         Sets.SetView<WaypointTransmitter> newWaypoints = Sets.difference(this.this$waypoints(), receiverConnections.keySet());
 
@@ -180,6 +190,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
 
     @Override
     public void remakeConnections(WaypointTransmitter waypoint) {
+        if (!this.locatorBarEnabled) return;
         if (!(waypoint instanceof ServerPlayer)) {
             super.remakeConnections(waypoint);
             return; // Only override player waypoints
@@ -236,13 +247,13 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     }
 
     protected void override$createConnection(ServerPlayer player, ServerPlayer waypoint) {
-        if (player != waypoint && isLocatorBarEnabledFor(player)) {
+        if (player != waypoint && this.locatorBarEnabled) {
             this.handleUpdateWaypointConnection(player, waypoint);
         }
     }
 
     protected void override$updateConnection(ServerPlayer player, ServerPlayer waypoint, WaypointTransmitter.Connection connection) {
-        if (player == waypoint || !isLocatorBarEnabledFor(player)) {
+        if (player == waypoint || !this.locatorBarEnabled) {
             return;
         }
         if (this.ship.getConfig().getDelegate().waypointMode == WaypointMode.CULLED_AZIMUTH) {
@@ -255,7 +266,7 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
                 return;
             }
         }
-        if (WaypointTransmitter.doesSourceIgnoreReceiver(waypoint, player)) { // Reduced "broken" check
+        if (connection.isBroken()) {
             this.handleUpdateWaypointConnection(player, waypoint); // Recreate the connection if it's "broken" - Is "broken" a goofy name mojang, isn't it? Why not just call it "invalid"?
         } else {
             connection.update();
