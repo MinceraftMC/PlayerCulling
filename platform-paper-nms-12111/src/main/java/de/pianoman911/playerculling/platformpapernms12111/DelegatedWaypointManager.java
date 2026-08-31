@@ -19,7 +19,6 @@ import net.minecraft.world.waypoints.WaypointTransmitter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class DelegatedWaypointManager extends ServerWaypointManager {
@@ -85,12 +84,8 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
             SET_PLAYERS.invoke(delegated, GET_PLAYERS.invoke(original));
             SET_CONNECTIONS.invoke(delegated, GET_CONNECTIONS.invoke(original));
             if (GET_SERVER_LEVEL != null && SET_SERVER_LEVEL != null && SET_LOCATOR_BAR_ENABLED != null && GET_LOCATOR_BAR_ENABLED != null) {
-                try {
-                    SET_SERVER_LEVEL.invoke(delegated, GET_SERVER_LEVEL.invoke(original));
-                    SET_LOCATOR_BAR_ENABLED.invoke(delegated, GET_LOCATOR_BAR_ENABLED.invoke(original));
-                } catch (Throwable throwable) {
-                    throw new RuntimeException("Failed to set server level on DelegatedWaypointManager", throwable);
-                }
+                SET_SERVER_LEVEL.invoke(delegated, GET_SERVER_LEVEL.invoke(original));
+                SET_LOCATOR_BAR_ENABLED.invoke(delegated, GET_LOCATOR_BAR_ENABLED.invoke(original));
             }
         } catch (Throwable throwable) {
             SneakyThrow.sneaky(throwable);
