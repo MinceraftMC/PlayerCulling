@@ -39,6 +39,8 @@ public class DelegatedWaypointManager extends ServerWaypointManager {
     private static final MethodHandle UPDATE_CONNECTION = ReflectionUtil.getMethod(ServerWaypointManager.class,
             MethodType.methodType(void.class, ServerPlayer.class, WaypointTransmitter.class, WaypointTransmitter.Connection.class), 0);
 
+    // Fixes backported ServerWayPointManager Patch from Paper 26.1.1 used by Leaf 1.21.11: https://github.com/Winds-Studio/Leaf/commit/842e2f8dd98d12f722e0b73b491fe34fb6a69fde
+    // Fixed by allocating the Delegation Object directly, without calling the constructor
     private static final MethodHandle GET_SERVER_LEVEL = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getGetter(ServerWaypointManager.class, ServerLevel.class, 0));
     private static final MethodHandle SET_SERVER_LEVEL = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getSetter(ServerWaypointManager.class, ServerLevel.class, 0));
     private static final MethodHandle GET_LOCATOR_BAR_ENABLED = ReflectionUtil.onExceptionNull(() -> ReflectionUtil.getGetter(ServerWaypointManager.class, boolean.class, 0));
