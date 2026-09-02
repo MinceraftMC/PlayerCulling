@@ -1,0 +1,7 @@
+{
+  "config-version": 1,
+  "min-version": "1.20",
+  "mappings": {
+    "model-classpath": "net.minecraft.client.model"
+  }
+}

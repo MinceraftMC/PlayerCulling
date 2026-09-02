@@ -9,6 +9,7 @@ plugins {
 include("common")
 include("core")
 include("api")
+include("meme")
 include("platform-common")
 include("platform-paper")
 include("plugin-paper")

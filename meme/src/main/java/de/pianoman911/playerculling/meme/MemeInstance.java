@@ -1,0 +1,97 @@
+package de.pianoman911.playerculling.meme;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import de.pianoman911.playerculling.meme.extractor.ModelExtractor;
+import de.pianoman911.playerculling.meme.mappings.EntityMappings;
+import de.pianoman911.playerculling.meme.meta.MemeDescriptor;
+import de.pianoman911.playerculling.meme.meta.SemanticVersion;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.jspecify.annotations.NullMarked;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
+@NullMarked
+public class MemeInstance {
+
+    public static final Gson GSON = new GsonBuilder().serializeNulls().create();
+    private static final String DESCRIPTOR_PATH = "meme/descriptors";
+
+    private final Path dataPath;
+    private final MemeDownloader memeDownloader = new MemeDownloader(this);
+    private final EntityMappings mappings = new EntityMappings(this);
+    private final ModelExtractor extractor = new ModelExtractor(this);
+    private final SemanticVersion version;
+    private @MonotonicNonNull MemeDescriptor descriptor;
+
+    public MemeInstance(Path dataPath, SemanticVersion version) {
+        this.dataPath = dataPath;
+        this.version = version;
+    }
+
+    public Path getDataPath() {
+        return this.dataPath;
+    }
+
+    public MemeDownloader getMemeDownloader() {
+        return this.memeDownloader;
+    }
+
+    public SemanticVersion getVersion() {
+        return this.version;
+    }
+
+    public MemeDescriptor getDescriptor() {
+        if (this.descriptor == null) {
+            throw new IllegalStateException("Descriptor has not been determined yet");
+        }
+        return this.descriptor;
+    }
+
+    public EntityMappings getMappings() {
+        return this.mappings;
+    }
+
+    public EntityMappings getEntityMappings() {
+        return this.mappings;
+    }
+
+    public void startExtraction() {
+        this.determineDescriptor();
+        this.memeDownloader.downloadClientJar();
+        this.mappings.build();
+    }
+
+    private void determineDescriptor() {
+        // Read Resource folders
+        URL folderUrl = this.getClass().getResource("/" + DESCRIPTOR_PATH);
+        if (folderUrl == null) {
+            throw new RuntimeException("Could not find descriptor folder in resources");
+        }
+        try (Stream<Path> stream = Files.walk(Paths.get(folderUrl.toURI()), 1)) {
+            stream.filter(Files::isRegularFile)
+                    .forEach(path -> {
+                        MemeDescriptor descriptor = MemeDescriptor.fromJson(path);
+                        if (descriptor.isCompatibleWith(this.version)) {
+                            this.descriptor = descriptor;
+                        }
+                    });
+            if (this.descriptor == null) {
+                throw new RuntimeException("No compatible descriptor found for configVersion " + this.version.asVeryShortPrettyString(true));
+            }
+        } catch (IOException | URISyntaxException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    public static void main(String[] args) {
+        MemeInstance instance = new MemeInstance(Path.of("./meme_data"), SemanticVersion.of("26.2.0"));
+        instance.startExtraction();
+    }
+}
