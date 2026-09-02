@@ -5,7 +5,7 @@ import com.destroystokyo.paper.util.SneakyThrow;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
 import de.pianoman911.playerculling.platformcommon.util.ForwardedInt2ObjectMap;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
@@ -14,8 +14,6 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -23,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.spigotmc.AsyncCatcher;
 
 import java.lang.invoke.MethodHandle;
-import java.util.Arrays;
 import java.util.Set;
 
 @SuppressWarnings("UnstableApiUsage")

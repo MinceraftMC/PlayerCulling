@@ -1,7 +1,7 @@
 package de.pianoman911.playerculling.platformpapernms1214;
 
 import com.destroystokyo.paper.util.SneakyThrow;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import io.papermc.paper.antixray.ChunkPacketBlockController;
 import io.papermc.paper.antixray.ChunkPacketInfo;
 import net.minecraft.core.BlockPos;

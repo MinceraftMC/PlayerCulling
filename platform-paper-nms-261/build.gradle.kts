@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":platform-paper"))
-    paperweight.paperDevBundle("26.1.2.build.+")
+    implementation(projects.platformPaper)
+    paperweight.paperDevBundle("26.2.build.+")
 }
 
 configure<JavaPluginExtension> {

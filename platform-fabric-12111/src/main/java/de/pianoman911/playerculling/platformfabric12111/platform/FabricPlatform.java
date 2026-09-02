@@ -10,7 +10,7 @@ import de.pianoman911.playerculling.platformcommon.platform.command.PlatformComm
 import de.pianoman911.playerculling.platformcommon.platform.entity.PlatformPlayer;
 import de.pianoman911.playerculling.platformcommon.platform.world.PlatformWorld;
 import de.pianoman911.playerculling.platformcommon.util.OcclusionMappings;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import de.pianoman911.playerculling.platformfabric12111.common.IServerLevel;
 import de.pianoman911.playerculling.platformfabric12111.common.IServerPlayer;
 import de.pianoman911.playerculling.platformfabric12111.util.SimpleScheduler;

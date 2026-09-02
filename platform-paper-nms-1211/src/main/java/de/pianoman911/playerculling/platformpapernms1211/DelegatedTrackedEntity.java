@@ -4,7 +4,7 @@ import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
 import com.destroystokyo.paper.util.SneakyThrow;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import de.pianoman911.playerculling.platformcommon.util.ForwardedInt2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;

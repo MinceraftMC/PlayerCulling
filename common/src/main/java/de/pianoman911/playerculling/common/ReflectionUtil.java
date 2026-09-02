@@ -1,4 +1,4 @@
-package de.pianoman911.playerculling.platformcommon.util;
+package de.pianoman911.playerculling.common;
 // Created by booky10 in SimplePacketApi (22:27 15.05.23)
 
 import org.jspecify.annotations.Nullable;

@@ -3,7 +3,7 @@ package de.pianoman911.playerculling.platformpapernms12111;
 import com.destroystokyo.paper.util.SneakyThrow;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;

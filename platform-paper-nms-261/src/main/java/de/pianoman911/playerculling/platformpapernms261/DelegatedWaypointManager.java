@@ -7,7 +7,6 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import de.pianoman911.playerculling.core.culling.CullPlayer;
 import de.pianoman911.playerculling.core.culling.CullShip;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
 import de.pianoman911.playerculling.platformcommon.util.WaypointMode;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

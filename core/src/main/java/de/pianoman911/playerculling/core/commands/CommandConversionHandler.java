@@ -13,7 +13,7 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformArgument;
 import de.pianoman911.playerculling.platformcommon.platform.command.PlatformCommandSourceStack;
 import org.jspecify.annotations.Nullable;

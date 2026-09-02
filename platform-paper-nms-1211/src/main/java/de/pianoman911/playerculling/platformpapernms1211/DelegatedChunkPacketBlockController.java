@@ -3,7 +3,7 @@ package de.pianoman911.playerculling.platformpapernms1211;
 import com.destroystokyo.paper.antixray.ChunkPacketBlockController;
 import com.destroystokyo.paper.antixray.ChunkPacketInfo;
 import com.destroystokyo.paper.util.SneakyThrow;
-import de.pianoman911.playerculling.platformcommon.util.ReflectionUtil;
+import de.pianoman911.playerculling.common.ReflectionUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
