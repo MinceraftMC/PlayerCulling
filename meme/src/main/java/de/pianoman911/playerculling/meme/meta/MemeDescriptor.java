@@ -12,7 +12,6 @@ public class MemeDescriptor {
     public SemanticVersion minVersion = SemanticVersion.MIN_VERSION;
     public SemanticVersion maxVersion = SemanticVersion.MAX_VERSION;
     public Mappings mappings;
-    public Set<String> libraries = new HashSet<>();
 
     public boolean isCompatibleWith(SemanticVersion version) {
         return !version.isOlderThan(this.minVersion) && !version.isNewerThan(this.maxVersion);

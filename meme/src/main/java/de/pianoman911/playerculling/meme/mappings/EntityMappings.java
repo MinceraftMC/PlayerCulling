@@ -38,9 +38,6 @@ public class EntityMappings {
 
     private void extractFromPath(Path path) {
         MappingsEntry entry = this.parser.parse(path);
-        if (!path.toString().contains("Cow")) {
-            return;
-        }
         this.mappings.put(entry.getType(), entry);
     }
 

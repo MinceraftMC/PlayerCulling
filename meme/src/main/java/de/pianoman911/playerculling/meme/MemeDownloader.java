@@ -14,7 +14,6 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Set;
 
 @NullMarked
 public class MemeDownloader {
@@ -75,17 +74,12 @@ public class MemeDownloader {
         String version = this.meme.getVersion().asVeryShortPrettyString(true);
         this.libPath = this.meme.getDataPath().resolve("client_jars").resolve(version);
 
-        Set<String> libraries = this.meme.getDescriptor().libraries;
-        LOGGER.info("Downloading libraries for version {}: {}", version, libraries);
+        LOGGER.info("Downloading libraries for version {}", version);
 
         for (JsonElement entry : this.meta.getAsJsonArray("libraries")) {
             JsonObject libraryMeta = entry.getAsJsonObject();
             if (libraryMeta.has("name")) {
-                String name = libraryMeta.get("name").getAsString();
-                name = name.substring(0, name.lastIndexOf(':'));
-                if (libraries.contains(name)) {
-                    this.downloadLib(libraryMeta);
-                }
+                this.downloadLib(libraryMeta);
             }
         }
     }
@@ -110,7 +104,7 @@ public class MemeDownloader {
 
             Path targetPath = this.libPath.resolve(path);
             if (Files.exists(targetPath)) {
-                LOGGER.info("Library {} already exists at {}", name, targetPath);
+                LOGGER.debug("Library {} already exists at {}", name, targetPath);
                 return;
             }
             Files.createDirectories(targetPath.getParent());
@@ -118,7 +112,7 @@ public class MemeDownloader {
             this.httpClient.send(HttpRequest.newBuilder().GET().uri(downloadUri).build(),
                     HttpResponse.BodyHandlers.ofFile(targetPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE));
 
-            LOGGER.info("Downloaded library {} to {}", name, targetPath);
+            LOGGER.debug("Downloaded library {} to {}", name, targetPath);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }

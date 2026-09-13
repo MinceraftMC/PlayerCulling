@@ -1,15 +1,6 @@
 {
   "config-version": 1,
   "min-version": "1.20",
-  "libraries": [
-    "com.google.guava:guava",
-    "com.mojang:datafixerupper",
-    "org.joml:joml",
-    "it.unimi.dsi:fastutil",
-    "org.apache.commons:commons-lang3",
-    "io.netty:netty-codec-base",
-    "io.netty:netty-buffer"
-  ],
   "mappings": {
     "relative-class-path": "net.minecraft.client.model",
     "default-layer-creator": "()Lnet/minecraft/client/model/geom/builders/LayerDefinition;"

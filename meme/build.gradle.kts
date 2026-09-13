@@ -8,6 +8,7 @@ dependencies {
     api(libs.checkerframework)
     api(projects.common)
 
+    api(libs.joml)
     api(libs.slf4j)
     api(libs.bundles.log4j)
 }

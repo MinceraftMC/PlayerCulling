@@ -139,6 +139,15 @@ public final class ReflectionUtil {
                 + " with offset " + offset + " in " + clazz.getName());
     }
 
+    public static Field lookupFieldByName(Class<?> clazz, String name) {
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getName().equals(name)) {
+                return field;
+            }
+        }
+        throw new IllegalArgumentException("Can't find field " + name + " in " + clazz.getName());
+    }
+
     @Nullable
     public static <T> T onExceptionNull(Supplier<T> supplier) {
         try {

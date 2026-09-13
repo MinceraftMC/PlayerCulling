@@ -7,9 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -19,63 +23,77 @@ public class JarLibLoader extends ClassLoader {
     private static final Logger LOGGER = MemeLogger.getLogger("JarLibLoader");
     private final Path jarPath;
     private final Path libPath;
-    private final Set<Path> jars = new HashSet<>();
-    private final WeakHashMap<String, Class<?>> loadedClasses = new WeakHashMap<>();
+
+    private final List<JarFile> jarFiles = new ArrayList<>();
+
+    private final Map<String, JarFile> classToJarMap = new ConcurrentHashMap<>();
+
+    private final Map<String, Class<?>> loadedClasses = new ConcurrentHashMap<>();
 
     public JarLibLoader(Path jarPath, Path libPath) {
         this.jarPath = jarPath;
         this.libPath = libPath;
-
         this.buildChildren();
     }
 
     private void buildChildren() {
         LOGGER.info("Building child jars for {} and libPath {}", this.jarPath, this.libPath);
-        this.buildChild(this.libPath);
-        LOGGER.info("Finished build child jars, found {} jars", this.jars.size());
-    }
+        Set<Path> paths = new HashSet<>();
+        paths.add(this.jarPath);
 
-    private void buildChild(Path path) {
-        try (Stream<Path> files = Files.list(path)) {
-            files.forEach(p -> {
-                if (Files.isDirectory(p)) {
-                    this.buildChild(p);
-                }
-                if (p.toString().endsWith(".jar")) {
-                    this.jars.add(p);
-                }
-            });
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
+        if (Files.exists(this.libPath)) {
+            try (Stream<Path> walk = Files.walk(this.libPath)) {
+                walk.filter(p -> p.toString().endsWith(".jar")).forEach(paths::add);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to scan lib path", e);
+            }
         }
-        this.jars.add(this.jarPath);
+
+        for (Path path : paths) {
+            try {
+                JarFile jarFile = new JarFile(path.toFile());
+                this.jarFiles.add(jarFile);
+
+                // Index vorab aufbauen (ermöglicht blitzschnelles Finden)
+                var entries = jarFile.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.getName().endsWith(".class")) {
+                        this.classToJarMap.put(entry.getName(), jarFile);
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to open jar file: {}", path, e);
+            }
+        }
+
+        LOGGER.info("Finished build child jars, loaded {} jars", this.jarFiles.size());
     }
 
     @Override
-    protected Class<?> findClass(String name) {
-        return this.loadedClasses.computeIfAbsent(name, n -> {
-            try {
-                return this.findClass0(n);
-            } catch (ClassNotFoundException exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-    }
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        Class<?> clazz = this.loadedClasses.get(name);
+        if (clazz != null) {
+            return clazz;
+        }
 
-    protected Class<?> findClass0(String name) throws ClassNotFoundException{
         String path = name.replace('.', '/') + ".class";
-        for (Path jar : this.jars) {
-            try (JarFile jarFile = new JarFile(jar.toFile())) {
-                JarEntry entry = jarFile.getJarEntry(path);
-                if (entry != null) {
-                    try (InputStream inputStream = jarFile.getInputStream(entry)) {
-                        byte[] classBytes = inputStream.readAllBytes();
-                        return defineClass(name, classBytes, 0, classBytes.length);
-                    }
+        JarFile jarFile = this.classToJarMap.get(path);
+
+        if (jarFile != null) {
+            JarEntry entry = jarFile.getJarEntry(path);
+            if (entry != null) {
+                try (InputStream inputStream = jarFile.getInputStream(entry)) {
+                    byte[] classBytes = inputStream.readAllBytes();
+                    clazz = defineClass(name, classBytes, 0, classBytes.length);
+                    this.loadedClasses.put(name, clazz);
+                    return clazz;
+                } catch (IOException e) {
+                    throw new ClassNotFoundException("Failed to read class bytes for " + name, e);
                 }
-            } catch (Exception ignored1) {
             }
         }
+
         throw new ClassNotFoundException("Could not load class " + name + " in " + this.jarPath + " libPath: " + this.libPath);
     }
 }
