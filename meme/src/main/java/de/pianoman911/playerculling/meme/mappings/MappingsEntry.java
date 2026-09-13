@@ -2,6 +2,8 @@ package de.pianoman911.playerculling.meme.mappings;
 
 public class MappingsEntry {
 
+    private static final int CLASS_NAME_CUT_LENGTH = ".class".length();
+
     private final String type;
     private final String classPath;
 
@@ -16,6 +18,10 @@ public class MappingsEntry {
 
     public String getClassPath() {
         return this.classPath;
+    }
+
+    public String getClassName() {
+        return this.classPath.substring(0, this.classPath.length() - CLASS_NAME_CUT_LENGTH).replace('/', '.');
     }
 
     @Override

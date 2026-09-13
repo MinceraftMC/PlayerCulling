@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    api(libs.bundles.configurate)
     api(libs.jspecify)
 }
 

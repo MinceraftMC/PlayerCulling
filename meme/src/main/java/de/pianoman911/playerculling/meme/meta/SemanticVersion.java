@@ -1,7 +1,15 @@
 package de.pianoman911.playerculling.meme.meta;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.ScalarSerializer;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
+import java.lang.reflect.Type;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -104,5 +112,28 @@ public record SemanticVersion(int major, int minor, int patch, String metadata) 
                 ", patch=" + this.patch +
                 ", metadata='" + this.metadata + '\'' +
                 '}';
+    }
+
+    public static final class Serializer implements TypeSerializer<SemanticVersion> {
+
+        public static final Serializer INSTANCE = new Serializer();
+
+        @Override
+        @Nullable
+        public SemanticVersion deserialize(Type type, ConfigurationNode node) throws SerializationException {
+            if (node.virtual()) {
+                return null;
+            }
+            return SemanticVersion.of(Objects.requireNonNull(node.getString()));
+        }
+
+        @Override
+        public void serialize(Type type, @Nullable SemanticVersion obj, ConfigurationNode node) throws SerializationException {
+            if (obj == null) {
+                node.set(null);
+                return;
+            }
+            node.set(obj.asShortPrettyString(true));
+        }
     }
 }
