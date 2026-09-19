@@ -62,6 +62,11 @@ adventure-platform-fabric-v2612 = "6.9.0"
 fabricapi-v262 = "0.154.0+26.2"
 adventure-platform-fabric-v262 = "7.1.0"
 
+# fabric 26.3
+fabricapi-v263 = "0.161.0+26.3"
+fabric-permissions-v263 = "0.7.0"
+adventure-platform-fabric-v263 = "7.2.0"
+
 [libraries]
 plugin-paperweight = { module = "io.papermc.paperweight:paperweight-userdev", version.ref = "paperweight-userdev" }
 plugin-shadow = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "gradle-shadow" }
