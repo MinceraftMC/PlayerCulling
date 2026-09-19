@@ -171,7 +171,7 @@ public class PaperNmsAdapterImpl implements PaperNmsAdapter {
         ServerLevel world = handle.level();
 
         BlockableEventLoop<?> eventLoop = world.getServer().isIteratingOverLevels ?
-                world.chunkSource.mainThreadProcessor : world.getServer();
+                world.getChunkSource().mainThreadProcessor : world.getServer();
 
         eventLoop.executeIfPossible(() -> {
             for (PlatformPlayer target : targets) {

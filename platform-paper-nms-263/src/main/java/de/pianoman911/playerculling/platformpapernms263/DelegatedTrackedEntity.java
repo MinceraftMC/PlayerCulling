@@ -14,6 +14,7 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.UpdateInterval;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public final class DelegatedTrackedEntity {
     private static final MethodHandle SET_LAST_TRACKED_CHUNK = ReflectionUtil.getSetter(ChunkMap.TrackedEntity.class, NearbyPlayers.TrackedChunk.class, 0);
 
     // ServerEntity getter
-    private static final MethodHandle GET_UPDATE_INTERVAL = ReflectionUtil.getGetter(ServerEntity.class, int.class, 3);
+    private static final MethodHandle GET_UPDATE_INTERVAL = ReflectionUtil.getGetter(ServerEntity.class, UpdateInterval.class, 0);
     private static final MethodHandle GET_TRACK_DELTA = ReflectionUtil.getGetter(ServerEntity.class, boolean.class, 0);
 
     private DelegatedTrackedEntity() {
@@ -78,7 +79,7 @@ public final class DelegatedTrackedEntity {
             return entity; // skip useless delegation
         }
         int range = (int) GET_RANGE.invoke(entity);
-        int updateInterval = (int) GET_UPDATE_INTERVAL.invoke(entity.serverEntity);
+        UpdateInterval updateInterval = (UpdateInterval) GET_UPDATE_INTERVAL.invoke(entity.serverEntity);
         boolean trackDelta = (boolean) GET_TRACK_DELTA.invoke(entity.serverEntity);
 
         CullPlayer player = ship.getPlayer(mcEntity.getUUID());

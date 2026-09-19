@@ -10,7 +10,6 @@ import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,8 +63,8 @@ public class DelegatedChunkPacketBlockController extends ChunkPacketBlockControl
     }
 
     @Override
-    public final ChunkPacketInfo<BlockState> getChunkPacketInfo(ClientboundLevelChunkWithLightPacket chunkPacket, LevelChunk chunk) {
-        return this.delegate.getChunkPacketInfo(chunkPacket, chunk);
+    public ChunkPacketInfo<BlockState> getChunkPacketInfo(LevelChunk chunk) {
+        return this.delegate.getChunkPacketInfo(chunk);
     }
 
     @Override
@@ -80,8 +79,8 @@ public class DelegatedChunkPacketBlockController extends ChunkPacketBlockControl
     }
 
     @Override
-    public final void onPlayerLeftClickBlock(ServerPlayerGameMode serverPlayerGameMode, BlockPos blockPos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence) {
-        this.delegate.onPlayerLeftClickBlock(serverPlayerGameMode, blockPos, action, direction, worldHeight, sequence);
+    public void onPlayerLeftClickBlock(Level level, BlockPos blockPos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence) {
+        this.delegate.onPlayerLeftClickBlock(level, blockPos, action, direction, worldHeight, sequence);
     }
 
     @FunctionalInterface
