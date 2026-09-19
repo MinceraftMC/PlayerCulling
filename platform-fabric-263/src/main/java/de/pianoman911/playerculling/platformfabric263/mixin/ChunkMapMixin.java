@@ -5,6 +5,7 @@ import de.pianoman911.playerculling.platformfabric263.PlayerCullingMod;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.UpdateInterval;
 import org.jspecify.annotations.NullMarked;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,7 +27,7 @@ public class ChunkMapMixin {
             at = @At(value = "NEW",
                     target = "net/minecraft/server/level/ChunkMap$TrackedEntity")
     )
-    private ChunkMap.TrackedEntity injectCustomEntity(ChunkMap this$0, Entity entity, int range, int updateInterval, boolean trackDelta) {
+    private ChunkMap.TrackedEntity injectCustomEntity(ChunkMap this$0, Entity entity, int range, UpdateInterval updateInterval, boolean trackDelta) {
         if (!(entity instanceof ServerPlayer)) {
             return this$0.new TrackedEntity(entity, range, updateInterval, trackDelta);
         }
