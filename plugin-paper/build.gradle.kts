@@ -8,7 +8,7 @@ plugins {
 runPaper.folia.registerTask()
 
 dependencies {
-    listOf("1.21.1", "1.21.4", "1.21.6", "1.21.11", "26.1")
+    listOf("1.21.1", "1.21.4", "1.21.6", "1.21.11", "26.1", "26.3")
         .map { "paper-nms-${it.replace(".", "")}" }
         .forEach { implementation(project(":platform-$it")) }
     listOf("1.21.4", "1.21.6", "26.1")
@@ -19,7 +19,7 @@ dependencies {
 tasks {
     withType<RunServer> {
         runDirectory = project.layout.projectDirectory.dir("run")
-        minecraftVersion("26.1.2")
+        minecraftVersion("26.3")
         javaLauncher = project.javaToolchains.launcherFor {
             languageVersion = JavaLanguageVersion.of(25)
             vendor = JvmVendorSpec.ADOPTIUM
