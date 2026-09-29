@@ -120,6 +120,7 @@ environment with an AMD Ryzen 5 3600X CPU.
 
 | Server Version | Paper | Folia | Fabric |
 |:--------------:|:-----:|:-----:|:------:|
+|     26.3.x     |   ✅   |   ❌   |   ✅    |  
 |     26.2.x     |   ✅   |   ✅   |   ✅    |  
 |     26.1.x     |   ✅   |   ✅   |   ✅    |  
 |    1.21.11     |   ✅   |   ✅   |   ✅    |  
