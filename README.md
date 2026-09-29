@@ -4,7 +4,7 @@
 
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/MinceraftMC/PlayerCulling?style=flat-square)](https://github.com/MinceraftMC/PlayerCulling)
 [![AGPLv3 License](https://img.shields.io/badge/License-AGPL%20v3-yellow.svg?style=flat-square)](https://opensource.org/license/agpl-v3/)
-![Status Alpha](https://img.shields.io/badge/Status-Alpha-red?style=flat-square)
+![Status Beta](https://img.shields.io/badge/Status-Beta-orange?style=flat-square)
 [![Discord](https://img.shields.io/discord/1094193723191070793?style=flat-square&label=Discord&link=https%3A%2F%2Fdiscord.gg%2FzC8xjtSPKC)](https://discord.gg/zC8xjtSPKC)
 
 ## Description
